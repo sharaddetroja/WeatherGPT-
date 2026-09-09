@@ -3,6 +3,7 @@ import { CloudRain, Map, LayoutDashboard, Bell, BarChart2, User, Menu, X, Sun, M
 import { cn } from '../utils/cn';
 import { useTheme } from '../hooks/useTheme';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
+import { useUserProfile } from '../hooks/useUserProfile';
 import { useState, useRef, useEffect } from 'react';
 
 const navItems = [
@@ -17,6 +18,7 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { profile } = useUserProfile();
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const { 
@@ -68,7 +70,7 @@ export default function Navbar() {
         <div className="ml-auto flex items-center space-x-4">
           <div className="hidden md:flex items-center bg-muted/50 rounded-full px-4 py-1.5 text-sm">
             <Map className="w-4 h-4 mr-2 text-muted-foreground" />
-            <span>Rajkot, Gujarat</span>
+            <span>{profile.location || 'Rajkot, Gujarat'}</span>
           </div>
 
           <button
@@ -208,8 +210,12 @@ export default function Navbar() {
             <span className="hidden sm:inline">Ask AI</span>
           </Link>
 
-          <Link to="/profile" className="hidden md:flex p-2 rounded-full hover:bg-muted transition-colors">
-            <User className="w-5 h-5" />
+          <Link 
+            to="/profile" 
+            className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all border border-primary/20 shadow-2xs"
+            title={`Profile & Settings: ${profile.name}`}
+          >
+            {profile.avatarInitials || 'JD'}
           </Link>
 
           <button 

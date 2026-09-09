@@ -1,20 +1,21 @@
 import { BarChart2, TrendingUp, Droplets, ThermometerSun } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useUserProfile } from '../hooks/useUserProfile';
 
-const tempTrend = [
-  { month: 'Jan', temp: 20 },
-  { month: 'Feb', temp: 23 },
-  { month: 'Mar', temp: 28 },
-  { month: 'Apr', temp: 33 },
-  { month: 'May', temp: 37 },
-  { month: 'Jun', temp: 35 },
-  { month: 'Jul', temp: 31 },
-  { month: 'Aug', temp: 30 },
-  { month: 'Sep', temp: 32 },
-  { month: 'Oct', temp: 30 },
-  { month: 'Nov', temp: 26 },
-  { month: 'Dec', temp: 21 },
+const rawTempTrend = [
+  { month: 'Jan', tempC: 20 },
+  { month: 'Feb', tempC: 23 },
+  { month: 'Mar', tempC: 28 },
+  { month: 'Apr', tempC: 33 },
+  { month: 'May', tempC: 37 },
+  { month: 'Jun', tempC: 35 },
+  { month: 'Jul', tempC: 31 },
+  { month: 'Aug', tempC: 30 },
+  { month: 'Sep', tempC: 32 },
+  { month: 'Oct', tempC: 30 },
+  { month: 'Nov', tempC: 26 },
+  { month: 'Dec', tempC: 21 },
 ];
 
 const rainTrend = [
@@ -33,6 +34,15 @@ const rainTrend = [
 ];
 
 export default function ClimatePage() {
+  const { convertTemp, tempUnitSymbol, preferences } = useUserProfile();
+
+  const tempTrend = rawTempTrend.map(item => ({
+    month: item.month,
+    temp: convertTemp(item.tempC),
+  }));
+
+  const increaseText = preferences.tempUnit === 'fahrenheit' ? '2.2°F' : '1.2°C';
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in duration-500">
       <div className="flex items-center gap-3">
@@ -50,7 +60,7 @@ export default function ClimatePage() {
               <div>
                 <h3 className="text-lg font-semibold text-emerald-700 dark:text-emerald-400">Climate Insight</h3>
                 <p className="mt-1 text-foreground leading-relaxed">
-                  Average temperature has increased by 1.2°C compared with the historical baseline (1990-2020). 
+                  Average temperature has increased by {increaseText} compared with the historical baseline (1990-2020). 
                   Monsoon patterns show higher intensity rainfall over shorter periods.
                 </p>
               </div>
@@ -60,10 +70,13 @@ export default function ClimatePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ThermometerSun className="w-5 h-5 text-orange-500" />
-              Average Temperature Trend
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <ThermometerSun className="w-5 h-5 text-orange-500" />
+                Average Temperature Trend
+              </CardTitle>
+              <span className="text-xs font-semibold text-muted-foreground">Unit: {tempUnitSymbol}</span>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] w-full">
@@ -71,9 +84,10 @@ export default function ClimatePage() {
                 <LineChart data={tempTrend} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                   <XAxis dataKey="month" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}°C`} />
+                  <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}${tempUnitSymbol}`} />
                   <Tooltip 
                     contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(val) => [`${val}${tempUnitSymbol}`, 'Temperature']}
                   />
                   <Line type="monotone" dataKey="temp" name="Temperature" stroke="#f97316" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>

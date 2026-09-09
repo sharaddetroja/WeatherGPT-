@@ -1,107 +1,215 @@
-import { User, Settings, Bell, MapPin, Moon, Sun, Save } from 'lucide-react';
+import { useState } from 'react';
+import { User, Settings, Bell, MapPin, Moon, Sun, Save, Check, X, Edit3, Mail, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { useTheme } from '../hooks/useTheme';
+import { useUserProfile, type TemperatureUnit, type UserProfile, type UserPreferences } from '../hooks/useUserProfile';
 
 export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
+  const { 
+    profile, 
+    preferences, 
+    saveChanges, 
+    lastSavedNotification, 
+    dismissNotification 
+  } = useUserProfile();
+
+  // Local form states for editing
+  const [formProfile, setFormProfile] = useState<UserProfile>(profile);
+  const [formPreferences, setFormPreferences] = useState<UserPreferences>(preferences);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSavedRecently, setIsSavedRecently] = useState(false);
+
+  // Sync with context if context updates externally
+  const handleOpenEditModal = () => {
+    setFormProfile(profile);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveModalProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Compute initials from name
+    const parts = formProfile.name.trim().split(/\s+/);
+    const initials = parts.length > 1 
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (parts[0].slice(0, 2)).toUpperCase();
+    
+    const updatedProfile = { ...formProfile, avatarInitials: initials || 'JD' };
+    setFormProfile(updatedProfile);
+    saveChanges(updatedProfile, formPreferences);
+    setIsEditModalOpen(false);
+    triggerSaveEffect();
+  };
+
+  const handleSaveAll = () => {
+    saveChanges(formProfile, formPreferences);
+    triggerSaveEffect();
+  };
+
+  const triggerSaveEffect = () => {
+    setIsSavedRecently(true);
+    setTimeout(() => {
+      setIsSavedRecently(false);
+    }, 2500);
+  };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center gap-3">
-        <User className="w-8 h-8 text-primary" />
-        <h1 className="text-3xl font-bold tracking-tight">Profile & Settings</h1>
+    <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500 relative">
+      {/* Save Success Banner Notification */}
+      {lastSavedNotification && (
+        <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between gap-3 text-emerald-700 dark:text-emerald-400 shadow-sm animate-in slide-in-from-top-2">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-sm font-semibold">{lastSavedNotification}</span>
+          </div>
+          <button 
+            onClick={dismissNotification}
+            className="p-1 hover:bg-emerald-500/20 rounded-lg transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <User className="w-8 h-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Profile & Settings</h1>
+            <p className="text-xs text-muted-foreground">Manage your personal preferences and weather units</p>
+          </div>
+        </div>
       </div>
 
+      {/* Profile Overview Card */}
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center text-primary text-3xl font-bold">
-              JD
+            <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 rounded-full flex items-center justify-center text-primary text-3xl font-extrabold shadow-inner">
+              {profile.avatarInitials || 'JD'}
             </div>
             <div className="flex-1 text-center md:text-left space-y-2">
-              <h2 className="text-2xl font-bold">John Doe</h2>
-              <p className="text-muted-foreground">john.doe@example.com</p>
-              <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-primary bg-primary/10 w-fit mx-auto md:mx-0 px-3 py-1 rounded-full">
-                <MapPin className="w-4 h-4" />
-                Rajkot, Gujarat
+              <h2 className="text-2xl font-bold text-foreground">{profile.name}</h2>
+              <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-1.5 text-sm">
+                <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                {profile.email}
+              </p>
+              <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-primary bg-primary/10 w-fit mx-auto md:mx-0 px-3.5 py-1 rounded-full border border-primary/20">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span>{profile.location}</span>
               </div>
             </div>
-            <button className="px-4 py-2 border rounded-xl hover:bg-muted font-medium transition-colors">
-              Edit Profile
+            <button 
+              onClick={handleOpenEditModal}
+              className="flex items-center gap-2 px-4 py-2.5 border border-border bg-card hover:bg-muted font-medium rounded-xl transition-all cursor-pointer shadow-2xs hover:scale-105"
+            >
+              <Edit3 className="w-4 h-4 text-primary" />
+              <span>Edit Profile</span>
             </button>
           </div>
         </CardContent>
       </Card>
 
+      {/* Preferences & Notifications Cards */}
       <div className="grid md:grid-cols-2 gap-6">
+        {/* Preferences Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
-              Preferences
+              <Settings className="w-5 h-5 text-primary" />
+              <span>Preferences</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
+            {/* Temperature Unit Preference */}
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-medium">Temperature Unit</p>
-                <p className="text-sm text-muted-foreground">Celsius or Fahrenheit</p>
+                <p className="font-semibold text-foreground">Temperature Unit</p>
+                <p className="text-xs text-muted-foreground">Select Celsius (°C) or Fahrenheit (°F)</p>
               </div>
-              <select className="border rounded-lg px-3 py-2 bg-background focus:ring-2 focus:ring-primary outline-none">
-                <option>Celsius (°C)</option>
-                <option>Fahrenheit (°F)</option>
+              <select 
+                value={formPreferences.tempUnit}
+                onChange={(e) => {
+                  const newUnit = e.target.value as TemperatureUnit;
+                  setFormPreferences(prev => ({ ...prev, tempUnit: newUnit }));
+                }}
+                className="border border-border rounded-xl px-3.5 py-2 bg-background font-medium text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer shadow-2xs"
+              >
+                <option value="celsius">Celsius (°C)</option>
+                <option value="fahrenheit">Fahrenheit (°F)</option>
               </select>
             </div>
             
-            <div className="flex items-center justify-between">
+            {/* Appearance Preference */}
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-medium">Appearance</p>
-                <p className="text-sm text-muted-foreground">Light or dark theme</p>
+                <p className="font-semibold text-foreground">Appearance</p>
+                <p className="text-xs text-muted-foreground">Light or dark interface theme</p>
               </div>
-              <div className="flex bg-muted rounded-xl p-1">
+              <div className="flex bg-muted rounded-xl p-1 border border-border/50">
                 <button 
                   onClick={() => setTheme('light')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${theme === 'light' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    theme === 'light' 
+                      ? 'bg-background text-foreground shadow-xs' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
                 >
-                  <Sun className="w-4 h-4" /> Light
+                  <Sun className="w-3.5 h-3.5 text-amber-500" /> Light
                 </button>
                 <button 
                   onClick={() => setTheme('dark')}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${theme === 'dark' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    theme === 'dark' 
+                      ? 'bg-background text-foreground shadow-xs' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
                 >
-                  <Moon className="w-4 h-4" /> Dark
+                  <Moon className="w-3.5 h-3.5 text-blue-400" /> Dark
                 </button>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Notifications Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              Notifications
+              <Bell className="w-5 h-5 text-primary" />
+              <span>Notifications</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-medium">Weather Alerts</p>
-                <p className="text-sm text-muted-foreground">Severe weather warnings</p>
+                <p className="font-semibold text-foreground">Weather Alerts</p>
+                <p className="text-xs text-muted-foreground">Severe rain & storm warnings</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={formPreferences.weatherAlertsNotification}
+                  onChange={(e) => setFormPreferences(prev => ({ ...prev, weatherAlertsNotification: e.target.checked }))}
+                />
                 <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-medium">Daily Forecast</p>
-                <p className="text-sm text-muted-foreground">Morning weather summary</p>
+                <p className="font-semibold text-foreground">Daily Forecast</p>
+                <p className="text-xs text-muted-foreground">Morning weather summary</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={formPreferences.dailyForecastNotification}
+                  onChange={(e) => setFormPreferences(prev => ({ ...prev, dailyForecastNotification: e.target.checked }))}
+                />
                 <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
@@ -109,12 +217,117 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      <div className="flex justify-end">
-        <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-medium rounded-xl hover:bg-primary/90 transition-colors shadow-sm">
-          <Save className="w-5 h-5" />
-          Save Changes
+      {/* Save Changes Bottom Action */}
+      <div className="flex items-center justify-between pt-2">
+        <span className="text-xs text-muted-foreground">
+          Current Unit: <strong className="text-foreground">{formPreferences.tempUnit === 'fahrenheit' ? 'Fahrenheit (°F)' : 'Celsius (°C)'}</strong>
+        </span>
+
+        <button 
+          onClick={handleSaveAll}
+          className={`flex items-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all shadow-md cursor-pointer ${
+            isSavedRecently 
+              ? 'bg-emerald-600 hover:bg-emerald-700 text-white scale-105' 
+              : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02]'
+          }`}
+        >
+          {isSavedRecently ? (
+            <>
+              <Check className="w-5 h-5 animate-bounce" />
+              <span>Saved!</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-5 h-5" />
+              <span>Save Changes</span>
+            </>
+          )}
         </button>
       </div>
+
+      {/* Interactive Edit Profile Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-bold text-foreground">Edit Profile</h3>
+              </div>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Edit Form */}
+            <form onSubmit={handleSaveModalProfile} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  Full Name
+                </label>
+                <input 
+                  type="text" 
+                  required
+                  value={formProfile.name}
+                  onChange={(e) => setFormProfile(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground font-medium focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  placeholder="e.g. John Doe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  Email Address
+                </label>
+                <input 
+                  type="email" 
+                  required
+                  value={formProfile.email}
+                  onChange={(e) => setFormProfile(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground font-medium focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  placeholder="e.g. john.doe@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  City / Location
+                </label>
+                <input 
+                  type="text" 
+                  required
+                  value={formProfile.location}
+                  onChange={(e) => setFormProfile(prev => ({ ...prev, location: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground font-medium focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  placeholder="e.g. Rajkot, Gujarat"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold border border-border hover:bg-muted text-foreground transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xs cursor-pointer hover:scale-105"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Update Profile</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

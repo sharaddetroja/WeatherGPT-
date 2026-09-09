@@ -23,6 +23,7 @@ import {
   RefreshCw 
 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 // Supported Languages for Voice & Text
 export interface LanguageOption {
@@ -475,6 +476,7 @@ const INITIAL_SESSIONS: ChatSession[] = [
 export default function VoiceAssistantPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { formatTemp, profile } = useUserProfile();
 
   // Sessions and Active Chat
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
@@ -666,22 +668,28 @@ export default function VoiceAssistantPage() {
     const activeLang = langCode === 'auto' ? detectLanguage(query) : langCode;
     const q = query.toLowerCase();
 
+    // Dynamic temperature strings matching user unit (°C or °F)
+    const curTemp = formatTemp(28);
+    const feelsTemp = formatTemp(30);
+    const maxTemp = formatTemp(32);
+    const minTemp = formatTemp(24);
+
     // Check if user mentioned a specific location
     const locationMatch = query.match(/\b(rajkot|ahmedabad|surat|vadodara|mumbai|delhi|bengaluru|chennai|kolkata|pune|hyderabad|london|paris|dubai|tokyo|new york)\b/i);
-    const locName = locationMatch ? locationMatch[0].charAt(0).toUpperCase() + locationMatch[0].slice(1).toLowerCase() : "Rajkot";
+    const locName = locationMatch ? locationMatch[0].charAt(0).toUpperCase() + locationMatch[0].slice(1).toLowerCase() : (profile.location ? profile.location.split(',')[0].trim() : "Rajkot");
 
     // 1. GUJARATI (ગુજરાતી)
     if (activeLang === 'gu') {
       if (q.includes('વરસાદ') || q.includes('છત્રી') || q.includes('પાણી') || q.includes('મેઘ') || q.includes('ઝરમર')) {
         return `${locName}માં આજે સાંજે 5:00 થી 8:00 વાગ્યા દરમિયાન 80% ગાજવીજ સાથે ભારે વરસાદની શક્યતા છે. હવામાં ભેજ 68% છે અને પવન 15.4 કિમી/કલાકની ઝડપે ફૂંકાઈ રહ્યો છે. જો તમે બહાર નીકળતા હોવ તો સાથે છત્રી અથવા રેઈનકોટ ચોક્કસ રાખવો!`;
       } else if (q.includes('તાપમાન') || q.includes('ગરમી') || q.includes('તડકો')) {
-        return `${locName}નું હાલનું તાપમાન 28°C છે (અનુભવાતું તાપમાન 30°C). દિવસ દરમિયાન મહત્તમ તાપમાન 32°C અને રાત્રે લઘુત્તમ 24°C રહેશે. બપોરના સમયે UV ઇન્ડેક્સ 6 (મધ્યમ) રહેશે.`;
+        return `${locName}નું હાલનું તાપમાન ${curTemp} છે (અનુભવાતું તાપમાન ${feelsTemp}). દિવસ દરમિયાન મહત્તમ તાપમાન ${maxTemp} અને રાત્રે લઘુત્તમ ${minTemp} રહેશે. બપોરના સમયે UV ઇન્ડેક્સ 6 (મધ્યમ) રહેશે.`;
       } else if (q.includes('ખેતી') || q.includes('પાક') || q.includes('જમીન')) {
         return `ખેડૂત મિત્રો માટે કૃષિ હવામાન સલાહ: આગામી 48 કલાકમાં હળવોથી મધ્યમ વરસાદ મગફળી અને કપાસના પાક માટે લાભદાયી છે. પરંતુ ખેતરમાં વધુ પડતું પાણી ભરાય નહીં તેની નિકાલ વ્યવસ્થા રાખવી.`;
       } else if (q.includes('પવન') || q.includes('વાવાઝોડું') || q.includes('તોફાન') || q.includes('આગાહી')) {
         return `${locName} વિસ્તારમાં પવનની ઝડપ 15 થી 25 કિમી/કલાક રહેવાની સંભાવના છે. દરિયાકાંઠાના વિસ્તારોમાં હળવા વાવાઝોડાની ચેતવણી જારી કરવામાં આવી છે.`;
       }
-      return `${locName}માં આજનું હવામાન વાદળછાયું અને આહલાદક છે. તાપમાન 28°C, ભેજ 68% અને સાંજે 80% વરસાદની શક્યતા છે. તમે 7 દિવસનું પૂર્વાનુમાન અથવા રડાર મેપ વિશે પણ પૂછી શકો છો!`;
+      return `${locName}માં આજનું હવામાન વાદળછાયું અને આહલાદક છે. તાપમાન ${curTemp}, ભેજ 68% અને સાંજે 80% વરસાદની શક્યતા છે. તમે 7 દિવસનું પૂર્વાનુમાન અથવા રડાર મેપ વિશે પણ પૂછી શકો છો!`;
     }
 
     // 2. HINDI (हिन्दी)
@@ -689,11 +697,11 @@ export default function VoiceAssistantPage() {
       if (q.includes('बारिश') || q.includes('छाता') || q.includes('पानी') || q.includes('मानसून')) {
         return `${locName} में आज शाम 5:00 बजे से रात 8:00 बजे के बीच 80% बारिश और गरज-चमक की संभावना है। आर्द्रता 68% है। यदि आप शाम को बाहर जा रहे हैं, तो छाता या रेनकोट अवश्य साथ रखें!`;
       } else if (q.includes('तापमान') || q.includes('गर्मी') || q.includes('धूप')) {
-        return `${locName} का वर्तमान तापमान 28°C है और 'फील्स लाइक' तापमान 30°C दर्ज किया गया है। आज अधिकतम तापमान 32°C और रात में न्यूनतम 24°C रहेगा।`;
+        return `${locName} का वर्तमान तापमान ${curTemp} है और 'फील्स लाइक' तापमान ${feelsTemp} दर्ज किया गया है। आज अधिकतम तापमान ${maxTemp} और रात में न्यूनतम ${minTemp} रहेगा।`;
       } else if (q.includes('हवा') || q.includes('तूफान') || q.includes('आंधी') || q.includes('अलर्ट')) {
         return `मौसम चेतावनी: ${locName} और आसपास के जिलों में 40 किमी/घंटा तक के तेज हवा के झोंके और मूसलाधार बारिश का येलो अलर्ट जारी किया गया है।`;
       }
-      return `${locName} में आज का मौसम आंशिक रूप से बादलों भरा और सुहावना है। तापमान 28°C है तथा शाम को बारिश का अनुमान है। क्या आप 7 दिनों का पूर्वानुमान या यात्रा सलाह जानना चाहते हैं?`;
+      return `${locName} में आज का मौसम आंशिक रूप से बादलों भरा और सुहावना है। तापमान ${curTemp} है तथा शाम को बारिश का अनुमान है। क्या आप 7 दिनों का पूर्वानुमान या यात्रा सलाह जानना चाहते हैं?`;
     }
 
     // 3. MARATHI (मराठी)
@@ -701,9 +709,9 @@ export default function VoiceAssistantPage() {
       if (q.includes('पाऊस') || q.includes('छत्री') || q.includes('पाणी')) {
         return `${locName}मध्ये आज संध्याकाळी 5:00 ते रात्री 8:00 दरम्यान 80% मुसळधार पावसाची शक्यता आहे. हवेतील आर्द्रता 68% आहे. बाहेर जाताना छत्री नक्की सोबत ठेवा!`;
       } else if (q.includes('तापमान') || q.includes('उष्णता') || q.includes('ऊन')) {
-        return `${locName}चे सध्याचे तापमान 28°C असून जाणवणारे तापमान 30°C आहे. कमाल तापमान 32°C आणि किमान तापमान 24°C राहण्याचा अंदाज आहे.`;
+        return `${locName}चे सध्याचे तापमान ${curTemp} असून जाणवणारे तापमान ${feelsTemp} आहे. कमाल तापमान ${maxTemp} आणि किमान तापमान ${minTemp} राहण्याचा अंदाज आहे.`;
       }
-      return `${locName}मध्ये आज ढगाळ हवामान राहील. सध्या तापमान 28°C असून वारे ताशी 15.4 किमी वेगाने वाहत आहेत. संध्याकाळी पावसाचा अंदाज आहे.`;
+      return `${locName}मध्ये आज ढगाळ हवामान राहील. सध्या तापमान ${curTemp} असून वारे ताशी 15.4 किमी वेगाने वाहत आहेत. संध्याकाळी पावसाचा अंदाज आहे.`;
     }
 
     // 4. BENGALI (বাংলা)
@@ -711,9 +719,9 @@ export default function VoiceAssistantPage() {
       if (q.includes('বৃষ্টি') || q.includes('ছাতা') || q.includes('জল')) {
         return `${locName}-এ আজ সন্ধ্যা ৫:০০ থেকে রাত ৮:০০ এর মধ্যে ৮০% বজ্রসহ বৃষ্টির সম্ভাবনা রয়েছে। বাতাসে আর্দ্রতা ৬৮%। বাইরে যাওয়ার সময় সঙ্গে ছাতা রাখার পরামর্শ দেওয়া হচ্ছে!`;
       } else if (q.includes('তাপমাত্রা') || q.includes('গরম')) {
-        return `${locName}-এর বর্তমান তাপমাত্রা ২৮°C এবং অনুভূত তাপমাত্রা ৩০°C। দিনের সর্বোচ্চ তাপমাত্রা ৩২°C পর্যন্ত পৌঁছাতে পারে।`;
+        return `${locName}-এর বর্তমান তাপমাত্রা ${curTemp} এবং অনুভূত তাপমাত্রা ${feelsTemp}। দিনের সর্বোচ্চ তাপমাত্রা ${maxTemp} পর্যন্ত পৌঁছাতে পারে।`;
       }
-      return `${locName}-এ আজ আংশিক মেঘলা আবহাওয়া থাকবে। তাপমাত্রা ২৮°C এবং সন্ধ্যার দিকে বৃষ্টির সম্ভাবনা রয়েছে।`;
+      return `${locName}-এ আজ আংশিক মেঘলা আবহাওয়া থাকবে। তাপমাত্রা ${curTemp} এবং সন্ধ্যার দিকে বৃষ্টির সম্ভাবনা রয়েছে।`;
     }
 
     // 5. TAMIL (தமிழ்)
@@ -721,9 +729,9 @@ export default function VoiceAssistantPage() {
       if (q.includes('மழை') || q.includes('குடை')) {
         return `${locName} பகுதியில் இன்று மாலை 5 மணி முதல் 8 மணி வரை 80% இடியுடன் கூடிய கனமழை பெய்ய வாய்ப்புள்ளது. ஈரப்பதம் 68%. வெளியே செல்லும்போது குடை எடுத்துச் செல்லுங்கள்!`;
       } else if (q.includes('வெப்பநிலை') || q.includes('வெயில்')) {
-        return `${locName} தற்போதைய வெப்பநிலை 28°C (உணரப்படும் வெப்பநிலை 30°C). இன்றைய அதிகபட்ச வெப்பநிலை 32°C ஆக இருக்கும்.`;
+        return `${locName} தற்போதைய வெப்பநிலை ${curTemp} (உணரப்படும் வெப்பநிலை ${feelsTemp}). இன்றைய அதிகபட்ச வெப்பநிலை ${maxTemp} ஆக இருக்கும்.`;
       }
-      return `${locName} பகுதியில் இன்று வானம் மேகமூட்டத்துடன் காணப்படும். வெப்பநிலை 28°C மற்றும் மாலை நேரத்தில் மழை பெய்ய வாய்ப்புள்ளது.`;
+      return `${locName} பகுதியில் இன்று வானம் மேகமூட்டத்துடன் காணப்படும். வெப்பநிலை ${curTemp} மற்றும் மாலை நேரத்தில் மழை பெய்ய வாய்ப்புள்ளது.`;
     }
 
     // 6. TELUGU (తెలుగు)
@@ -731,7 +739,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('వర్షం') || q.includes('గొడుగు')) {
         return `${locName}లో ఈరోజు సాయంత్రం 5:00 నుండి 8:00 గంటల మధ్య 80% ఉరుములతో కూడిన వర్షం పడే అవకాశం ఉంది. గాలిలో తేమ 68%. బయటకు వెళ్లేటప్పుడు గొడుగు తీసుకెళ్లడం మంచిది!`;
       }
-      return `${locName}లో ప్రస్తుత ఉష్ణోగ్రత 28°C. ఆకాశం పాక్షికంగా మేఘావృతమై ఉంటుంది మరియు సాయంత్రం వర్ష సూచన ఉంది.`;
+      return `${locName}లో ప్రస్తుత ఉష్णోగ్రత ${curTemp}. ఆకాశం పాక్షికంగా మేఘావృతమై ఉంటుంది మరియు సాయంత్రం వర్ష సూచన ఉంది.`;
     }
 
     // 7. KANNADA (ಕನ್ನಡ)
@@ -739,15 +747,15 @@ export default function VoiceAssistantPage() {
       if (q.includes('ಮಳೆ') || q.includes('ಛತ್ರಿ')) {
         return `${locName}ನಲ್ಲಿ ಇಂದು ಸಂಜೆ 5:00 ರಿಂದ 8:00 ರ ನಡುವೆ 80% ಗುಡುಗು ಸಹಿತ ಮಳೆಯಾಗುವ ಸಾಧ್ಯತೆಯಿದೆ. ತೇವಾಂಶ 68%. ಹೊರಗೆ ಹೋಗುವಾಗ ಛತ್ರಿ ತೆಗೆದುಕೊಂಡು ಹೋಗುವುದು ಸೂಕ್ತ!`;
       }
-      return `${locName}ನಲ್ಲಿ ಪ್ರಸ್ತುತ ತಾಪಮಾನ 28°C ಆಗಿದೆ. ಸಂಜೆ ವೇಳೆಗೆ ಮಳೆಯಾಗುವ ಮುನ್ಸೂಚನೆ ಇದೆ.`;
+      return `${locName}ನಲ್ಲಿ ಪ್ರಸ್ತುತ ತಾಪಮಾನ ${curTemp} ಆಗಿದೆ. ಸಂಜೆ ವೇಳೆಗೆ ಮಳೆಯಾಗುವ ಮುನ್ಸೂಚನೆ ಇದೆ.`;
     }
 
     // 8. MALAYALAM (മലയാളം)
     if (activeLang === 'ml') {
       if (q.includes('മഴ') || q.includes('കുട')) {
-        return `${locName}ൽ ഇന്ന് വൈകുന്നേരം 5:00 നും 8:00 നും ഇടയിൽ 80% ഇടിമിന്നലോട് കൂടിയ മഴയ്ക്ക് സാധ്യതയുണ്ട്. ഈർപ്പം 68%. പുറത്തിറങ്ങുമ്പോൾ കുട കരുതുക!`;
+        return `${locName}ൽ ഇന്ന് വൈകുന്നೇരം 5:00 നും 8:00 നും ഇടയിൽ 80% ഇടിಮಿന്നലോട് കൂടിയ മഴയ്ക്ക് സാധ്യതയുണ്ട്. ഈർപ്പം 68%. പുറത്തിറങ്ങുമ്പോൾ കുട കരുതുക!`;
       }
-      return `${locName}ൽ നിലവിലെ താപനില 28°C ആണ്. വൈകുന്നേരത്തോടെ മഴയ്ക്ക് സാധ്യതയുണ്ട്.`;
+      return `${locName}ൽ നിലവിലെ താപനില ${curTemp} ആണ്. വൈകുന്നേരത്തോടെ മഴയ്ക്ക് സാധ്യതയുണ്ട്.`;
     }
 
     // 9. PUNJABI (ਪੰਜਾਬੀ)
@@ -755,7 +763,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('ਮੀਂਹ') || q.includes('ਛਤਰੀ')) {
         return `${locName} ਵਿੱਚ ਅੱਜ ਸ਼ਾਮ 5:00 ਤੋਂ 8:00 ਵਜੇ ਦਰਮਿਆਨ 80% ਮੀਂਹ ਪੈਣ ਦੀ ਸੰਭਾਵਨਾ ਹੈ। ਨਮੀ 68% ਹੈ। ਬਾਹਰ ਜਾਂਦੇ ਸਮੇਂ ਛਤਰੀ ਜ਼ਰੂਰ ਨਾਲ ਰੱਖੋ!`;
       }
-      return `${locName} ਵਿੱਚ ਅੱਜ ਮੌਸਮ ਬੱਦਲਵਾਈ ਵਾਲਾ ਰਹੇਗਾ। ਤਾਪਮਾਨ 28°C ਹੈ ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਮੀਂਹ ਦਾ ਅਨੁਮਾਨ ਹੈ।`;
+      return `${locName} ਵਿੱਚ ਅੱਜ ਮੌਸਮ ਬੱਦਲਵਾਈ ਵਾਲਾ ਰਹੇਗਾ। ਤਾਪਮਾਨ ${curTemp} ਹੈ ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਮੀਂਹ ਦਾ ਅਨੁਮਾਨ ਹੈ।`;
     }
 
     // 10. URDU (اردو)
@@ -763,7 +771,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('بارش') || q.includes('چھتری')) {
         return `${locName} میں آج شام 5:00 سے 8:00 بجے کے درمیان 80 فیصد گرج چمک کے ساتھ بارش کا امکان ہے۔ نمی 68 فیصد ہے۔ باہر جاتے وقت چھتری ضرور ساتھ رکھیں!`;
       }
-      return `${locName} میں آج کا موسم جزوی طور پر ابر آلود رہے گا۔ موجودہ درجہ حرارت 28 ڈگری سینٹی گریڈ ہے اور شام کو بارش کی توقع ہے۔`;
+      return `${locName} میں آج کا موسم جزوی طور پر ابر آلود رہے گا۔ موجودہ درجہ حرارت ${curTemp} ہے اور شام کو بارش کی توقع ہے۔`;
     }
 
     // 11. SPANISH (Español)
@@ -771,9 +779,9 @@ export default function VoiceAssistantPage() {
       if (q.includes('lluvia') || q.includes('paraguas') || q.includes('llover')) {
         return `Hay un 80% de probabilidad de tormentas y lluvia esta tarde en ${locName} entre las 5:00 PM y las 8:00 PM. Humedad al 68%. ¡Te recomiendo llevar paraguas!`;
       } else if (q.includes('temperatura') || q.includes('calor')) {
-        return `La temperatura actual en ${locName} es de 28°C con sensación térmica de 30°C. La máxima de hoy alcanzará 32°C.`;
+        return `La temperatura actual en ${locName} es de ${curTemp} con sensación térmica de ${feelsTemp}. La máxima de hoy alcanzará ${maxTemp}.`;
       }
-      return `El clima en ${locName} está parcialmente nublado con 28°C y vientos de 15 km/h. Se esperan lluvias hacia el final de la tarde.`;
+      return `El clima en ${locName} está parcialmente nublado con ${curTemp} y vientos de 15 km/h. Se esperan lluvias hacia el final de la tarde.`;
     }
 
     // 12. FRENCH (Français)
@@ -781,7 +789,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('pluie') || q.includes('parapluie') || q.includes('pleuvoir')) {
         return `Il y a 80 % de risques d'averses orageuses ce soir à ${locName} entre 17h00 et 20h00. Humidité à 68 %. Pensez à vous munir d'un parapluie !`;
       }
-      return `À ${locName}, le ciel est actuellement partiellement nuageux avec 28°C. Risque de précipitations en soirée.`;
+      return `À ${locName}, le ciel est actuellement partiellement nuageux avec ${curTemp}. Risque de précipitations en soirée.`;
     }
 
     // 13. GERMAN (Deutsch)
@@ -789,7 +797,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('regen') || q.includes('schirm') || q.includes('regnen')) {
         return `In ${locName} besteht heute Abend zwischen 17:00 und 20:00 Uhr eine 80%ige Wahrscheinlichkeit für Regenschauer. Luftfeuchtigkeit 68%. Ein Regenschirm wird empfohlen!`;
       }
-      return `Aktuell in ${locName}: 28°C, teils bewölkt mit leichtem Wind aus Nordwest (15,4 km/h).`;
+      return `Aktuell in ${locName}: ${curTemp}, teils bewölkt mit leichtem Wind aus Nordwest (15,4 km/h).`;
     }
 
     // 14. ITALIAN (Italiano)
@@ -797,7 +805,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('pioggia') || q.includes('ombrello') || q.includes('piovere')) {
         return `C'è una probabilità dell'80% di rovesci a ${locName} stasera tra le 17:00 e le 20:00. Umidità al 68%. Si consiglia di portare un ombrello!`;
       }
-      return `Attualmente a ${locName} ci sono 28°C con cielo parzialmente nuvoloso e vento a 15 km/h.`;
+      return `Attualmente a ${locName} ci sono ${curTemp} con cielo parzialmente nuvoloso e vento a 15 km/h.`;
     }
 
     // 15. PORTUGUESE (Português)
@@ -805,7 +813,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('chuva') || q.includes('guarda-chuva') || q.includes('chover')) {
         return `Há 80% de chance de chuva com trovoadas em ${locName} hoje entre 17h e 20h. Umidade em 68%. Recomenda-se levar um guarda-chuva!`;
       }
-      return `Atualmente em ${locName}: 28°C, parcialmente nublado com ventos de 15,4 km/h.`;
+      return `Atualmente em ${locName}: ${curTemp}, parcialmente nublado com ventos de 15,4 km/h.`;
     }
 
     // 16. RUSSIAN (Русский)
@@ -813,7 +821,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('дождь') || q.includes('зонт') || q.includes('осадки')) {
         return `В городе ${locName} сегодня вечером с 17:00 до 20:00 ожидается 80% вероятность грозового дождя. Влажность 68%. Возьмите с собой зонт!`;
       }
-      return `В ${locName} сейчас переменная облачность, температура 28°C, ветер 15 км/ч. К вечеру возможен дождь.`;
+      return `В ${locName} сейчас переменная облачность, температура ${curTemp}, ветер 15 км/ч. К вечеру возможен дождь.`;
     }
 
     // 17. CHINESE (中文)
@@ -821,7 +829,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('雨') || q.includes('伞')) {
         return `${locName} 今天傍晚 17:00 至 20:00 之间有 80% 的雷阵雨概率，空气湿度 68%。出行请务必携带雨伞！`;
       }
-      return `${locName} 目前天气多云，气温 28°C，体感温度 30°C，西北风 15.4 公里/小时。`;
+      return `${locName} 目前天气多云，气温 ${curTemp}，体感温度 ${feelsTemp}，西北风 15.4 公里/小时。`;
     }
 
     // 18. JAPANESE (日本語)
@@ -829,7 +837,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('雨') || q.includes('傘')) {
         return `${locName}では本日夕方17時から20時にかけて80%の確率で雷雨が予想されています。湿度68%。外出時は傘を持参してください！`;
       }
-      return `${locName}の現在の天気は一部曇り、気温28°C、北西の風15.4km/hです。夕方に降雨が予想されます。`;
+      return `${locName}の現在の天気は一部曇り、気温${curTemp}、北西の風15.4km/hです。夕方に降雨が予想されます。`;
     }
 
     // 19. KOREAN (한국어)
@@ -837,7 +845,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('비') || q.includes('우산')) {
         return `${locName}에서는 오늘 저녁 5시부터 8시 사이에 80%의 확률로 소나기와 뇌우가 내릴 것으로 예상됩니다. 습도 68%. 우산을 챙기세요!`;
       }
-      return `현재 ${locName}은(는) 구름 조금, 기온 28°C(체감 30°C)입니다. 저녁에 비 소식이 있습니다.`;
+      return `현재 ${locName}은(는) 구름 조금, 기온 ${curTemp}(체감 ${feelsTemp})입니다. 저녁에 비 소식이 있습니다.`;
     }
 
     // 20. ARABIC (العربية)
@@ -845,7 +853,7 @@ export default function VoiceAssistantPage() {
       if (q.includes('مطر') || q.includes('مظلة') || q.includes('امطار')) {
         return `هناك احتمال بنسبة 80٪ لهطول أمطار رعدية في ${locName} هذا المساء بين الساعة 5:00 و 8:00 مساءً. الرطوبة 68٪. يُنصح بحمل مظلة!`;
       }
-      return `الطقس في ${locName} حالياً غائم جزئياً مع 28 درجة مئوية ورياح بسرعة 15.4 كم/ساعة.`;
+      return `الطقس في ${locName} حالياً غائم جزئياً مع ${curTemp} ورياح بسرعة 15.4 كم/ساعة.`;
     }
 
     // 21. TURKISH (Türkçe)
@@ -853,21 +861,21 @@ export default function VoiceAssistantPage() {
       if (q.includes('yağmur') || q.includes('şemsiye')) {
         return `${locName}'de bu akşam 17:00 ile 20:00 saatleri arasında %80 gök gürültülü sağanak yağış bekleniyor. Nem %68. Yanınıza şemsiye alınız!`;
       }
-      return `${locName}'de şu an hava parçalı bulutlu, sıcaklık 28°C ve rüzgar 15.4 km/s hızında esiyor.`;
+      return `${locName}'de şu an hava parçalı bulutlu, sıcaklık ${curTemp} ve rüzgar 15.4 km/s hızında esiyor.`;
     }
 
     // 22. DEFAULT ENGLISH
     if (q.includes('rain') || q.includes('umbrella') || q.includes('precipitation')) {
       return `There is an 80% chance of showers and thunderstorms in ${locName} this evening between 5:00 PM and 8:00 PM. Humidity is at 68% with NW winds at 15.4 km/h. Carrying an umbrella is strongly advised!`;
     } else if (q.includes('temp') || q.includes('heat') || q.includes('hot') || q.includes('cold')) {
-      return `The current temperature in ${locName} is 28°C with a 'Feels Like' index of 30°C. High today will reach 32°C, and the overnight low will dip to 24°C. UV index is moderate at 6.`;
+      return `The current temperature in ${locName} is ${curTemp} with a 'Feels Like' index of ${feelsTemp}. High today will reach ${maxTemp}, and the overnight low will dip to ${minTemp}. UV index is moderate at 6.`;
     } else if (q.includes('alert') || q.includes('storm') || q.includes('warning')) {
       return `⚠️ Weather Warning: High precipitation alert is active for the ${locName} basin. Wind gusts up to 45 km/h are expected in the afternoon. Avoid unnecessary outdoor transit during peak hours.`;
     } else if (q.includes('forecast') || q.includes('week') || q.includes('tomorrow')) {
-      return `7-Day Outlook for ${locName}: Rain will continue into Tuesday (90% probability, 31°C). Skies will clear by Wednesday and Thursday with sunny intervals and highs around 34°C.`;
+      return `7-Day Outlook for ${locName}: Rain will continue into Tuesday (90% probability, ${maxTemp}). Skies will clear by Wednesday and Thursday with sunny intervals and warm conditions.`;
     }
 
-    return `Currently in ${locName}, conditions are Partly Cloudy at 28°C with 68% humidity and gentle NW breezes at 15.4 km/h. An 80% chance of showers is forecast for the evening. Feel free to ask in ANY language about hourly radar, travel safety, or climate trends!`;
+    return `Currently in ${locName}, conditions are Partly Cloudy at ${curTemp} with 68% humidity and gentle NW breezes at 15.4 km/h. An 80% chance of showers is forecast for the evening. Feel free to ask in ANY language about hourly radar, travel safety, or climate trends!`;
   };
 
   // Handle Sending a Message with Dynamic Language Recognition

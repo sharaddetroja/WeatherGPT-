@@ -8,24 +8,27 @@ import ProfilePage from './pages/ProfilePage';
 import VoiceAssistantPage from './pages/VoiceAssistantPage';
 import { ThemeProvider } from './hooks/useTheme';
 import { WeatherAlertsProvider } from './hooks/useWeatherAlerts';
+import { UserProfileProvider } from './hooks/useUserProfile';
 
 function App() {
   return (
     <ThemeProvider>
-      <WeatherAlertsProvider>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="map" element={<WeatherMapPage />} />
-          <Route path="alerts" element={<AlertsPage />} />
-          <Route path="climate" element={<ClimatePage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="assistant" element={<VoiceAssistantPage />} />
-          <Route path="chat" element={<VoiceAssistantPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-        </Routes>
-      </WeatherAlertsProvider>
+      <UserProfileProvider>
+        <WeatherAlertsProvider>
+          <Routes>
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="map" element={<WeatherMapPage />} />
+              <Route path="alerts" element={<AlertsPage />} />
+              <Route path="climate" element={<ClimatePage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="assistant" element={<VoiceAssistantPage />} />
+              <Route path="chat" element={<VoiceAssistantPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </WeatherAlertsProvider>
+      </UserProfileProvider>
     </ThemeProvider>
   );
 }

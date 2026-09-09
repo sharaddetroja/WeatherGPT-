@@ -6,9 +6,11 @@ import { getWeatherData } from '../services/weatherService';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { WeatherStatCard } from '../components/WeatherStatCard';
 import { format } from 'date-fns';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { convertTemp, tempUnitSymbol, profile } = useUserProfile();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +50,8 @@ export default function Dashboard() {
     }
   };
 
+  const displayLocation = profile.location || `${data.location.name}, ${data.location.country}`;
+
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-500">
       {/* Header Section */}
@@ -55,7 +59,7 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center gap-2 text-primary font-medium text-lg">
             <MapPin className="w-5 h-5" />
-            <h2>{data.location.name}, {data.location.country}</h2>
+            <h2>{displayLocation}</h2>
           </div>
           <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
@@ -153,16 +157,24 @@ export default function Dashboard() {
           </div>
           <CardContent className="p-8 relative z-10 flex flex-col h-full justify-between">
             <div>
-              <p className="text-primary-foreground/80 font-medium mb-1">Current Weather</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-primary-foreground/80 font-medium">Current Weather</p>
+                <span className="text-xs px-2 py-0.5 bg-primary-foreground/20 rounded-full font-bold">
+                  {tempUnitSymbol}
+                </span>
+              </div>
               <div className="flex items-center gap-4">
                 <Cloud className="w-12 h-12" />
-                <h1 className="text-6xl font-bold tracking-tighter">{data.current.temp_c}°</h1>
+                <div className="flex items-baseline gap-1">
+                  <h1 className="text-6xl font-bold tracking-tighter">{convertTemp(data.current.temp_c)}°</h1>
+                  <span className="text-xl font-bold text-primary-foreground/80">{tempUnitSymbol}</span>
+                </div>
               </div>
               <p className="text-2xl font-medium mt-4">{data.current.condition.text}</p>
-              <div className="flex items-center gap-4 mt-2 text-primary-foreground/80">
-                <span>H: {data.forecast[0].max_temp}°</span>
-                <span>L: {data.forecast[0].min_temp}°</span>
-                <span>Feels like {data.current.feelslike_c}°</span>
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-primary-foreground/80 text-sm">
+                <span>H: {convertTemp(data.forecast[0].max_temp)}°</span>
+                <span>L: {convertTemp(data.forecast[0].min_temp)}°</span>
+                <span>Feels like {convertTemp(data.current.feelslike_c)}°</span>
               </div>
             </div>
           </CardContent>
@@ -170,12 +182,48 @@ export default function Dashboard() {
 
         {/* Stats Grid */}
         <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-          <WeatherStatCard icon={Droplets} label="Humidity" value={data.current.humidity} unit="%" description="The dew point is 22° right now" />
-          <WeatherStatCard icon={Wind} label="Wind Speed" value={data.current.wind_kph} unit="km/h" description="Wind direction is NW" />
-          <WeatherStatCard icon={CloudRain} label="Rain Prob." value={data.forecast[0].chance_of_rain} unit="%" description="Expected in afternoon" />
-          <WeatherStatCard icon={Eye} label="Visibility" value={data.current.visibility_km} unit="km" description="It's clear right now" />
-          <WeatherStatCard icon={Sun} label="UV Index" value={data.current.uv} unit="" description="Moderate level today" />
-          <WeatherStatCard icon={CloudLightning} label="Pressure" value={data.current.pressure_mb} unit="mb" description="Rising slowly" />
+          <WeatherStatCard 
+            icon={Droplets} 
+            label="Humidity" 
+            value={data.current.humidity} 
+            unit="%" 
+            description={`The dew point is ${convertTemp(22)}° right now`} 
+          />
+          <WeatherStatCard 
+            icon={Wind} 
+            label="Wind Speed" 
+            value={data.current.wind_kph} 
+            unit="km/h" 
+            description="Wind direction is NW" 
+          />
+          <WeatherStatCard 
+            icon={CloudRain} 
+            label="Rain Prob." 
+            value={data.forecast[0].chance_of_rain} 
+            unit="%" 
+            description="Expected in afternoon" 
+          />
+          <WeatherStatCard 
+            icon={Eye} 
+            label="Visibility" 
+            value={data.current.visibility_km} 
+            unit="km" 
+            description="It's clear right now" 
+          />
+          <WeatherStatCard 
+            icon={Sun} 
+            label="UV Index" 
+            value={data.current.uv} 
+            unit="" 
+            description="Moderate level today" 
+          />
+          <WeatherStatCard 
+            icon={CloudLightning} 
+            label="Pressure" 
+            value={data.current.pressure_mb} 
+            unit="mb" 
+            description="Rising slowly" 
+          />
         </div>
       </div>
 
@@ -183,7 +231,10 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Hourly Forecast</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Hourly Forecast</CardTitle>
+              <span className="text-xs font-semibold text-muted-foreground">Unit: {tempUnitSymbol}</span>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex overflow-x-auto pb-4 gap-4 hide-scrollbar snap-x">
@@ -193,7 +244,7 @@ export default function Dashboard() {
                   <div className="my-3">
                     {hour.icon.includes('rain') ? <CloudRain className="w-8 h-8 text-blue-500" /> : <Sun className="w-8 h-8 text-amber-500" />}
                   </div>
-                  <span className="text-xl font-bold">{hour.temp_c}°</span>
+                  <span className="text-xl font-bold">{convertTemp(hour.temp_c)}°</span>
                   <div className="flex items-center gap-1 mt-1 text-xs text-blue-500 font-medium">
                     <Droplets className="w-3 h-3" />
                     <span>{hour.chance_of_rain}%</span>
@@ -230,7 +281,10 @@ export default function Dashboard() {
       {/* 7 Day Forecast */}
       <Card>
         <CardHeader>
-          <CardTitle>7-Day Forecast</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>7-Day Forecast</CardTitle>
+            <span className="text-xs font-semibold text-muted-foreground">Unit: {tempUnitSymbol}</span>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="divide-y">
@@ -249,8 +303,8 @@ export default function Dashboard() {
                   <span>{day.chance_of_rain}%</span>
                 </div>
                 <div className="flex items-center gap-3 w-1/4 justify-end font-medium">
-                  <span>{day.max_temp}°</span>
-                  <span className="text-muted-foreground">{day.min_temp}°</span>
+                  <span>{convertTemp(day.max_temp)}°</span>
+                  <span className="text-muted-foreground">{convertTemp(day.min_temp)}°</span>
                 </div>
               </div>
             ))}
