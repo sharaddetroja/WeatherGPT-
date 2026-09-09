@@ -1,12 +1,32 @@
 import { Link, useLocation } from 'react-router-dom';
-import { CloudRain, Map, LayoutDashboard, Bell, BarChart2, User, Menu, X, Sun, Moon, Sparkles, CheckCheck, BellRing } from 'lucide-react';
+import { 
+  CloudRain, 
+  Map, 
+  LayoutDashboard, 
+  Bell, 
+  BarChart2, 
+  User, 
+  Menu, 
+  X, 
+  Sun, 
+  Moon, 
+  Sparkles, 
+  CheckCheck, 
+  BellRing, 
+  Sprout, 
+  Car, 
+  Waves,
+  ChevronDown
+} from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useTheme } from '../hooks/useTheme';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useMagnetic } from '../utils/gsapEffects';
 
-const navItems = [
+const mainNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: CloudRain, label: 'Alerts', path: '/alerts' },
   { icon: Map, label: 'Map', path: '/map' },
@@ -14,13 +34,24 @@ const navItems = [
   { icon: Sparkles, label: 'Voice AI', path: '/assistant' },
 ];
 
+const hubsNavItems = [
+  { icon: Sprout, label: 'Kisan Hub', desc: 'Crop weather & agronomy advisory', path: '/agriculture', color: 'text-emerald-500' },
+  { icon: Car, label: 'Trip Planner', desc: 'Highway weather & route safety', path: '/travel', color: 'text-blue-500' },
+  { icon: Waves, label: 'Marine Safety', desc: 'Tides, waves & fisherman alerts', path: '/marine', color: 'text-teal-500' },
+];
+
 export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hubsOpen, setHubsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { profile } = useUserProfile();
   const [notifOpen, setNotifOpen] = useState(false);
+
   const notifRef = useRef<HTMLDivElement>(null);
+  const hubsRef = useRef<HTMLDivElement>(null);
+  const askAIBtnRef = useMagnetic<HTMLAnchorElement>(0.3);
+
   const { 
     alerts, 
     unreadCount, 
@@ -36,190 +67,276 @@ export default function Navbar() {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setNotifOpen(false);
       }
+      if (hubsRef.current && !hubsRef.current.contains(event.target as Node)) {
+        setHubsOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const isHubActive = hubsNavItems.some(h => location.pathname === h.path);
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-      <div className="flex h-16 items-center px-4 md:px-8">
-        <div className="flex items-center gap-2">
-          <CloudRain className="h-6 w-6 text-primary" />
+      <div className="flex h-16 items-center px-4 md:px-6 max-w-7xl mx-auto">
+        <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
+          <motion.div 
+            whileHover={{ rotate: 15, scale: 1.15 }}
+            transition={{ type: 'spring', stiffness: 400 }}
+          >
+            <CloudRain className="h-6 w-6 text-primary" />
+          </motion.div>
           <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
             WeatherGPT
           </span>
-        </div>
+        </Link>
         
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center ml-10 space-x-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
+        <div className="hidden md:flex items-center ml-6 space-x-1">
+          {mainNavItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "relative px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex-shrink-0",
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
+              >
+                {isActive && (
+                  <motion.div 
+                    layoutId="activeNavTab"
+                    className="absolute inset-0 bg-primary/10 rounded-xl -z-10"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                {item.label}
+              </Link>
+            );
+          })}
+
+          {/* Hubs Dropdown */}
+          <div className="relative" ref={hubsRef}>
+            <button
+              onClick={() => setHubsOpen(!hubsOpen)}
               className={cn(
-                "px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-muted",
-                location.pathname === item.path ? "bg-muted text-primary" : "text-muted-foreground"
+                "relative px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer",
+                isHubActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
-              {item.label}
-            </Link>
-          ))}
+              <span>Hubs</span>
+              <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", hubsOpen && "rotate-180")} />
+            </button>
+
+            <AnimatePresence>
+              {hubsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full left-0 mt-2 w-64 bg-card border border-border rounded-2xl shadow-2xl p-2 z-50 space-y-1"
+                >
+                  {hubsNavItems.map((hub) => (
+                    <Link
+                      key={hub.path}
+                      to={hub.path}
+                      onClick={() => setHubsOpen(false)}
+                      className={cn(
+                        "flex items-start gap-3 p-2.5 rounded-xl transition-all hover:bg-muted/70",
+                        location.pathname === hub.path && "bg-primary/10"
+                      )}
+                    >
+                      <div className={cn("p-2 rounded-lg bg-muted flex-shrink-0 mt-0.5", hub.color)}>
+                        <hub.icon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-extrabold text-foreground">{hub.label}</div>
+                        <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">{hub.desc}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
-        <div className="ml-auto flex items-center space-x-4">
-          <div className="hidden md:flex items-center bg-muted/50 rounded-full px-4 py-1.5 text-sm">
-            <Map className="w-4 h-4 mr-2 text-muted-foreground" />
+        <div className="ml-auto flex items-center space-x-3">
+          <div className="hidden lg:flex items-center bg-muted/50 rounded-full px-3.5 py-1 text-xs font-semibold">
+            <Map className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
             <span>{profile.location || 'Rajkot, Gujarat'}</span>
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.15, rotate: 18 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
+            className="p-2 rounded-full hover:bg-muted transition-colors cursor-pointer"
+            title="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-blue-500" />}
+          </motion.button>
           
           {/* Notifications Bell Dropdown */}
           <div className="relative" ref={notifRef}>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setNotifOpen(!notifOpen)}
               className="p-2 rounded-full hover:bg-muted transition-colors relative cursor-pointer"
               title="Weather Alerts & Notifications"
             >
-              <Bell className="w-5 h-5 text-foreground" />
+              <Bell className="w-4 h-4 text-foreground" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-extrabold rounded-full border-2 border-background shadow-xs animate-pulse">
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [1, 1.25, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-red-500 text-white text-[9px] font-extrabold rounded-full border-2 border-background"
+                >
                   {unreadCount}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
 
             {/* Notifications Popover Dropdown */}
-            {notifOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                {/* Header */}
-                <div className="p-3.5 border-b border-border bg-muted/40 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <BellRing className="w-4 h-4 text-primary" />
-                    <h3 className="font-bold text-xs text-foreground uppercase tracking-wider">Weather Alerts</h3>
+            <AnimatePresence>
+              {notifOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 mt-2 w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50"
+                >
+                  {/* Header */}
+                  <div className="p-3.5 border-b border-border bg-muted/40 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BellRing className="w-4 h-4 text-primary" />
+                      <h3 className="font-bold text-xs text-foreground uppercase tracking-wider">Weather Alerts</h3>
+                      {unreadCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-600">
+                          {unreadCount} New
+                        </span>
+                      )}
+                    </div>
                     {unreadCount > 0 && (
-                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500/15 text-red-600">
-                        {unreadCount} New
-                      </span>
+                      <button
+                        onClick={markAllAsRead}
+                        className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <CheckCheck className="w-3.5 h-3.5" />
+                        Mark all read
+                      </button>
                     )}
                   </div>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllAsRead}
-                      className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <CheckCheck className="w-3.5 h-3.5" />
-                      Mark all read
-                    </button>
-                  )}
-                </div>
 
-                {/* Push Notification Permission Quick-Bar */}
-                <div className="px-3.5 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-2">
-                  <div className="text-[11px] font-medium text-foreground">
-                    <span className="font-bold">Desktop Push Alerts: </span>
-                    <span className={permissionStatus === 'granted' ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold"}>
-                      {permissionStatus === 'granted' ? "Active ✓" : "Off"}
-                    </span>
+                  {/* Push Notification Permission Quick-Bar */}
+                  <div className="px-3.5 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-2">
+                    <div className="text-[11px] font-medium text-foreground">
+                      <span className="font-bold">Desktop Push Alerts: </span>
+                      <span className={permissionStatus === 'granted' ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold"}>
+                        {permissionStatus === 'granted' ? "Active ✓" : "Off"}
+                      </span>
+                    </div>
+                    {permissionStatus !== 'granted' ? (
+                      <button
+                        onClick={requestNotificationPermission}
+                        className="px-2.5 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer shadow-2xs"
+                      >
+                        Enable Push
+                      </button>
+                    ) : (
+                      <button
+                        onClick={triggerHeavyRainTestAlert}
+                        className="px-2.5 py-1 bg-card hover:bg-muted border border-border text-foreground text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-2xs"
+                      >
+                        ⚡ Test Alert
+                      </button>
+                    )}
                   </div>
-                  {permissionStatus !== 'granted' ? (
-                    <button
-                      onClick={requestNotificationPermission}
-                      className="px-2.5 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer shadow-2xs"
-                    >
-                      Enable Push
-                    </button>
-                  ) : (
+
+                  {/* Alerts List */}
+                  <div className="max-h-72 overflow-y-auto divide-y divide-border/60">
+                    {alerts.map((alert) => (
+                      <div
+                        key={alert.id}
+                        onClick={() => markAsRead(alert.id)}
+                        className={cn(
+                          "p-3 hover:bg-muted/60 transition-colors cursor-pointer space-y-1",
+                          !alert.read && "bg-muted/30"
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={cn(
+                            "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
+                            alert.severity === 'Critical' ? "bg-red-500/15 text-red-600 border border-red-500/30" :
+                            alert.severity === 'High' ? "bg-orange-500/15 text-orange-600 border border-orange-500/30" :
+                            "bg-amber-500/15 text-amber-600 border border-amber-500/30"
+                          )}>
+                            {alert.severity} • {alert.type}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">{alert.timestamp}</span>
+                        </div>
+
+                        <h4 className={cn("text-xs font-bold text-foreground line-clamp-1", !alert.read && "text-primary")}>
+                          {alert.title}
+                        </h4>
+
+                        <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                          {alert.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Footer Link */}
+                  <div className="p-2.5 bg-muted/40 border-t border-border flex items-center justify-between">
                     <button
                       onClick={triggerHeavyRainTestAlert}
-                      className="px-2.5 py-1 bg-card hover:bg-muted border border-border text-foreground text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-2xs"
+                      className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer flex items-center gap-1"
+                      title="Simulate a real-time heavy rain warning with sound & notification"
                     >
-                      ⚡ Test Alert
+                      <span>⛈️ Test Heavy Rain Alert</span>
                     </button>
-                  )}
-                </div>
-
-                {/* Alerts List */}
-                <div className="max-h-72 overflow-y-auto divide-y divide-border/60">
-                  {alerts.map((alert) => (
-                    <div
-                      key={alert.id}
-                      onClick={() => markAsRead(alert.id)}
-                      className={cn(
-                        "p-3 hover:bg-muted/60 transition-colors cursor-pointer space-y-1",
-                        !alert.read && "bg-muted/30"
-                      )}
+                    <Link
+                      to="/alerts"
+                      onClick={() => setNotifOpen(false)}
+                      className="text-[11px] font-bold text-primary hover:underline"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className={cn(
-                          "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
-                          alert.severity === 'Critical' ? "bg-red-500/15 text-red-600 border border-red-500/30" :
-                          alert.severity === 'High' ? "bg-orange-500/15 text-orange-600 border border-orange-500/30" :
-                          "bg-amber-500/15 text-amber-600 border border-amber-500/30"
-                        )}>
-                          {alert.severity} • {alert.type}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">{alert.timestamp}</span>
-                      </div>
-
-                      <h4 className={cn("text-xs font-bold text-foreground line-clamp-1", !alert.read && "text-primary")}>
-                        {alert.title}
-                      </h4>
-
-                      <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
-                        {alert.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Footer Link to Alerts Page & Test Button */}
-                <div className="p-2.5 bg-muted/40 border-t border-border flex items-center justify-between">
-                  <button
-                    onClick={triggerHeavyRainTestAlert}
-                    className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer flex items-center gap-1"
-                    title="Simulate a real-time heavy rain warning with sound & notification"
-                  >
-                    <span>⛈️ Test Heavy Rain Alert</span>
-                  </button>
-                  <Link
-                    to="/alerts"
-                    onClick={() => setNotifOpen(false)}
-                    className="text-[11px] font-bold text-primary hover:underline"
-                  >
-                    View All Advisories →
-                  </Link>
-                </div>
-              </div>
-            )}
+                      View All Advisories →
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           
           {/* WeatherGPT AI Voice Assistant Link */}
           <Link
+            ref={askAIBtnRef}
             to="/assistant"
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-primary to-blue-600 text-white shadow-xs hover:shadow hover:scale-105 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-primary to-blue-600 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer flex-shrink-0"
             title="Open WeatherGPT Voice Assistant"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
             <span className="hidden sm:inline">Ask AI</span>
           </Link>
 
+          {/* User Profile Avatar Link */}
           <Link 
             to="/profile" 
-            className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all border border-primary/20 shadow-2xs"
+            className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all border border-primary/20 shadow-2xs hover:scale-110 flex-shrink-0"
             title={`Profile & Settings: ${profile.name}`}
           >
             {profile.avatarInitials || 'JD'}
           </Link>
 
           <button 
-            className="md:hidden p-2 rounded-lg hover:bg-muted"
+            className="md:hidden p-2 rounded-lg hover:bg-muted cursor-pointer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -227,43 +344,64 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Nav */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t p-4 bg-background animate-in slide-in-from-top-2">
-          <div className="flex flex-col space-y-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  "flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                  location.pathname === item.path ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
-                )}
-              >
-                <item.icon className="w-5 h-5 mr-3" />
-                {item.label}
-              </Link>
-            ))}
-            <Link
-              to="/profile"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted"
-            >
-              <User className="w-5 h-5 mr-3" />
-              Profile
-            </Link>
-            <Link
-              to="/assistant"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center px-4 py-3 rounded-lg text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
-            >
-              <Sparkles className="w-5 h-5 mr-3 text-amber-500" />
-              Ask WeatherGPT Voice AI
-            </Link>
-          </div>
-        </div>
-      )}
+      {/* Mobile Nav with Motion */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t p-4 bg-background overflow-hidden space-y-1"
+          >
+            <div className="flex flex-col space-y-1">
+              {mainNavItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors",
+                    location.pathname === item.path ? "bg-primary/10 text-primary font-bold" : "text-foreground hover:bg-muted"
+                  )}
+                >
+                  <item.icon className="w-5 h-5 mr-3" />
+                  {item.label}
+                </Link>
+              ))}
+
+              <div className="pt-2 pb-1 text-[11px] font-extrabold text-muted-foreground uppercase tracking-wider px-4">
+                Specialized Hubs
+              </div>
+
+              {hubsNavItems.map((hub) => (
+                <Link
+                  key={hub.path}
+                  to={hub.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors",
+                    location.pathname === hub.path ? "bg-primary/10 text-primary font-bold" : "text-foreground hover:bg-muted"
+                  )}
+                >
+                  <hub.icon className={cn("w-5 h-5 mr-3", hub.color)} />
+                  {hub.label}
+                </Link>
+              ))}
+
+              <div className="pt-2">
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold text-foreground hover:bg-muted"
+                >
+                  <User className="w-5 h-5 mr-3" />
+                  Profile & Settings
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

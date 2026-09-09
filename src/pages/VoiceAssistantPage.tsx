@@ -19,11 +19,11 @@ import {
   PanelLeftClose, 
   PanelLeft, 
   PhoneOff, 
-  Compass, 
-  RefreshCw 
+  Compass
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { AIVoiceOrb3D } from '../components/3d/AIVoiceOrb3D';
 
 // Supported Languages for Voice & Text
 export interface LanguageOption {
@@ -361,6 +361,21 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = [
   }
 ];
 
+// Helper to convert Gujarati script to Devanagari for systems without a native gu-IN TTS voice installed
+export const gujaratiToDevanagari = (text: string): string => {
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    // Gujarati Unicode block: 0x0A81 to 0x0AF1 -> Devanagari 0x0901 to 0x0971 (subtract 0x0180)
+    if (code >= 0x0A81 && code <= 0x0AF1) {
+      result += String.fromCharCode(code - 0x0180);
+    } else {
+      result += text[i];
+    }
+  }
+  return result;
+};
+
 // Automatically detects which language the user is speaking or typing in
 export const detectLanguage = (text: string): string => {
   if (!text) return 'en';
@@ -377,17 +392,27 @@ export const detectLanguage = (text: string): string => {
   if (/[\u4E00-\u9FFF]/.test(text)) return 'zh'; // Chinese
   if (/[\u0400-\u04FF]/.test(text)) return 'ru'; // Russian
   if (/[\u0600-\u06FF]/.test(text)) {
-    // Check Urdu vs Arabic
     if (/کیا|بارش|موسم|ہے|نہیں|پانی|چھتری|کب/.test(text)) return 'ur';
     return 'ar';
   }
   if (/[\u0900-\u097F]/.test(text)) {
-    // Check Marathi vs Hindi words
     if (/पाऊस|आहे|काय|तापमान|वारा|हवामान|छत्री|कधी|जावे/.test(text)) return 'mr';
     return 'hi';
   }
   
   const lower = text.toLowerCase();
+
+  // Romanized / Transliterated Language Detection
+  if (/\b(varsad|varsat|chhatri|chatri|aaje|aaj|kem|su|tamare|hovanu|nathi|khabar|pavan|garmi|tapman)\b/i.test(lower)) {
+    return 'gu';
+  }
+  if (/\b(barish|baarish|chata|mausam|garmi|tufan|hawa|hogi|hoga|kya|dhoop|aandhi|taapman)\b/i.test(lower)) {
+    return 'hi';
+  }
+  if (/\b(paus|paoos|vara|hava|kiti|kadhi)\b/i.test(lower)) {
+    return 'mr';
+  }
+
   if (/\b(lluvia|paraguas|clima|tiempo|hoy|temperatura|calor|viento|llover|nublado)\b/i.test(lower)) return 'es';
   if (/\b(pluie|parapluie|temps|aujourd'hui|météo|chaleur|vent|pleuvoir|nuageux)\b/i.test(lower)) return 'fr';
   if (/\b(regen|wetter|heute|temperatur|wind|schirm|sonne|regnen|gewitter)\b/i.test(lower)) return 'de';
@@ -521,6 +546,17 @@ export default function VoiceAssistantPage() {
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
+  const transcriptRef = useRef<string>('');
+  const isLiveVoiceModeRef = useRef<boolean>(isLiveVoiceMode);
+  const voiceStateRef = useRef<'idle' | 'listening' | 'thinking' | 'speaking'>(voiceState);
+  const isAudioMutedRef = useRef<boolean>(isAudioMuted);
+  const selectedLangRef = useRef<LanguageOption>(selectedLang);
+
+  useEffect(() => { isLiveVoiceModeRef.current = isLiveVoiceMode; }, [isLiveVoiceMode]);
+  useEffect(() => { voiceStateRef.current = voiceState; }, [voiceState]);
+  useEffect(() => { isAudioMutedRef.current = isAudioMuted; }, [isAudioMuted]);
+  useEffect(() => { selectedLangRef.current = selectedLang; }, [selectedLang]);
+
   const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
 
   // Save sessions to localStorage
@@ -548,20 +584,40 @@ export default function VoiceAssistantPage() {
     }
   }, []);
 
-  // Text-to-Speech function with native voice matching
-  const speakText = (text: string, langCode: string = selectedLang.speechLang) => {
-    if (isAudioMuted || !synthRef.current) return;
+  // Text-to-Speech function with native voice matching & Gujarati Devanagari fallback
+  const speakText = (text: string, langCode: string = selectedLangRef.current.speechLang) => {
+    if (isAudioMutedRef.current || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
     try {
-      synthRef.current.cancel(); // Stop previous speech
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = langCode;
-      utterance.rate = 1.0;
+      window.speechSynthesis.cancel(); // Stop previous speech
+      
+      const voices = window.speechSynthesis.getVoices();
+      const langPrefix = langCode.slice(0, 2).toLowerCase();
+      let matchVoice = voices.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
+
+      let textToSpeak = text;
+      let targetLang = langCode;
+
+      // Special handling for Gujarati (gu): If browser has no native 'gu' TTS voice, use Devanagari transliteration + Hindi/Indian voice!
+      if (langPrefix === 'gu') {
+        if (!matchVoice) {
+          matchVoice = voices.find(v => 
+            v.lang.toLowerCase().includes('hi') || 
+            v.lang.toLowerCase().includes('in') || 
+            v.name.toLowerCase().includes('india') ||
+            v.name.toLowerCase().includes('hindi')
+          );
+          // Transliterate Gujarati script to Devanagari so Hindi/Indian voice speaks Gujarati flawlessly!
+          textToSpeak = gujaratiToDevanagari(text);
+          targetLang = 'hi-IN';
+        }
+      }
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = targetLang;
+      utterance.rate = 0.92; // Slightly natural pace for clear Gujarati pronunciation
       utterance.pitch = 1.0;
 
-      // Select voice matching language if available
-      const voices = synthRef.current.getVoices();
-      const matchVoice = voices.find(v => v.lang.startsWith(langCode.slice(0, 2)));
       if (matchVoice) {
         utterance.voice = matchVoice;
       }
@@ -572,16 +628,21 @@ export default function VoiceAssistantPage() {
       utterance.onend = () => {
         setVoiceState('idle');
         // If in live mode, automatically resume listening!
-        if (isLiveVoiceMode) {
-          startSpeechRecognition();
+        if (isLiveVoiceModeRef.current) {
+          setTimeout(() => {
+            if (isLiveVoiceModeRef.current) {
+              startSpeechRecognition();
+            }
+          }, 400);
         }
       };
-      utterance.onerror = () => {
+      utterance.onerror = (err) => {
+        console.warn('Speech synthesis utterance error:', err);
         setVoiceState('idle');
       };
 
       activeUtteranceRef.current = utterance;
-      synthRef.current.speak(utterance);
+      window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.warn('Speech synthesis error:', e);
       setVoiceState('idle');
@@ -604,9 +665,14 @@ export default function VoiceAssistantPage() {
 
     try {
       const recognition = new SpeechRec();
-      recognition.lang = selectedLang.speechLang;
+      const recLang = selectedLangRef.current.code === 'auto'
+        ? (navigator.language || 'gu-IN')
+        : selectedLangRef.current.speechLang;
+      recognition.lang = recLang;
       recognition.continuous = false;
       recognition.interimResults = true;
+
+      transcriptRef.current = '';
 
       recognition.onstart = () => {
         setIsSpeechRecognitionActive(true);
@@ -617,6 +683,7 @@ export default function VoiceAssistantPage() {
         const transcript = Array.from(event.results)
           .map((result: any) => result[0].transcript)
           .join('');
+        transcriptRef.current = transcript;
         setLiveTranscript(transcript);
         setInput(transcript);
       };
@@ -624,20 +691,31 @@ export default function VoiceAssistantPage() {
       recognition.onerror = (event: any) => {
         console.warn('Speech recognition error:', event.error);
         setIsSpeechRecognitionActive(false);
-        if (voiceState !== 'speaking') {
+        if (voiceStateRef.current !== 'speaking') {
           setVoiceState('idle');
+        }
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          alert('Microphone access was denied. Please allow microphone permissions in your browser settings.');
         }
       };
 
       recognition.onend = () => {
         setIsSpeechRecognitionActive(false);
-        // If user said something, send it!
-        if (liveTranscript.trim()) {
-          const finalQuery = liveTranscript.trim();
-          setLiveTranscript('');
-          handleSendMessage(finalQuery);
-        } else if (voiceState !== 'speaking') {
+        const finalQuery = transcriptRef.current.trim();
+        transcriptRef.current = '';
+        setLiveTranscript('');
+
+        if (finalQuery) {
+          handleSendMessage(finalQuery, true);
+        } else if (voiceStateRef.current !== 'speaking') {
           setVoiceState('idle');
+          if (isLiveVoiceModeRef.current) {
+            setTimeout(() => {
+              if (isLiveVoiceModeRef.current && voiceStateRef.current === 'idle') {
+                startSpeechRecognition();
+              }
+            }, 600);
+          }
         }
       };
 
@@ -680,16 +758,37 @@ export default function VoiceAssistantPage() {
 
     // 1. GUJARATI (ગુજરાતી)
     if (activeLang === 'gu') {
-      if (q.includes('વરસાદ') || q.includes('છત્રી') || q.includes('પાણી') || q.includes('મેઘ') || q.includes('ઝરમર')) {
-        return `${locName}માં આજે સાંજે 5:00 થી 8:00 વાગ્યા દરમિયાન 80% ગાજવીજ સાથે ભારે વરસાદની શક્યતા છે. હવામાં ભેજ 68% છે અને પવન 15.4 કિમી/કલાકની ઝડપે ફૂંકાઈ રહ્યો છે. જો તમે બહાર નીકળતા હોવ તો સાથે છત્રી અથવા રેઈનકોટ ચોક્કસ રાખવો!`;
-      } else if (q.includes('તાપમાન') || q.includes('ગરમી') || q.includes('તડકો')) {
-        return `${locName}નું હાલનું તાપમાન ${curTemp} છે (અનુભવાતું તાપમાન ${feelsTemp}). દિવસ દરમિયાન મહત્તમ તાપમાન ${maxTemp} અને રાત્રે લઘુત્તમ ${minTemp} રહેશે. બપોરના સમયે UV ઇન્ડેક્સ 6 (મધ્યમ) રહેશે.`;
-      } else if (q.includes('ખેતી') || q.includes('પાક') || q.includes('જમીન')) {
-        return `ખેડૂત મિત્રો માટે કૃષિ હવામાન સલાહ: આગામી 48 કલાકમાં હળવોથી મધ્યમ વરસાદ મગફળી અને કપાસના પાક માટે લાભદાયી છે. પરંતુ ખેતરમાં વધુ પડતું પાણી ભરાય નહીં તેની નિકાલ વ્યવસ્થા રાખવી.`;
-      } else if (q.includes('પવન') || q.includes('વાવાઝોડું') || q.includes('તોફાન') || q.includes('આગાહી')) {
-        return `${locName} વિસ્તારમાં પવનની ઝડપ 15 થી 25 કિમી/કલાક રહેવાની સંભાવના છે. દરિયાકાંઠાના વિસ્તારોમાં હળવા વાવાઝોડાની ચેતવણી જારી કરવામાં આવી છે.`;
+      // Greetings & Introductions
+      if (q.includes('હેલો') || q.includes('હાય') || q.includes('નમસ્તે') || q.includes('નમસ્કાર') || q.includes('કેમ છો') || q.includes('કોણ') || q.includes('hi') || q.includes('hello') || q.includes('kem') || q.includes('namaste')) {
+        return `નમસ્તે! હું WeatherGPT વોઇસ AI છું. હું તમને ${locName} અને ગુજરાતના હવામાન, વરસાદની આગાહી, તાપમાન અને વાવાઝોડાના અલર્ટ વિશે પૂરી માહિતી આપી શકું છું. આજે તમને હવામાન વિશે શું જાણવું છે?`;
+      } 
+      // Rain & Thunderstorms
+      else if (q.includes('વરસાદ') || q.includes('છત્રી') || q.includes('પાણી') || q.includes('મેઘ') || q.includes('ઝરમર') || q.includes('ગાજવીજ') || q.includes('છાટા') || q.includes('varsad') || q.includes('varsat') || q.includes('rain') || q.includes('chhatri') || q.includes('chatri')) {
+        return `${locName}માં આજે સાંજે 5:00 થી 8:00 વાગ્યા દરમિયાન 80% ગાજવીજ સાથે ભારે વરસાદની શક્યતા છે. હવામાં ભેજ 68% છે અને પવન 15.4 કિમી/કલાકની ઝડપે ફૂંકાઈ રહ્યો છે. જો તમે બહાર નીકળવાના હોવ તો સાથે છત્રી અથવા રેઈનકોટ ચોક્કસ રાખજો!`;
+      } 
+      // Temperature & Heat Index
+      else if (q.includes('તાપમાન') || q.includes('ગરમી') || q.includes('તડકો') || q.includes('ઠંડી') || q.includes('હવામાન') || q.includes('tapman') || q.includes('garmi') || q.includes('temp') || q.includes('tadko')) {
+        return `${locName}નું હાલનું તાપમાન ${curTemp} છે (અનુભવાતું તાપમાન ${feelsTemp}). આજે મહત્તમ તાપમાન ${maxTemp} અને રાત્રે લઘુત્તમ ${minTemp} રહેશે. બપોરના સમયે UV ઇન્ડેક્સ 6 (મધ્યમ) રહેશે, તેથી બપોરે તડકાથી બચવું.`;
+      } 
+      // Agriculture & Crop weather
+      else if (q.includes('ખેતી') || q.includes('પાક') || q.includes('જમીન') || q.includes('કપાસ') || q.includes('મગફળી') || q.includes('ખેડૂત') || q.includes('kheti') || q.includes('pak')) {
+        return `ખેડૂત મિત્રો માટે કૃષિ હવામાન સલાહ: આગામી 48 કલાક દરમિયાન ${locName} અને સૌરાષ્ટ્રમાં હળવોથી મધ્યમ વરસાદ મગફળી અને કપાસના પાક માટે ખૂબ લાભદાયી છે. પરંતુ ખેતરમાં વધારાનું પાણી ભરાય નહીં તેની નિકાલ વ્યવસ્થા રાખવી.`;
+      } 
+      // Wind & Storm Alert
+      else if (q.includes('પવન') || q.includes('વાવાઝોડું') || q.includes('તોફાન') || q.includes('આગાહી') || q.includes('અલર્ટ') || q.includes('ચેતવણી') || q.includes('pavan') || q.includes('wind') || q.includes('alert')) {
+        return `⚠️ હવામાન ચેતવણી: ${locName} અને દરિયાકાંઠાના વિસ્તારોમાં પવનની ઝડપ 40 થી 62 કિમી/કલાક સુધી પહોંચી શકે છે. દરિયામાં મોજા ઉછળવાની શક્યતા હોવાથી માછીમારોને દરિયો ન ખેડવાની સલાહ આપવામાં આવે છે.`;
+      } 
+      // Forecast & Tomorrow
+      else if (q.includes('કાલે') || q.includes('આવતીકાલે') || q.includes('અઠવાડિયું') || q.includes('પૂર્વાનુમાન') || q.includes('kale') || q.includes('tomorrow') || q.includes('week') || q.includes('forecast')) {
+        return `${locName} માટે 7 દિવસની આગાહી: કાલે મંગળવારે 90% વરસાદની શક્યતા સાથે મહત્તમ તાપમાન ${maxTemp} રહેશે. બુધવાર અને ગુરુવારથી આકાશ ખુલ્લું થશે અને રમણીય હવામાન રહેશે.`;
+      } 
+      // Travel & Road Safety
+      else if (q.includes('મુસાફરી') || q.includes('ગાડી') || q.includes('રસ્તો') || q.includes('હાઈવે') || q.includes('travel') || q.includes('drive')) {
+        return `મુસાફરી અંગે સલાહ: ${locName} અને NH47 હાઈવે પર સાંજે ભારે વરસાદના કારણે રસ્તા પર પાણી ભરાવાની શક્યતા છે. શનિવારે સવારે મુસાફરી કરવી વધુ સુરક્ષિત રહેશે.`;
       }
-      return `${locName}માં આજનું હવામાન વાદળછાયું અને આહલાદક છે. તાપમાન ${curTemp}, ભેજ 68% અને સાંજે 80% વરસાદની શક્યતા છે. તમે 7 દિવસનું પૂર્વાનુમાન અથવા રડાર મેપ વિશે પણ પૂછી શકો છો!`;
+
+      // Comprehensive Default Full Response for any other Gujarati query
+      return `${locName}માં આજનું હવામાન વાદળછાયું અને આહલાદક છે. હાલમાં તાપમાન ${curTemp} (અનુભવાતું ${feelsTemp}) છે, હવામાં ભેજ 68% અને સાંજના સમયે 80% વરસાદની શક્યતા છે. પવન ઉત્તર-પશ્ચિમ દિશામાંથી 15.4 કિમી/કલાકની ઝડપે ફૂંકાઈ રહ્યો છે. તમે મને વરસાદ, તાપમાન, ખેતી કે મુસાફરી વિશે પૂછી શકો છો.`;
     }
 
     // 2. HINDI (हिन्दी)
@@ -879,13 +978,18 @@ export default function VoiceAssistantPage() {
   };
 
   // Handle Sending a Message with Dynamic Language Recognition
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = (textToSend?: string, isVoiceInput: boolean = false) => {
     const messageContent = (textToSend || input).trim();
     if (!messageContent) return;
 
     // Detect the effective language
     const effectiveLangCode = selectedLang.code === 'auto' ? detectLanguage(messageContent) : selectedLang.code;
     const effectiveLangObj = SUPPORTED_LANGUAGES.find(l => l.code === effectiveLangCode) || SUPPORTED_LANGUAGES[0];
+
+    // Automatically switch selectedLang so speech synthesis & speech recognition stay in the user's native spoken language!
+    if (selectedLang.code === 'auto' && effectiveLangCode !== 'auto') {
+      setSelectedLang(effectiveLangObj);
+    }
 
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -946,8 +1050,9 @@ export default function VoiceAssistantPage() {
 
       setIsTyping(false);
 
-      // Speak response aloud in matching native voice!
-      if (isLiveVoiceMode || !isAudioMuted) {
+      // Speak response aloud ONLY if the message was spoken by voice or in Live Voice Call mode!
+      const shouldSpeakAloud = (isVoiceInput || isLiveVoiceModeRef.current) && !isAudioMutedRef.current;
+      if (shouldSpeakAloud) {
         speakText(aiResponseText, effectiveLangObj.speechLang);
       } else {
         setVoiceState('idle');
@@ -1045,90 +1150,61 @@ export default function VoiceAssistantPage() {
   };
 
   return (
-    <div className="relative flex h-full w-full rounded-2xl border border-border bg-card shadow-xl overflow-hidden animate-in fade-in duration-300">
+    <div className="relative flex h-[calc(100vh-4rem)] w-full rounded-2xl border border-border bg-background shadow-2xl overflow-hidden animate-in fade-in duration-300">
       
       {/* ========================================================================= */}
-      {/* 1. LEFT SIDEBAR - CHAT HISTORY & LIVE VOICE TRIGGER (ChatGPT Style)       */}
+      {/* 1. COLLAPSIBLE SIDEBAR - CHAT HISTORY                                     */}
       {/* ========================================================================= */}
       <div className={cn(
-        "flex flex-col border-r border-border bg-muted/40 transition-all duration-300 z-30",
-        sidebarOpen ? "w-80" : "w-0 overflow-hidden border-none"
+        "absolute md:relative z-40 h-full flex flex-col border-r border-border bg-card/80 backdrop-blur-xl transition-all duration-300 ease-in-out",
+        sidebarOpen ? "w-72 translate-x-0" : "w-72 -translate-x-full md:w-0 md:translate-x-0 overflow-hidden border-none"
       )}>
-        {/* New Chat & Live Mode Header */}
-        <div className="p-3.5 border-b border-border space-y-2.5">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleCreateNewChat}
-              className="flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>New Chat</span>
-            </button>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="p-2 ml-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
-              title="Close sidebar"
-            >
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* ChatGPT Live Voice Assistant Banner */}
+        <div className="p-4 border-b border-border flex items-center justify-between">
           <button
-            onClick={handleEnterLiveVoiceMode}
-            className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer group"
+            onClick={handleCreateNewChat}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-xl text-sm font-bold transition-all cursor-pointer"
           >
-            <div className="flex items-center gap-2.5">
-              <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-white/20 backdrop-blur-xs">
-                <Radio className="w-4 h-4 text-amber-300 animate-pulse" />
-                <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-300"></span>
-                </span>
-              </div>
-              <div className="text-left">
-                <div className="text-xs font-bold tracking-wide">Live Voice Mode</div>
-                <div className="text-[10px] text-white/80">Interactive 2-Way Speech</div>
-              </div>
-            </div>
-            <Sparkles className="w-4 h-4 text-amber-300 group-hover:rotate-12 transition-transform" />
+            <Plus className="w-4 h-4" />
+            <span>New Chat</span>
+          </button>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-2 ml-2 md:hidden text-muted-foreground hover:bg-muted rounded-lg"
+          >
+            <PanelLeftClose className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Conversation History List */}
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
           {['Today', 'Yesterday', 'Previous 7 Days'].map((category) => {
             const categorySessions = sessions.filter(s => s.dateCategory === category);
             if (categorySessions.length === 0) return null;
-
             return (
               <div key={category} className="space-y-1">
-                <div className="px-2 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   {category}
                 </div>
                 {categorySessions.map((session) => {
                   const isActive = session.id === activeSessionId;
                   const lang = SUPPORTED_LANGUAGES.find(l => l.code === session.languageCode) || SUPPORTED_LANGUAGES[0];
-
                   return (
                     <div
                       key={session.id}
-                      onClick={() => setActiveSessionId(session.id)}
+                      onClick={() => { setActiveSessionId(session.id); if (window.innerWidth < 768) setSidebarOpen(false); }}
                       className={cn(
                         "group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer",
                         isActive 
-                          ? "bg-card border border-primary/40 shadow-xs text-primary font-semibold" 
+                          ? "bg-primary/10 text-primary font-bold shadow-xs" 
                           : "hover:bg-muted text-muted-foreground hover:text-foreground"
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className="text-xs flex-shrink-0">{lang.flag}</span>
+                        <span className="text-xs">{lang.flag}</span>
                         <span className="truncate text-xs">{session.title}</span>
                       </div>
                       <button
                         onClick={(e) => handleDeleteSession(session.id, e)}
                         className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 rounded transition-opacity"
-                        title="Delete chat"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1139,414 +1215,299 @@ export default function VoiceAssistantPage() {
             );
           })}
         </div>
-
-        {/* Language Selector in Sidebar Bottom */}
-        <div className="p-3 border-t border-border bg-card/50">
-          <div className="relative">
-            <button
-              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-              className="w-full flex items-center justify-between px-3 py-2 bg-background border border-border rounded-xl text-xs font-semibold hover:bg-muted transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2 truncate">
-                <Languages className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Voice Language: {selectedLang.flag} {selectedLang.nativeName}</span>
-              </div>
-              <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", langDropdownOpen && "rotate-180")} />
-            </button>
-
-            {langDropdownOpen && (
-              <div className="absolute bottom-full left-0 right-0 mb-1.5 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2">
-                <div className="p-1 max-h-52 overflow-y-auto space-y-0.5">
-                  {SUPPORTED_LANGUAGES.map((l) => (
-                    <button
-                      key={l.code}
-                      onClick={() => handleSelectLanguage(l)}
-                      className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer",
-                        selectedLang.code === l.code ? "bg-primary/10 text-primary font-bold" : "hover:bg-muted text-foreground"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{l.flag}</span>
-                        <span>{l.nativeName}</span>
-                        <span className="text-[10px] text-muted-foreground">({l.name})</span>
-                      </div>
-                      {selectedLang.code === l.code && <Check className="w-3.5 h-3.5 text-primary" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* ========================================================================= */}
       {/* 2. MAIN CHAT AREA                                                         */}
       {/* ========================================================================= */}
-      <div className="flex-1 flex flex-col h-full bg-background relative overflow-hidden">
+      <div className="flex-1 flex flex-col h-full relative">
         
-        {/* Top Chat Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/60 backdrop-blur-sm z-20">
-          <div className="flex items-center gap-2.5">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-md z-30 absolute top-0 left-0 right-0 border-b border-border/50">
+          <div className="flex items-center gap-3">
             {!sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                title="Open history sidebar"
+                className="p-2 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                <PanelLeft className="w-4 h-4" />
+                <PanelLeft className="w-5 h-5" />
               </button>
             )}
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-primary/10 text-primary rounded-xl">
-                <Bot className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-bold text-foreground">WeatherGPT Voice AI</h2>
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                    Live
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <span>Language: {selectedLang.flag} {selectedLang.name}</span>
-                  <span>• Speech Enabled</span>
-                </p>
-              </div>
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="font-bold text-foreground">WeatherGPT</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">4.0</span>
             </div>
           </div>
 
-          {/* Quick Header Actions */}
           <div className="flex items-center gap-2">
-            {/* Live Voice Assistant Launch Button */}
-            <button
-              onClick={handleEnterLiveVoiceMode}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-primary to-blue-600 text-white rounded-full text-xs font-semibold shadow-xs hover:shadow hover:scale-105 transition-all cursor-pointer"
-            >
-              <Radio className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-              <span>Voice Mode</span>
-            </button>
+            {/* Language Dropdown in Header */}
+            <div className="relative">
+              <button
+                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 hover:bg-muted rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                <span>{selectedLang.flag}</span>
+                <span className="hidden sm:inline">{selectedLang.name}</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {langDropdownOpen && (
+                <div className="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
+                  <div className="p-1 max-h-64 overflow-y-auto">
+                    {SUPPORTED_LANGUAGES.map((l) => (
+                      <button
+                        key={l.code}
+                        onClick={() => handleSelectLanguage(l)}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer text-left",
+                          selectedLang.code === l.code ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
+                        )}
+                      >
+                        <span className="text-base">{l.flag}</span>
+                        <div className="flex flex-col">
+                          <span>{l.nativeName}</span>
+                          <span className="text-[10px] text-muted-foreground opacity-70">{l.name}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Mute/Unmute Audio button */}
             <button
               onClick={() => setIsAudioMuted(!isAudioMuted)}
               className={cn(
-                "p-2 rounded-lg border transition-colors cursor-pointer",
-                isAudioMuted ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-card hover:bg-muted text-muted-foreground border-border"
+                "p-2 rounded-xl transition-colors cursor-pointer",
+                isAudioMuted ? "bg-red-500/10 text-red-500" : "bg-muted/50 hover:bg-muted text-foreground"
               )}
-              title={isAudioMuted ? "Unmute Voice" : "Mute Voice"}
             >
               {isAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
-
-            {/* Shift to Map Page */}
             <button
               onClick={() => navigate('/map?locate=true')}
-              className="p-2 rounded-lg border border-border hover:bg-muted text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-              title="Open Interactive Map with My Location"
+              className="p-2 rounded-xl bg-muted/50 hover:bg-muted text-foreground transition-colors cursor-pointer hidden sm:block"
             >
               <Compass className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Message Thread */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-muted/10">
-          {activeSession.messages.map((message) => {
-            const isUser = message.role === 'user';
-
-            return (
-              <div
-                key={message.id}
-                className={cn("flex gap-3.5 max-w-3xl", isUser ? "ml-auto flex-row-reverse" : "mr-auto flex-row")}
-              >
-                {/* Avatar */}
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-xs",
-                  isUser 
-                    ? "bg-primary text-primary-foreground" 
-                    : "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white"
-                )}>
-                  {isUser ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-                </div>
-
-                {/* Bubble */}
-                <div className="space-y-1.5 max-w-[85%] md:max-w-[80%]">
-                  <div className={cn(
-                    "p-4 rounded-2xl text-sm leading-relaxed shadow-xs transition-all",
-                    isUser
-                      ? "bg-primary text-primary-foreground rounded-tr-xs"
-                      : "bg-card border border-border/80 text-foreground rounded-tl-xs"
-                  )}>
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                  </div>
-
-                  {/* Actions under AI Message */}
-                  {!isUser && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
-                      <button
-                        onClick={() => {
-                          const langObj = SUPPORTED_LANGUAGES.find(l => l.code === message.language) || selectedLang;
-                          speakText(message.content, langObj.speechLang);
-                        }}
-                        className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-                        title="Listen to voice readout"
-                      >
-                        <Volume2 className="w-3.5 h-3.5" />
-                        <span className="text-[11px]">Listen</span>
-                      </button>
-                      <span>•</span>
-                      <button
-                        onClick={() => handleCopy(message.id, message.content)}
-                        className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-                        title="Copy text"
-                      >
-                        {copiedId === message.id ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="text-[11px] text-emerald-500">Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span className="text-[11px]">Copy</span>
-                          </>
-                        )}
-                      </button>
-                      <span>•</span>
-                      <span className="text-[10px]">{message.timestamp}</span>
-                    </div>
-                  )}
-                </div>
+        {/* Scrollable Messages Area */}
+        <div className="flex-1 overflow-y-auto pt-16 pb-32 px-4 md:px-12 w-full max-w-4xl mx-auto scroll-smooth">
+          
+          {/* Empty State / Welcome Screen */}
+          {activeSession.messages.length <= 1 && (
+            <div className="h-full flex flex-col items-center justify-center pt-4 pb-8 animate-in fade-in zoom-in duration-500">
+              <div className="relative w-48 h-48 sm:w-64 sm:h-64 mb-6">
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+                <AIVoiceOrb3D state={voiceState} className="w-full h-full relative z-10" />
               </div>
-            );
-          })}
+              
+              <h2 className="text-2xl sm:text-3xl font-black text-center mb-3 bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+                How can I help with the weather?
+              </h2>
+              <p className="text-sm text-muted-foreground text-center max-w-md mb-8">
+                {selectedLang.greeting}
+              </p>
 
-          {/* Typing / Thinking Indicator */}
-          {isTyping && (
-            <div className="flex gap-3.5 mr-auto">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                <Sparkles className="w-4 h-4 animate-spin" />
-              </div>
-              <div className="p-4 rounded-2xl bg-card border border-border rounded-tl-xs shadow-xs flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
-                <span className="text-xs text-muted-foreground ml-1">WeatherGPT is analyzing radar...</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+                {selectedLang.suggestions.map((suggestion, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSendMessage(suggestion)}
+                    className="p-3.5 rounded-2xl bg-card border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-sm font-medium text-left transition-all cursor-pointer shadow-xs group"
+                  >
+                    <div className="text-foreground group-hover:text-primary transition-colors">{suggestion}</div>
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
-          <div ref={messagesEndRef} />
+          {/* Message List */}
+          {activeSession.messages.length > 1 && (
+            <div className="space-y-6 pb-4 pt-4">
+              {activeSession.messages.map((message) => {
+                const isUser = message.role === 'user';
+                return (
+                  <div key={message.id} className={cn("flex gap-4", isUser ? "justify-end" : "justify-start")}>
+                    {!isUser && (
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                      </div>
+                    )}
+                    <div className={cn(
+                      "group flex flex-col gap-1 max-w-[85%] md:max-w-[75%]",
+                      isUser ? "items-end" : "items-start"
+                    )}>
+                      <div className={cn(
+                        "px-5 py-3.5 rounded-3xl text-sm leading-relaxed shadow-sm",
+                        isUser 
+                          ? "bg-primary text-primary-foreground rounded-br-sm" 
+                          : "bg-muted/50 border border-border/50 text-foreground rounded-bl-sm"
+                      )}>
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      </div>
+                      
+                      {!isUser && (
+                        <div className="flex items-center gap-3 px-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => {
+                              const langObj = SUPPORTED_LANGUAGES.find(l => l.code === message.language) || selectedLang;
+                              speakText(message.content, langObj.speechLang);
+                            }}
+                            className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                          >
+                            <Volume2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleCopy(message.id, message.content)}
+                            className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                          >
+                            {copiedId === message.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {isTyping && (
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Sparkles className="w-4 h-4 text-primary animate-spin" />
+                  </div>
+                  <div className="px-5 py-4 rounded-3xl bg-muted/50 border border-border/50 rounded-bl-sm flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
 
-        {/* Quick Suggestion Chips (in selected language!) */}
-        {activeSession.messages.length <= 2 && (
-          <div className="px-4 py-2 border-t border-border/40 bg-card/40 flex flex-wrap gap-1.5">
-            {selectedLang.suggestions.map((suggestion, i) => (
-              <button
-                key={i}
-                onClick={() => handleSendMessage(suggestion)}
-                className="text-xs px-3 py-1.5 rounded-full bg-muted/80 hover:bg-primary/10 hover:text-primary border border-border text-foreground transition-all cursor-pointer text-left"
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Input Bar */}
-        <div className="p-3 md:p-4 border-t border-border bg-card">
-          <div className="flex items-center gap-2 bg-muted/60 rounded-2xl p-1.5 border border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-xs">
+        {/* Floating Input Area (Positioned at bottom center) */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/90 to-transparent pt-8 pointer-events-none">
+          <div className="max-w-3xl mx-auto flex flex-col items-center gap-2 pointer-events-auto">
             
-            {/* Live Mic Speech-To-Text Button */}
-            <button
-              onClick={isSpeechRecognitionActive ? stopSpeechRecognition : startSpeechRecognition}
-              className={cn(
-                "p-2.5 rounded-xl transition-all cursor-pointer flex-shrink-0",
-                isSpeechRecognitionActive 
-                  ? "bg-red-500 text-white shadow-md animate-pulse scale-105" 
-                  : "bg-card hover:bg-primary/10 text-primary border border-border shadow-xs"
-              )}
-              title={isSpeechRecognitionActive ? "Stop voice listening" : `Hold/Click to speak in ${selectedLang.name}`}
-            >
-              {isSpeechRecognitionActive ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </button>
+            {/* Input Bar with integrated Live Voice Call button */}
+            <div className="w-full bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl rounded-[2rem] p-2 flex items-center gap-2 transition-all focus-within:ring-2 focus-within:ring-primary/20">
+              
+              {/* Mic Speech Dictation Button */}
+              <button
+                onClick={isSpeechRecognitionActive ? stopSpeechRecognition : startSpeechRecognition}
+                className={cn(
+                  "p-3 rounded-full transition-all cursor-pointer flex-shrink-0",
+                  isSpeechRecognitionActive 
+                    ? "bg-red-500 text-white shadow-lg shadow-red-500/20 animate-pulse" 
+                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                )}
+                title={isSpeechRecognitionActive ? "Stop listening" : "Dictate speech to chat"}
+              >
+                {isSpeechRecognitionActive ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
 
-            {/* Input field */}
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder={isSpeechRecognitionActive ? `Listening in ${selectedLang.nativeName}...` : `Ask WeatherGPT in ${selectedLang.name}...`}
-              className="flex-1 bg-transparent border-none outline-none text-sm px-2 text-foreground placeholder:text-muted-foreground"
-            />
+              {/* Shifted Live Call Conversation Option (Inside chat box near voice assistant mic) */}
+              <button
+                onClick={handleEnterLiveVoiceMode}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full text-xs font-bold transition-all shadow-md hover:scale-105 cursor-pointer flex-shrink-0 group"
+                title="Start 2-Way Interactive Live Voice Call"
+              >
+                <Radio className="w-3.5 h-3.5 text-amber-300 group-hover:animate-pulse" />
+                <span className="hidden sm:inline">Live Call</span>
+              </button>
 
-            {/* Send Button */}
-            <button
-              onClick={() => handleSendMessage()}
-              disabled={!input.trim() || isTyping}
-              className="p-2.5 bg-primary text-primary-foreground rounded-xl disabled:opacity-40 hover:bg-primary/90 transition-all cursor-pointer shadow-xs flex-shrink-0"
-              title="Send message"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
+              {/* Text Input Field */}
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder={isSpeechRecognitionActive ? `Listening...` : `Ask WeatherGPT...`}
+                className="flex-1 bg-transparent border-none outline-none text-base px-2 text-foreground placeholder:text-muted-foreground"
+              />
 
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-2 px-1">
-            <span>Powered by WeatherGPT 4.0 Multi-Lingual Radar Engine</span>
-            <span>Microphone dictation active in {selectedLang.flag} {selectedLang.name}</span>
+              {/* Send Button */}
+              <button
+                onClick={() => handleSendMessage()}
+                disabled={!input.trim() || isTyping}
+                className="p-3 bg-primary text-primary-foreground rounded-full disabled:opacity-40 hover:bg-primary/90 transition-all cursor-pointer flex-shrink-0"
+                title="Send message"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="text-[10px] font-medium text-muted-foreground text-center">
+              WeatherGPT 4.0 • Live Voice & Multilingual Radar AI
+            </div>
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. CHATGPT LIVE VOICE ASSISTANT MODAL (Full Live Talk Experience)        */}
+      {/* 3. LIVE VOICE MODAL OVERLAY                                                */}
       {/* ========================================================================= */}
       {isLiveVoiceMode && (
-        <div className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-between p-6 sm:p-12 text-white animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-3xl flex flex-col items-center justify-between p-6 sm:p-12 animate-in fade-in zoom-in-95 duration-300">
           
-          {/* Live Mode Header */}
           <div className="w-full max-w-2xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-white/10">
-                <Sparkles className="w-5 h-5 text-amber-300" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base">WeatherGPT Live Talk</h3>
-                <p className="text-xs text-white/70">ChatGPT Voice Assistant Mode • {selectedLang.flag} {selectedLang.name}</p>
-              </div>
-            </div>
-
-            {/* Language Switcher in Live Mode */}
-            <div className="flex items-center gap-2">
-              <select
-                value={selectedLang.code}
-                onChange={(e) => {
-                  const l = SUPPORTED_LANGUAGES.find(lang => lang.code === e.target.value);
-                  if (l) setSelectedLang(l);
-                }}
-                className="bg-white/10 text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 outline-none text-white cursor-pointer"
-              >
-                {SUPPORTED_LANGUAGES.map((l) => (
-                  <option key={l.code} value={l.code} className="bg-slate-900 text-white">
-                    {l.flag} {l.nativeName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Center Stage: Animated Glowing Voice Orb & Waves */}
-          <div className="flex flex-col items-center justify-center my-auto space-y-8 text-center max-w-xl">
-            
-            {/* ChatGPT-style Pulsing Orb */}
-            <div className="relative flex items-center justify-center">
-              {/* Outer Glow Wave */}
-              <div className={cn(
-                "absolute w-64 h-64 rounded-full transition-all duration-700 blur-3xl opacity-60",
-                voiceState === 'listening' ? "bg-red-500 scale-125 animate-pulse" :
-                voiceState === 'thinking' ? "bg-amber-400 scale-110 animate-spin" :
-                voiceState === 'speaking' ? "bg-blue-500 scale-125 animate-pulse" :
-                "bg-indigo-600 scale-100"
-              )} />
-
-              {/* Middle Ring */}
-              <div className={cn(
-                "w-48 h-48 rounded-full border border-white/30 flex items-center justify-center transition-all duration-500 shadow-2xl",
-                voiceState === 'listening' ? "bg-gradient-to-tr from-red-600 to-rose-500 scale-110" :
-                voiceState === 'thinking' ? "bg-gradient-to-tr from-amber-500 to-yellow-400 scale-105" :
-                voiceState === 'speaking' ? "bg-gradient-to-tr from-blue-600 via-sky-500 to-indigo-600 scale-115" :
-                "bg-gradient-to-tr from-blue-700 to-indigo-800 scale-100"
-              )}>
-                {/* Core Icon */}
-                {voiceState === 'listening' ? (
-                  <Mic className="w-16 h-16 text-white animate-bounce" />
-                ) : voiceState === 'thinking' ? (
-                  <RefreshCw className="w-14 h-14 text-white animate-spin" />
-                ) : voiceState === 'speaking' ? (
-                  <Volume2 className="w-16 h-16 text-white animate-pulse" />
-                ) : (
-                  <Radio className="w-14 h-14 text-white/90" />
-                )}
-              </div>
-            </div>
-
-            {/* Audio Waveform Bars Simulation */}
-            <div className="flex items-center justify-center gap-1.5 h-12">
-              {[40, 65, 90, 45, 100, 70, 85, 30, 95, 60, 80, 50, 75].map((height, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "w-1.5 rounded-full transition-all duration-150",
-                    voiceState === 'speaking' ? "bg-sky-400 animate-pulse" :
-                    voiceState === 'listening' ? "bg-red-400 animate-bounce" :
-                    voiceState === 'thinking' ? "bg-amber-300 animate-pulse" :
-                    "bg-white/20"
-                  )}
-                  style={{
-                    height: voiceState === 'idle' ? '8px' : `${height}%`,
-                    animationDelay: `${i * 80}ms`
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Live Status Text & Real-Time Transcription */}
-            <div className="space-y-2">
-              <div className="text-xl font-bold tracking-tight">
-                {voiceState === 'listening' && "Listening to you..."}
-                {voiceState === 'thinking' && "WeatherGPT is analyzing..."}
-                {voiceState === 'speaking' && "WeatherGPT is speaking..."}
-                {voiceState === 'idle' && "Tap the microphone to speak"}
-              </div>
-
-              {/* Transcription Box */}
-              <div className="min-h-12 text-sm text-white/80 bg-white/10 px-4 py-2.5 rounded-2xl border border-white/15">
-                {liveTranscript ? (
-                  <span className="text-amber-300 font-medium italic">"{liveTranscript}"</span>
-                ) : (
-                  <span className="text-white/50">Speak naturally in {selectedLang.nativeName} (e.g. "Will it rain today?")</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Live Mode Controls Bar */}
-          <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-full border border-white/20 shadow-2xl">
-            {/* Mic Toggle Button */}
-            <button
-              onClick={isSpeechRecognitionActive ? stopSpeechRecognition : startSpeechRecognition}
-              className={cn(
-                "p-4 rounded-full shadow-lg transition-all cursor-pointer",
-                isSpeechRecognitionActive ? "bg-red-500 text-white animate-pulse" : "bg-white text-slate-950 hover:bg-white/90"
-              )}
-              title={isSpeechRecognitionActive ? "Mute Microphone" : "Unmute Microphone"}
-            >
-              {isSpeechRecognitionActive ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+            <button onClick={handleExitLiveVoiceMode} className="p-3 rounded-full bg-muted hover:bg-muted/80 transition-colors">
+              <ChevronDown className="w-6 h-6" />
             </button>
+            <div className="px-4 py-1.5 bg-primary/10 text-primary font-bold text-xs rounded-full border border-primary/20">
+              Live {selectedLang.flag}
+            </div>
+          </div>
 
-            {/* Sound Output Toggle */}
+          <div className="flex-1 flex flex-col items-center justify-center w-full relative">
+            <div className={cn(
+              "absolute w-64 h-64 rounded-full blur-3xl opacity-40 transition-all duration-700 pointer-events-none",
+              voiceState === 'listening' ? "bg-emerald-500 scale-150 animate-pulse" :
+              voiceState === 'speaking' ? "bg-amber-500 scale-125" :
+              "bg-primary scale-100"
+            )} />
+            <AIVoiceOrb3D state={voiceState} className="w-72 h-72 relative z-10" />
+
+            <div className="mt-12 text-center space-y-4 relative z-20">
+              <div className="text-2xl font-black">
+                {voiceState === 'listening' && (selectedLang.code === 'gu' ? "સાંભળી રહ્યો છું..." : "Listening...")}
+                {voiceState === 'thinking' && (selectedLang.code === 'gu' ? "વિચાર કરી રહ્યો છું..." : "Thinking...")}
+                {voiceState === 'speaking' && (selectedLang.code === 'gu' ? "WeatherGPT બોલી રહ્યો છે..." : "Speaking...")}
+                {voiceState === 'idle' && (selectedLang.code === 'gu' ? "બોલવા માટે માઇક દબાવો" : "Tap mic to speak")}
+              </div>
+              <div className="h-16 text-muted-foreground max-w-md mx-auto text-lg font-medium">
+                {liveTranscript || <span className="opacity-50">{selectedLang.code === 'gu' ? "હવે ગુજરાતીમાં બોલો..." : "Speak now..."}</span>}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 mb-8 relative z-20">
             <button
               onClick={() => setIsAudioMuted(!isAudioMuted)}
-              className={cn(
-                "p-4 rounded-full border transition-all cursor-pointer",
-                isAudioMuted ? "bg-red-500/20 text-red-300 border-red-500/30" : "bg-white/20 hover:bg-white/30 text-white border-white/30"
-              )}
-              title={isAudioMuted ? "Unmute AI Voice" : "Mute AI Voice"}
+              className={cn("p-5 rounded-full transition-all cursor-pointer", isAudioMuted ? "bg-red-500/10 text-red-500" : "bg-muted text-foreground hover:bg-muted/80")}
             >
               {isAudioMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
             </button>
+            
+            <button
+              onClick={isSpeechRecognitionActive ? stopSpeechRecognition : startSpeechRecognition}
+              className={cn(
+                "p-8 rounded-full shadow-2xl transition-all hover:scale-105 cursor-pointer",
+                isSpeechRecognitionActive ? "bg-red-500 text-white animate-pulse" : "bg-primary text-primary-foreground"
+              )}
+            >
+              {isSpeechRecognitionActive ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
+            </button>
 
-            {/* End Call / Close Live Voice Mode */}
             <button
               onClick={handleExitLiveVoiceMode}
-              className="flex items-center gap-2 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold shadow-lg transition-all cursor-pointer"
+              className="p-5 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-all hover:scale-105 cursor-pointer"
             >
-              <PhoneOff className="w-5 h-5" />
-              <span>End Live Talk</span>
+              <PhoneOff className="w-6 h-6" />
             </button>
           </div>
         </div>

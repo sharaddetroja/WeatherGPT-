@@ -6,6 +6,9 @@ import AlertsPage from './pages/AlertsPage';
 import ClimatePage from './pages/ClimatePage';
 import ProfilePage from './pages/ProfilePage';
 import VoiceAssistantPage from './pages/VoiceAssistantPage';
+import AgriculturePage from './pages/AgriculturePage';
+import TravelPlannerPage from './pages/TravelPlannerPage';
+import MarineSafetyPage from './pages/MarineSafetyPage';
 import { ThemeProvider } from './hooks/useTheme';
 import { WeatherAlertsProvider } from './hooks/useWeatherAlerts';
 import { UserProfileProvider } from './hooks/useUserProfile';
@@ -21,6 +24,9 @@ function App() {
               <Route path="map" element={<WeatherMapPage />} />
               <Route path="alerts" element={<AlertsPage />} />
               <Route path="climate" element={<ClimatePage />} />
+              <Route path="agriculture" element={<AgriculturePage />} />
+              <Route path="travel" element={<TravelPlannerPage />} />
+              <Route path="marine" element={<MarineSafetyPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="assistant" element={<VoiceAssistantPage />} />
               <Route path="chat" element={<VoiceAssistantPage />} />
