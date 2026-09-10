@@ -651,7 +651,9 @@ export default function VoiceAssistantPage() {
   }, [currentLang.code]);
 
   // Sidebar & Layout state
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    return typeof window !== 'undefined' ? window.innerWidth > 768 : true;
+  });
 
   // Input state
   const [input, setInput] = useState('');
