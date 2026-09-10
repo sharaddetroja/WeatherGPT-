@@ -31,10 +31,10 @@ interface UserProfileContextType {
 }
 
 const DEFAULT_PROFILE: UserProfile = {
-  name: 'John Doe',
-  email: 'john.doe@example.com',
+  name: 'Sharad Detroja',
+  email: 'sharad.detroja@example.com',
   location: 'Rajkot, Gujarat',
-  avatarInitials: 'JD',
+  avatarInitials: 'SD',
 };
 
 const DEFAULT_PREFERENCES: UserPreferences = {
@@ -49,7 +49,16 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [profile, setProfile] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem('weathergpt_user_profile');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.name === 'John Doe') {
+          parsed.name = 'Sharad Detroja';
+          parsed.email = 'sharad.detroja@example.com';
+          parsed.avatarInitials = 'SD';
+          localStorage.setItem('weathergpt_user_profile', JSON.stringify(parsed));
+        }
+        return parsed;
+      }
     } catch (e) {
       console.error('Error loading profile from localStorage:', e);
     }

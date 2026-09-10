@@ -2,6 +2,7 @@ import { BarChart2, TrendingUp, Droplets, ThermometerSun } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useLanguage } from '../hooks/useLanguage';
 
 const rawTempTrend = [
   { month: 'Jan', tempC: 20 },
@@ -35,6 +36,7 @@ const rainTrend = [
 
 export default function ClimatePage() {
   const { convertTemp, tempUnitSymbol, preferences } = useUserProfile();
+  const { t } = useLanguage();
 
   const tempTrend = rawTempTrend.map(item => ({
     month: item.month,
@@ -47,7 +49,7 @@ export default function ClimatePage() {
     <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in duration-500">
       <div className="flex items-center gap-3">
         <BarChart2 className="w-8 h-8 text-primary" />
-        <h1 className="text-3xl font-bold tracking-tight">Climate & Environment</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('climate_title', 'Climate Trends & Historical Intelligence')}</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

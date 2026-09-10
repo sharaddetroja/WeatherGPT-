@@ -3,9 +3,11 @@ import { User, Settings, Bell, MapPin, Moon, Sun, Save, Check, X, Edit3, Mail, S
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { useTheme } from '../hooks/useTheme';
 import { useUserProfile, type TemperatureUnit, type UserProfile, type UserPreferences } from '../hooks/useUserProfile';
+import { useLanguage } from '../hooks/useLanguage';
 
 export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
+  const { t } = useLanguage();
   const { 
     profile, 
     preferences, 
@@ -34,7 +36,7 @@ export default function ProfilePage() {
       ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
       : (parts[0].slice(0, 2)).toUpperCase();
     
-    const updatedProfile = { ...formProfile, avatarInitials: initials || 'JD' };
+    const updatedProfile = { ...formProfile, avatarInitials: initials || 'SD' };
     setFormProfile(updatedProfile);
     saveChanges(updatedProfile, formPreferences);
     setIsEditModalOpen(false);
@@ -76,8 +78,8 @@ export default function ProfilePage() {
         <div className="flex items-center gap-3">
           <User className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Profile & Settings</h1>
-            <p className="text-xs text-muted-foreground">Manage your personal preferences and weather units</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('profile_title', 'Profile & Settings')}</h1>
+            <p className="text-xs text-muted-foreground">{t('profile_subtitle', 'Manage your personal preferences and weather units')}</p>
           </div>
         </div>
       </div>

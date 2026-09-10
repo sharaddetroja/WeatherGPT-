@@ -2,8 +2,10 @@ import { AlertTriangle, Info, ShieldAlert, CloudRain, Wind, ThermometerSun, Bell
 import { Card, CardContent } from '../components/Card';
 import { cn } from '../utils/cn';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
+import { useLanguage } from '../hooks/useLanguage';
 
 export default function AlertsPage() {
+  const { t } = useLanguage();
   const { 
     alerts, 
     permissionStatus, 
@@ -38,8 +40,8 @@ export default function AlertsPage() {
         <div className="flex items-center gap-3">
           <ShieldAlert className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Weather Alerts</h1>
-            <p className="text-xs text-muted-foreground">Real-time Doppler radar advisories and severe warning center</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('alerts_title', 'Weather Alerts & Warning Center')}</h1>
+            <p className="text-xs text-muted-foreground">{t('alerts_subtitle', 'Real-time Doppler radar advisories and severe warning center')}</p>
           </div>
         </div>
 
@@ -50,7 +52,7 @@ export default function AlertsPage() {
           title="Trigger a live simulated heavy rain alert notification with sound and toast"
         >
           <BellRing className="w-4 h-4 animate-pulse" />
-          <span>Test Heavy Rain Alert</span>
+          <span>{t('test_alert', 'Test Heavy Rain Alert')}</span>
         </button>
       </div>
 

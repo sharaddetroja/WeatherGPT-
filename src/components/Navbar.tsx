@@ -16,41 +16,46 @@ import {
   Sprout, 
   Car, 
   Waves,
+  Languages,
   ChevronDown
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useTheme } from '../hooks/useTheme';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useLanguage, SITE_LANGUAGES } from '../hooks/useLanguage';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useMagnetic } from '../utils/gsapEffects';
-
-const mainNavItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: CloudRain, label: 'Alerts', path: '/alerts' },
-  { icon: Map, label: 'Map', path: '/map' },
-  { icon: BarChart2, label: 'Climate', path: '/climate' },
-  { icon: Sparkles, label: 'Voice AI', path: '/assistant' },
-];
-
-const hubsNavItems = [
-  { icon: Sprout, label: 'Kisan Hub', desc: 'Crop weather & agronomy advisory', path: '/agriculture', color: 'text-emerald-500' },
-  { icon: Car, label: 'Trip Planner', desc: 'Highway weather & route safety', path: '/travel', color: 'text-blue-500' },
-  { icon: Waves, label: 'Marine Safety', desc: 'Tides, waves & fisherman alerts', path: '/marine', color: 'text-teal-500' },
-];
 
 export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hubsOpen, setHubsOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { profile } = useUserProfile();
+  const { currentLang, setLanguage, t } = useLanguage();
   const [notifOpen, setNotifOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const hubsRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
   const askAIBtnRef = useMagnetic<HTMLAnchorElement>(0.3);
+
+  const mainNavItems = [
+    { icon: LayoutDashboard, label: t('nav_dashboard', 'Dashboard'), path: '/' },
+    { icon: CloudRain, label: t('nav_alerts', 'Alerts'), path: '/alerts' },
+    { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
+    { icon: BarChart2, label: t('nav_climate', 'Climate'), path: '/climate' },
+    { icon: Sparkles, label: t('nav_voice_ai', 'Voice AI'), path: '/assistant' },
+  ];
+
+  const hubsNavItems = [
+    { icon: Sprout, label: t('nav_kisan_hub', 'Kisan Hub'), desc: 'Crop weather & agronomy advisory', path: '/agriculture', color: 'text-emerald-500' },
+    { icon: Car, label: t('nav_trip_planner', 'Trip Planner'), desc: 'Highway weather & route safety', path: '/travel', color: 'text-blue-500' },
+    { icon: Waves, label: t('nav_marine_safety', 'Marine Safety'), desc: 'Tides, waves & fisherman alerts', path: '/marine', color: 'text-teal-500' },
+  ];
 
   const { 
     alerts, 
@@ -69,6 +74,9 @@ export default function Navbar() {
       }
       if (hubsRef.current && !hubsRef.current.contains(event.target as Node)) {
         setHubsOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(event.target as Node)) {
+        setLangOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -168,6 +176,60 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center bg-muted/50 rounded-full px-3.5 py-1 text-xs font-semibold">
             <Map className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
             <span>{profile.location || 'Rajkot, Gujarat'}</span>
+          </div>
+
+          {/* Language Switcher Dropdown */}
+          <div className="relative" ref={langRef}>
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/60 hover:bg-muted rounded-full text-xs font-extrabold transition-all border border-border/60 cursor-pointer"
+              title="Change Site Language"
+            >
+              <span>{currentLang.flag}</span>
+              <span className="hidden sm:inline text-foreground">{currentLang.nativeName}</span>
+              <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", langOpen && "rotate-180")} />
+            </button>
+
+            <AnimatePresence>
+              {langOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50 p-1.5 space-y-0.5"
+                >
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 flex items-center justify-between">
+                    <span>Select Language</span>
+                    <Link to="/language" onClick={() => setLangOpen(false)} className="text-primary hover:underline font-extrabold">
+                      View All →
+                    </Link>
+                  </div>
+
+                  <div className="max-h-60 overflow-y-auto">
+                    {SITE_LANGUAGES.map((l) => (
+                      <button
+                        key={l.code}
+                        onClick={() => {
+                          setLanguage(l);
+                          setLangOpen(false);
+                        }}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-left",
+                          currentLang.code === l.code ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span>{l.flag}</span>
+                          <span>{l.nativeName}</span>
+                        </div>
+                        {currentLang.code === l.code && <span className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-md">Active</span>}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <motion.button
@@ -332,7 +394,7 @@ export default function Navbar() {
             className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all border border-primary/20 shadow-2xs hover:scale-110 flex-shrink-0"
             title={`Profile & Settings: ${profile.name}`}
           >
-            {profile.avatarInitials || 'JD'}
+            {profile.avatarInitials || 'SD'}
           </Link>
 
           <button 
@@ -388,14 +450,27 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-1">
+                <Link
+                  to="/language"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-foreground hover:bg-muted"
+                >
+                  <div className="flex items-center">
+                    <Languages className="w-5 h-5 mr-3 text-primary" />
+                    <span>{t('nav_language', 'Language')}</span>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
+                    {currentLang.flag} {currentLang.nativeName}
+                  </span>
+                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold text-foreground hover:bg-muted"
                 >
                   <User className="w-5 h-5 mr-3" />
-                  Profile & Settings
+                  {t('nav_profile', 'Profile & Settings')}
                 </Link>
               </div>
             </div>

@@ -25,6 +25,7 @@ import { cn } from '../utils/cn';
 import L from 'leaflet';
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../hooks/useLanguage';
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -519,6 +520,7 @@ interface SearchResult {
 }
 
 export default function WeatherMapPage() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [layer, setLayer] = useState<'temp' | 'rain' | 'clouds'>('rain');
@@ -815,9 +817,9 @@ export default function WeatherMapPage() {
         <div className="flex items-center gap-3">
           <Map className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Weather & Rainfall Map</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t('map_title')}</h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
-              Interactive Doppler radar, live rain animations & inches precipitation inspector
+              {t('map_subtitle')}
             </p>
           </div>
         </div>
@@ -828,7 +830,7 @@ export default function WeatherMapPage() {
             <Search className="w-5 h-5 text-muted-foreground ml-2 flex-shrink-0" />
             <input 
               type="text" 
-              placeholder="Search city, area or country..." 
+              placeholder={t('map_search_placeholder')} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -844,7 +846,7 @@ export default function WeatherMapPage() {
               ) : (
                 <>
                   <Search className="w-3.5 h-3.5" />
-                  <span>Search</span>
+                  <span>{t('map_search_btn')}</span>
                 </>
               )}
             </button>
@@ -862,7 +864,7 @@ export default function WeatherMapPage() {
             ) : (
               <Navigation className="w-4 h-4 text-primary" />
             )}
-            <span className="hidden md:inline text-xs font-semibold">My Location</span>
+            <span className="hidden md:inline text-xs font-semibold">{t('map_my_location')}</span>
           </button>
         </div>
       </div>
@@ -871,9 +873,25 @@ export default function WeatherMapPage() {
       {searchError && (
         <div className="text-sm text-red-500 bg-red-500/10 border border-red-500/20 px-4 py-2.5 rounded-xl flex items-center justify-between">
           <span>{searchError}</span>
-          <button onClick={() => setSearchError('')} className="text-xs font-semibold hover:underline ml-3">Dismiss</button>
+          <button onClick={() => setSearchError('')} className="text-xs font-semibold hover:underline ml-3">{t('map_dismiss')}</button>
         </div>
       )}
+
+      {/* Active Effects Status Banner (Moved from Map) */}
+      <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-background/95 border border-border rounded-xl shadow-sm text-xs font-semibold text-foreground">
+          <span className="flex h-2 w-2 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
+          <span className="hidden sm:inline">Active Effects:</span>
+          <span className="text-blue-500 font-bold">🌧️ 3 Rainfronts</span>
+          <span className="text-muted-foreground">•</span>
+          <span className="text-teal-500 font-bold">💨 2 Wind Gale Belts</span>
+          <span className="text-muted-foreground">•</span>
+          <span className="text-amber-500 font-medium text-[11px] hidden md:inline">Click anywhere on map to inspect rainfall (inches)</span>
+        </div>
+      </div>
 
       {/* Main Map + Sidebar Area */}
       <div className="flex flex-col md:flex-row gap-4 h-full">
@@ -885,7 +903,7 @@ export default function WeatherMapPage() {
             <div className="relative" ref={dropdownRef}>
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2.5 flex items-center gap-2">
                 <Palette className="w-4 h-4 text-primary" />
-                Map Mode
+                {t('map_mode')}
               </h3>
 
               {/* Custom Dropdown Trigger Button */}
@@ -971,7 +989,7 @@ export default function WeatherMapPage() {
             <div>
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2.5 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-primary" />
-                Weather Layers
+                {t('map_weather_layers')}
               </h3>
               <div className="space-y-1.5">
                 <button 
@@ -980,7 +998,7 @@ export default function WeatherMapPage() {
                 >
                   <div className="flex items-center gap-2">
                     <CloudRain className="w-4 h-4" />
-                    <span>Rainfall Radar (Inches)</span>
+                    <span>{t('map_rainfall_radar')}</span>
                   </div>
                   {layer === 'rain' && <span className="w-2 h-2 rounded-full bg-primary-foreground"></span>}
                 </button>
@@ -1000,7 +1018,7 @@ export default function WeatherMapPage() {
                 >
                   <div className="flex items-center gap-2">
                     <Droplets className="w-4 h-4" />
-                    <span>Cloud Coverage</span>
+                    <span>{t('map_cloud_coverage')}</span>
                   </div>
                   {layer === 'clouds' && <span className="w-2 h-2 rounded-full bg-primary-foreground"></span>}
                 </button>
@@ -1012,7 +1030,7 @@ export default function WeatherMapPage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-amber-500" />
-                  Area Weather Effects
+                  {t('map_area_effects')}
                 </h3>
                 <span className="text-[10px] font-bold bg-amber-500/15 text-amber-600 px-2 py-0.5 rounded-full border border-amber-500/20">
                   {WEATHER_EFFECT_ZONES.length} Active
@@ -1033,7 +1051,7 @@ export default function WeatherMapPage() {
                 >
                   <div className="flex items-center gap-1.5 truncate">
                     <CloudRain className={cn("w-4 h-4 flex-shrink-0", showRainEffects ? "text-blue-500 animate-bounce" : "text-muted-foreground")} />
-                    <span className="truncate">Rain Radar</span>
+                    <span className="truncate">{t('map_rain_radar')}</span>
                   </div>
                   <div className={cn("w-2 h-2 rounded-full", showRainEffects ? "bg-blue-500" : "bg-muted-foreground/40")} />
                 </button>
@@ -1050,7 +1068,7 @@ export default function WeatherMapPage() {
                 >
                   <div className="flex items-center gap-1.5 truncate">
                     <Wind className={cn("w-4 h-4 flex-shrink-0", showWindEffects ? "text-teal-500 animate-pulse" : "text-muted-foreground")} />
-                    <span className="truncate">Wind Flow</span>
+                    <span className="truncate">{t('map_wind_flow')}</span>
                   </div>
                   <div className={cn("w-2 h-2 rounded-full", showWindEffects ? "bg-teal-500" : "bg-muted-foreground/40")} />
                 </button>
@@ -1252,21 +1270,7 @@ export default function WeatherMapPage() {
 
         {/* Interactive Leaflet Map Container */}
         <div className="flex-1 rounded-2xl border bg-muted overflow-hidden relative shadow-sm min-h-[450px]">
-          {/* Top Floating Weather Effects Status Banner */}
-          <div className="absolute top-4 left-4 z-[400] flex items-center gap-2 max-w-[calc(100%-80px)] overflow-x-auto hide-scrollbar">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-background/95 backdrop-blur-md border border-border rounded-xl shadow-md text-xs font-semibold text-foreground">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-              </span>
-              <span className="hidden sm:inline">Active Effects:</span>
-              <span className="text-blue-500 font-bold">🌧️ 3 Rainfronts</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-teal-500 font-bold">💨 2 Wind Gale Belts</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-amber-500 font-medium text-[11px] hidden md:inline">Click anywhere on map to inspect rainfall (inches)</span>
-            </div>
-          </div>
+
 
           <MapContainer center={defaultCenter} zoom={6} maxZoom={21} className="w-full h-full z-0">
             {/* Base Tile Layer with active selected theme */}

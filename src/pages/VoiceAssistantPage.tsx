@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { askWeatherGPT, getUserLocation, analyzeWeatherLens } from '../services/weatherGptApi';
 import { 
   Send, 
   Mic, 
@@ -12,17 +15,20 @@ import {
   Copy, 
   Check, 
   Radio, 
-  Languages, 
   ChevronDown, 
-  Bot, 
-  User, 
   PanelLeftClose, 
   PanelLeft, 
   PhoneOff, 
-  Compass
+  Compass,
+  Edit2,
+  Camera,
+  Image as ImageIcon,
+  Share2,
+  X
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useLanguage, SITE_LANGUAGES } from '../hooks/useLanguage';
 import { AIVoiceOrb3D } from '../components/3d/AIVoiceOrb3D';
 
 // Supported Languages for Voice & Text
@@ -358,6 +364,114 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = [
       "Haftalık sıcaklık tahmini nedir?",
       "Herhangi bir fırtına uyarısı var mı?"
     ]
+  },
+  {
+    code: 'or',
+    name: 'Odia',
+    nativeName: 'ଓଡ଼ିଆ',
+    flag: '🇮🇳',
+    speechLang: 'or-IN',
+    greeting: "ନମସ୍କାର! ମୁଁ WeatherGPT । ପାଣିପାଗ ବିଷୟରେ ପଚାରନ୍ତୁ!",
+    suggestions: ["ଆଜି ବର୍ଷା ହେବ କି?", "ତାପମାତ୍ରା କେତେ?"]
+  },
+  {
+    code: 'as',
+    name: 'Assamese',
+    nativeName: 'অসমীয়া',
+    flag: '🇮🇳',
+    speechLang: 'as-IN',
+    greeting: "নমস্কাৰ! মই WeatherGPT। বতৰৰ বিষয়ে সোধক!",
+    suggestions: ["আজি বৰষুণ হ'বনে?", "উষ্ণতা কিমান?"]
+  },
+  {
+    code: 'sa',
+    name: 'Sanskrit',
+    nativeName: 'संस्कृतम्',
+    flag: '🇮🇳',
+    speechLang: 'sa-IN',
+    greeting: "नमो नमः! अहम् WeatherGPT अस्मि। मौसम-विषये पृच्छतु!",
+    suggestions: ["अद्य वृष्टिः भविष्यति वा?", "तापमानं कियत् अस्ति?"]
+  },
+  {
+    code: 'kok',
+    name: 'Konkani',
+    nativeName: 'कोंकणी',
+    flag: '🇮🇳',
+    speechLang: 'kok-IN',
+    greeting: "नमस्कार! हांव WeatherGPT. हवामानाविशीं विचार!",
+    suggestions: ["आयज पावस पडटलो काय?", "तापमान कितलें आसा?"]
+  },
+  {
+    code: 'mai',
+    name: 'Maithili',
+    nativeName: 'मैथिली',
+    flag: '🇮🇳',
+    speechLang: 'mai-IN',
+    greeting: "नमस्कार! हम WeatherGPT छी। मौसमक बारेमे पुछू!",
+    suggestions: ["आइ वर्षा हैत?", "तापमान कतेक अछि?"]
+  },
+  {
+    code: 'sd',
+    name: 'Sindhi',
+    nativeName: 'سنڌي / सिंधी',
+    flag: '🇮🇳',
+    speechLang: 'sd-IN',
+    greeting: "سلام! مان WeatherGPT آهيان. موسم بابت پڇو!",
+    suggestions: ["ڇا اڄ برسات پوندي؟", "گرمي پد ڇا آهي؟"]
+  },
+  {
+    code: 'ks',
+    name: 'Kashmiri',
+    nativeName: 'कॉशुर / كأشُر',
+    flag: '🇮🇳',
+    speechLang: 'ks-IN',
+    greeting: "نمسکار! بہ چھس WeatherGPT. موسمس متعلق وچھو!",
+    suggestions: ["از چھا رُد پینہٕچ وۄمید؟", "گرمی کتھ چھِ؟"]
+  },
+  {
+    code: 'mni',
+    name: 'Manipuri / Meetei',
+    nativeName: 'ꯃꯤꯇꯩꯂꯣꯟ',
+    flag: '🇮🇳',
+    speechLang: 'mni-IN',
+    greeting: "ꯈꯨꯔꯨꯝꯖꯔꯤ! ꯑꯩꯍꯥꯛ WeatherGPT ꯅꯤ꯫ ꯋꯦꯗꯔꯒꯤ ꯃꯇꯥꯡꯗ ꯍꯪꯕꯤꯌꯨ!",
+    suggestions: ["ꯉꯁꯤ ꯅꯣꯡ ꯇꯥꯒꯗ꯭ꯔꯥ?", "ꯑꯌꯥꯡꯕ ꯀꯌꯥꯝ ꯂꯩꯒꯦ?"]
+  },
+  {
+    code: 'brx',
+    name: 'Bodo',
+    nativeName: 'बड़ो',
+    flag: '🇮🇳',
+    speechLang: 'brx-IN',
+    greeting: "गोजोनथों! आं WeatherGPT. बोथोरनि सोमोन्दै सों!",
+    suggestions: ["दिनै अखा हागोन नामा?", "दुंथाइया बेसेबां?"]
+  },
+  {
+    code: 'doi',
+    name: 'Dogri',
+    nativeName: 'डोगरी',
+    flag: '🇮🇳',
+    speechLang: 'doi-IN',
+    greeting: "नमस्ते! मैं WeatherGPT आं। मौसम बारै पुच्छो!",
+    suggestions: ["अज्ज बक्खा पौग?", "तापमान केन्ना ऐ?"]
+  },
+  {
+    code: 'sat',
+    name: 'Santhali',
+    nativeName: 'ᱥᱟᱱᱛᱟᱲᱤ',
+    flag: '🇮🇳',
+    speechLang: 'sat-IN',
+    greeting: "ᱡᱚᱦᱟᱨ! ᱤᱧ WeatherGPT ᱠᱟᱱᱟᱹᱧ᱾ ᱦᱚᱭ-ᱦᱤᱥᱤᱫ ᱵᱟᱵᱚᱛ ᱠᱩᱞᱤ ᱢᱮ!",
+    suggestions: ["ᱛᱮᱦᱮᱧ ᱫᱟᱜ ᱟᱭ?", "ᱞᱚᱞᱚ ᱛᱤᱱᱟᱹᱜ ᱢᱮᱱᱟᱜᱼᱟ?"]
+  },
+  {
+    code: 'ne',
+    name: 'Nepali',
+    nativeName: 'नेपाली',
+    flag: '🇮🇳',
+    speechLang: 'ne-NP',
+    greeting: "नमस्ते! म WeatherGPT हुँ। मौसमको बारेमा सोध्नुहोस्!",
+    suggestions: ["के आज पानी पर्छ?", "तापक्रम कति छ?"]
   }
 ];
 
@@ -429,6 +543,9 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   language?: string;
+  image?: string;
+  lensData?: import('../services/weatherGptApi').WeatherLensResponse;
+  explainWhy?: string;
 }
 
 export interface ChatSession {
@@ -520,11 +637,18 @@ export default function VoiceAssistantPage() {
     return sessions[0]?.id || 'session-1';
   });
 
-  // Selected Language
+  const { currentLang, setLanguage: setGlobalLanguage } = useLanguage();
+
+  // Selected Language (synced with global)
   const [selectedLang, setSelectedLang] = useState<LanguageOption>(() => {
-    return SUPPORTED_LANGUAGES[0]; // English default
+    return SUPPORTED_LANGUAGES.find(l => l.code === currentLang.code) || SUPPORTED_LANGUAGES[0];
   });
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const matching = SUPPORTED_LANGUAGES.find(l => l.code === currentLang.code);
+    if (matching) setSelectedLang(matching);
+  }, [currentLang.code]);
 
   // Sidebar & Layout state
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -533,6 +657,25 @@ export default function VoiceAssistantPage() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  
+  // Camera & Image state
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showCameraOptions, setShowCameraOptions] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+        setShowCameraOptions(false);
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = '';
+  };
 
   // Live Voice Mode (ChatGPT Voice Assistant UI)
   const [isLiveVoiceMode, setIsLiveVoiceMode] = useState(false);
@@ -977,10 +1120,10 @@ export default function VoiceAssistantPage() {
     return `Currently in ${locName}, conditions are Partly Cloudy at ${curTemp} with 68% humidity and gentle NW breezes at 15.4 km/h. An 80% chance of showers is forecast for the evening. Feel free to ask in ANY language about hourly radar, travel safety, or climate trends!`;
   };
 
-  // Handle Sending a Message with Dynamic Language Recognition
-  const handleSendMessage = (textToSend?: string, isVoiceInput: boolean = false) => {
+  // Handle Sending a Message with Dynamic Language Recognition & Live API connection
+  const handleSendMessage = async (textToSend?: string, isVoiceInput: boolean = false) => {
     const messageContent = (textToSend || input).trim();
-    if (!messageContent) return;
+    if ((!messageContent && !previewImage) || isTyping) return;
 
     // Detect the effective language
     const effectiveLangCode = selectedLang.code === 'auto' ? detectLanguage(messageContent) : selectedLang.code;
@@ -991,12 +1134,14 @@ export default function VoiceAssistantPage() {
       setSelectedLang(effectiveLangObj);
     }
 
+    const currentImage = previewImage;
     const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
       role: 'user',
       content: messageContent,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      language: effectiveLangCode
+      language: effectiveLangCode,
+      image: currentImage || undefined
     };
 
     // Update active session messages
@@ -1004,9 +1149,9 @@ export default function VoiceAssistantPage() {
 
     // If this is the first user message, update session title
     const isFirstQuery = activeSession.messages.filter(m => m.role === 'user').length === 0;
-    const newTitle = isFirstQuery 
+    const newTitle = isFirstQuery && messageContent 
       ? messageContent.slice(0, 32) + (messageContent.length > 32 ? '...' : '') 
-      : activeSession.title;
+      : (currentImage && isFirstQuery ? "Weather Lens Analysis" : activeSession.title);
 
     setSessions(prev => prev.map(s => {
       if (s.id === activeSession.id) {
@@ -1022,42 +1167,75 @@ export default function VoiceAssistantPage() {
     }));
 
     setInput('');
+    setPreviewImage(null);
     setIsTyping(true);
     setVoiceState('thinking');
 
-    // Simulate AI response delay
-    setTimeout(() => {
-      const aiResponseText = generateWeatherResponse(messageContent, effectiveLangCode);
+    let aiResponseText = '';
+    let responseLang = effectiveLangCode;
+    let aiExplainWhy: string | undefined = undefined;
+    let aiLensData: import('../services/weatherGptApi').WeatherLensResponse | undefined = undefined;
 
-      const aiMessage: ChatMessage = {
-        id: `msg-${Date.now() + 1}`,
-        role: 'assistant',
-        content: aiResponseText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        language: effectiveLangCode
-      };
+    try {
+      // Call live WeatherGPT backend API
+      const loc = await getUserLocation();
+      const locationStr = loc ? `${loc.latitude},${loc.longitude}` : 'Unknown';
 
-      setSessions(prev => prev.map(s => {
-        if (s.id === activeSession.id) {
-          return {
-            ...s,
-            messages: [...updatedMessages, aiMessage],
-            updatedAt: Date.now()
-          };
-        }
-        return s;
-      }));
-
-      setIsTyping(false);
-
-      // Speak response aloud ONLY if the message was spoken by voice or in Live Voice Call mode!
-      const shouldSpeakAloud = (isVoiceInput || isLiveVoiceModeRef.current) && !isAudioMutedRef.current;
-      if (shouldSpeakAloud) {
-        speakText(aiResponseText, effectiveLangObj.speechLang);
+      if (currentImage) {
+        const apiRes = await analyzeWeatherLens(currentImage, messageContent, locationStr, effectiveLangCode);
+        aiResponseText = apiRes.answer;
+        aiLensData = apiRes;
       } else {
-        setVoiceState('idle');
+        const apiRes = await askWeatherGPT({ question: messageContent, location: loc });
+        
+        if (apiRes.answer) {
+          aiResponseText = apiRes.answer;
+          aiExplainWhy = apiRes.explainWhy;
+          if (apiRes.language) responseLang = apiRes.language;
+        } else if (apiRes.error) {
+          const errStr = typeof apiRes.error === 'string' ? apiRes.error : apiRes.error.message;
+          aiResponseText = `⚠️ **WeatherGPT Error**: ${errStr || 'Unable to retrieve weather forecast.'}`;
+        } else {
+          aiResponseText = generateWeatherResponse(messageContent, effectiveLangCode);
+        }
       }
-    }, 1100);
+    } catch (err: any) {
+      console.warn('WeatherGPT API live request fallback:', err);
+      aiResponseText = generateWeatherResponse(messageContent, effectiveLangCode);
+    }
+
+    const aiMessage: ChatMessage = {
+      id: `msg-${Date.now() + 1}`,
+      role: 'assistant',
+      content: aiResponseText,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      language: responseLang,
+      explainWhy: aiExplainWhy,
+      lensData: aiLensData
+    };
+
+    setSessions(prev => prev.map(s => {
+      if (s.id === activeSession.id) {
+        return {
+          ...s,
+          messages: [...updatedMessages, aiMessage],
+          updatedAt: Date.now()
+        };
+      }
+      return s;
+    }));
+
+    setIsTyping(false);
+
+    // Speak response aloud ONLY if the message was spoken by voice or in Live Voice Call mode!
+    const shouldSpeakAloud = (isVoiceInput || isLiveVoiceModeRef.current) && !isAudioMutedRef.current;
+    if (shouldSpeakAloud) {
+      // Clean markdown symbols for natural TTS speech output
+      const cleanTtsText = aiResponseText.replace(/[*#`_-]/g, ' ');
+      speakText(cleanTtsText, effectiveLangObj.speechLang);
+    } else {
+      setVoiceState('idle');
+    }
   };
 
   // Start New Chat Session
@@ -1105,32 +1283,32 @@ export default function VoiceAssistantPage() {
   };
 
   // Switch Language
-  const handleSelectLanguage = (lang: LanguageOption) => {
-    setSelectedLang(lang);
-    setLangDropdownOpen(false);
+  // const handleSelectLanguage = (lang: LanguageOption) => {
+  //   setSelectedLang(lang);
+  //   setLangDropdownOpen(false);
 
-    // If active session has no user messages, update greeting to new language
-    if (activeSession.messages.filter(m => m.role === 'user').length === 0) {
-      setSessions(prev => prev.map(s => {
-        if (s.id === activeSession.id) {
-          return {
-            ...s,
-            languageCode: lang.code,
-            messages: [
-              {
-                id: `msg-${Date.now()}`,
-                role: 'assistant',
-                content: lang.greeting,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                language: lang.code
-              }
-            ]
-          };
-        }
-        return s;
-      }));
-    }
-  };
+  //   // If active session has no user messages, update greeting to new language
+  //   if (activeSession.messages.filter(m => m.role === 'user').length === 0) {
+  //     setSessions(prev => prev.map(s => {
+  //       if (s.id === activeSession.id) {
+  //         return {
+  //           ...s,
+  //           languageCode: lang.code,
+  //           messages: [
+  //             {
+  //               id: `msg-${Date.now()}`,
+  //               role: 'assistant',
+  //               content: lang.greeting,
+  //               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  //               language: lang.code
+  //             }
+  //           ]
+  //         };
+  //       }
+  //       return s;
+  //     }));
+  //   }
+  // };
 
   // Enter Live Voice Mode
   const handleEnterLiveVoiceMode = () => {
@@ -1256,7 +1434,12 @@ export default function VoiceAssistantPage() {
                     {SUPPORTED_LANGUAGES.map((l) => (
                       <button
                         key={l.code}
-                        onClick={() => handleSelectLanguage(l)}
+                        onClick={() => {
+                          setSelectedLang(l);
+                          const globalMatch = SITE_LANGUAGES.find(g => g.code === l.code);
+                          if (globalMatch) setGlobalLanguage(globalMatch);
+                          setLangDropdownOpen(false);
+                        }}
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer text-left",
                           selectedLang.code === l.code ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
@@ -1346,7 +1529,67 @@ export default function VoiceAssistantPage() {
                           ? "bg-primary text-primary-foreground rounded-br-sm" 
                           : "bg-muted/50 border border-border/50 text-foreground rounded-bl-sm"
                       )}>
-                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        {isUser ? (
+                          <div className="relative group/msg">
+                            {message.image && (
+                              <img src={message.image} alt="User upload" className="max-w-[200px] rounded-xl mb-2 border shadow-sm" />
+                            )}
+                            <p className="whitespace-pre-wrap">{message.content}</p>
+                            <button
+                              onClick={() => {
+                                setInput(message.content);
+                                const msgIndex = activeSession.messages.findIndex(m => m.id === message.id);
+                                if (msgIndex !== -1) {
+                                  setSessions(prev => prev.map(s => {
+                                    if (s.id === activeSession.id) {
+                                      return { ...s, messages: s.messages.slice(0, msgIndex) };
+                                    }
+                                    return s;
+                                  }));
+                                }
+                              }}
+                              className="absolute -left-10 top-0 p-1.5 bg-background border border-border/50 text-muted-foreground hover:text-primary rounded-full opacity-0 group-hover/msg:opacity-100 transition-all cursor-pointer shadow-sm"
+                              title="Edit prompt"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed prose-p:my-1 prose-headings:font-bold prose-headings:my-2.5 prose-ul:my-1 prose-li:my-0.5 prose-strong:text-primary whitespace-pre-line overflow-x-auto relative">
+                            {message.lensData && (
+                              <div className="mb-4 bg-muted/30 border border-border/60 rounded-xl p-3 flex flex-col gap-2">
+                                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                  <Camera className="w-3.5 h-3.5" /> AI Sky Camera Lens
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-1">
+                                  <div className="bg-background rounded-lg p-2 text-center text-xs shadow-sm">
+                                    <div className="text-muted-foreground">Cloud Type</div>
+                                    <div className="font-bold text-primary truncate" title={message.lensData.cloudType}>{message.lensData.cloudType}</div>
+                                  </div>
+                                  <div className="bg-background rounded-lg p-2 text-center text-xs shadow-sm">
+                                    <div className="text-muted-foreground">Rain Risk</div>
+                                    <div className="font-bold text-red-500">{message.lensData.rainRiskPercent}%</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {message.content}
+                            </ReactMarkdown>
+                            {message.explainWhy && (
+                              <details className="mt-3 text-xs border border-amber-500/20 bg-amber-500/5 rounded-lg overflow-hidden group/explain cursor-pointer">
+                                <summary className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 hover:bg-amber-500/10 transition-colors outline-none list-none">
+                                  <span className="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">💡</span>
+                                  Why this prediction?
+                                  <ChevronDown className="w-3.5 h-3.5 ml-auto group-open/explain:rotate-180 transition-transform" />
+                                </summary>
+                                <div className="px-3 pb-3 pt-1 text-muted-foreground whitespace-pre-line">
+                                  {message.explainWhy}
+                                </div>
+                              </details>
+                            )}
+                          </div>
+                        )}
                       </div>
                       
                       {!isUser && (
@@ -1365,6 +1608,16 @@ export default function VoiceAssistantPage() {
                             className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                           >
                             {copiedId === message.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={() => {
+                              const waUrl = `https://wa.me/?text=${encodeURIComponent(message.content)}`;
+                              window.open(waUrl, '_blank');
+                            }}
+                            className="text-emerald-500 hover:text-emerald-600 transition-colors cursor-pointer"
+                            title="Share on WhatsApp"
+                          >
+                            <Share2 className="w-4 h-4" />
                           </button>
                         </div>
                       )}
@@ -1421,15 +1674,74 @@ export default function VoiceAssistantPage() {
                 <span className="hidden sm:inline">Live Call</span>
               </button>
 
+              {/* Camera Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowCameraOptions(!showCameraOptions)}
+                  className="p-2.5 text-muted-foreground hover:bg-muted rounded-full transition-colors cursor-pointer"
+                  title="Upload image or take photo for Weather Lens"
+                >
+                  <Camera className="w-5 h-5" />
+                </button>
+
+                {showCameraOptions && (
+                  <div className="absolute bottom-full left-0 mb-2 w-48 bg-card border border-border shadow-xl rounded-xl p-2 z-50 animate-in slide-in-from-bottom-2">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      capture="environment" 
+                      className="hidden" 
+                      ref={cameraInputRef}
+                      onChange={handleImageSelect}
+                    />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      ref={fileInputRef}
+                      onChange={handleImageSelect}
+                    />
+                    
+                    <button 
+                      onClick={() => { cameraInputRef.current?.click(); setShowCameraOptions(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Camera className="w-4 h-4" /> Take Photo
+                    </button>
+                    <button 
+                      onClick={() => { fileInputRef.current?.click(); setShowCameraOptions(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors cursor-pointer mt-1"
+                    >
+                      <ImageIcon className="w-4 h-4" /> Choose from Gallery
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Text Input Field */}
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder={isSpeechRecognitionActive ? `Listening...` : `Ask WeatherGPT...`}
-                className="flex-1 bg-transparent border-none outline-none text-base px-2 text-foreground placeholder:text-muted-foreground"
-              />
+              <div className="flex-1 flex flex-col relative">
+                {previewImage && (
+                  <div className="absolute bottom-full mb-3 left-0">
+                    <div className="relative inline-block">
+                      <img src={previewImage} alt="Preview" className="h-24 w-auto rounded-xl border-2 border-primary/20 shadow-lg object-cover" />
+                      <button
+                        onClick={() => setPreviewImage(null)}
+                        className="absolute -top-2 -right-2 bg-background border border-border rounded-full p-1 text-muted-foreground hover:text-red-500 shadow-sm transition-colors cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder={isSpeechRecognitionActive ? `Listening...` : `Ask WeatherGPT...`}
+                  className="w-full bg-transparent border-none outline-none text-base px-2 text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
 
               {/* Send Button */}
               <button

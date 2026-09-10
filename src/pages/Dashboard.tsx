@@ -15,9 +15,7 @@ import {
   AlertTriangle,
   Globe2,
   Sparkles,
-  Download,
-  Sprout,
-  Anchor
+  Download
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { getWeatherData } from '../services/weatherService';
@@ -25,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { WeatherStatCard } from '../components/WeatherStatCard';
 import { format } from 'date-fns';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useLanguage } from '../hooks/useLanguage';
 import { Weather3DCanvas, type Weather3DMode } from '../components/3d/Weather3DCanvas';
 import { WeatherGlobe3D } from '../components/3d/WeatherGlobe3D';
 import { WeatherOrb3D } from '../components/3d/WeatherOrb3D';
@@ -33,10 +32,13 @@ import { LightningTracker } from '../components/LightningTracker';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { useMagnetic } from '../utils/gsapEffects';
 import { motion, AnimatePresence } from 'motion/react';
+import { KisanAdvisoryCard } from '../components/KisanAdvisoryCard';
+import { CircularGauge } from '../components/ui/CircularGauge';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { convertTemp, tempUnitSymbol, profile } = useUserProfile();
+  const { t } = useLanguage();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [active3DMode, setActive3DMode] = useState<Weather3DMode>('rain');
@@ -276,6 +278,9 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
+      {/* Kisan / Smart Crop Advisory Tab */}
+      <KisanAdvisoryCard location={displayLocation} language="gu" />
+
       {/* Main Grid: Hero 3D Card & Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
@@ -331,7 +336,7 @@ export default function Dashboard() {
           <WeatherStatCard 
             index={0}
             icon={Droplets} 
-            label="Humidity" 
+            label={t('humidity', 'Humidity')} 
             value={data.current.humidity} 
             unit="%" 
             description={`The dew point is ${convertTemp(22)}° right now`} 
@@ -339,7 +344,7 @@ export default function Dashboard() {
           <WeatherStatCard 
             index={1}
             icon={Wind} 
-            label="Wind Speed" 
+            label={t('wind_speed', 'Wind Speed')} 
             value={data.current.wind_kph} 
             unit="km/h" 
             description="Wind direction is NW" 
@@ -347,7 +352,7 @@ export default function Dashboard() {
           <WeatherStatCard 
             index={2}
             icon={CloudRain} 
-            label="Rain Prob." 
+            label={t('rain_prob', 'Rain Prob.')} 
             value={data.forecast[0].chance_of_rain} 
             unit="%" 
             description="Expected in afternoon" 
@@ -355,7 +360,7 @@ export default function Dashboard() {
           <WeatherStatCard 
             index={3}
             icon={Eye} 
-            label="Visibility" 
+            label={t('visibility', 'Visibility')} 
             value={data.current.visibility_km} 
             unit="km" 
             description="It's clear right now" 
@@ -363,7 +368,7 @@ export default function Dashboard() {
           <WeatherStatCard 
             index={4}
             icon={Sun} 
-            label="UV Index" 
+            label={t('uv_index', 'UV Index')} 
             value={data.current.uv} 
             unit="" 
             description="Moderate level today" 
@@ -371,13 +376,31 @@ export default function Dashboard() {
           <WeatherStatCard 
             index={5}
             icon={CloudLightning} 
-            label="Pressure" 
+            label={t('pressure', 'Pressure')} 
             value={data.current.pressure_mb} 
             unit="mb" 
             description="Rising slowly" 
           />
         </div>
       </div>
+
+      {/* AI Risk Dashboard */}
+      <Card className="shadow-lg border-red-500/10 bg-gradient-to-tr from-background to-red-500/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            AI Risk & Vulnerability Dashboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 py-4">
+            <CircularGauge value={85} max={100} title="Overall Risk" color="text-red-500" icon={<AlertTriangle className="w-5 h-5" />} size={120} strokeWidth={8} />
+            <CircularGauge value={70} max={100} title="Flood Risk" color="text-blue-500" icon={<Droplets className="w-5 h-5" />} size={120} strokeWidth={8} />
+            <CircularGauge value={45} max={100} title="Heat Wave" color="text-amber-500" icon={<Sun className="w-5 h-5" />} size={120} strokeWidth={8} />
+            <CircularGauge value={90} max={100} title="Wind Gale" color="text-teal-500" icon={<Wind className="w-5 h-5" />} size={120} strokeWidth={8} />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Live AQI Score & Lightning Radar Proximity Tracker */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -390,7 +413,7 @@ export default function Dashboard() {
         <Card className="lg:col-span-2 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Hourly Forecast</CardTitle>
+              <CardTitle>{t('hourly_forecast', 'Hourly Forecast')}</CardTitle>
               <span className="text-xs font-bold text-muted-foreground">Unit: {tempUnitSymbol}</span>
             </div>
           </CardHeader>
@@ -427,7 +450,7 @@ export default function Dashboard() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <span className="bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">AI Insights</span>
+              <span className="bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">{t('ai_insights', 'AI Insights')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -455,7 +478,7 @@ export default function Dashboard() {
       <Card className="shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>7-Day Forecast</CardTitle>
+            <CardTitle>{t('seven_day_forecast', '7-Day Forecast')}</CardTitle>
             <span className="text-xs font-bold text-muted-foreground">Unit: {tempUnitSymbol}</span>
           </div>
         </CardHeader>

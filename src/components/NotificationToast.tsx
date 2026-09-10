@@ -2,10 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import { CloudRain, Wind, ThermometerSun, AlertTriangle, X, ChevronRight, BellRing } from 'lucide-react';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
 import { cn } from '../utils/cn';
+import { useLanguage } from '../hooks/useLanguage';
 
 export default function NotificationToast() {
   const { activeToast, dismissToast, markAsRead } = useWeatherAlerts();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   if (!activeToast) return null;
 
@@ -102,7 +104,7 @@ export default function NotificationToast() {
                 onClick={handleOpenAlerts}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
               >
-                <span>View Full Advisory</span>
+                <span>{t('toast_view_advisory', 'View Full Advisory')}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
               <button
@@ -112,7 +114,7 @@ export default function NotificationToast() {
                 }}
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-border bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
               >
-                Radar Map
+                {t('toast_radar_map', 'Radar Map')}
               </button>
             </div>
           </div>

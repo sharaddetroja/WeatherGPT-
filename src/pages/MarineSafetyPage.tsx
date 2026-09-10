@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Waves, Anchor, AlertCircle, ShieldAlert, Thermometer, Wind, Eye } from 'lucide-react';
-import { motion } from 'motion/react';
+import { useState } from 'react';
+import { Waves, Anchor, ShieldAlert, Thermometer, Wind, Eye } from 'lucide-react';
+import { useLanguage } from '../hooks/useLanguage';
 
 export interface CoastalZone {
   id: string;
@@ -44,7 +44,7 @@ const COASTAL_ZONES: CoastalZone[] = [
     highTide: '04:10 PM (3.8m)',
     lowTide: '10:05 PM (1.1m)',
     advisoryGu: 'દરિયાકિનારે મધ્યમ વાવાઝોડાનો સંકેત છે. નાના હોડી વાહકોએ સાવચેતી રાખવી.',
-    advisoryEn: 'Moderate sea condition with gusts up to 40 km/h. Small craft operators should exercise caution.'
+    advisoryEn: 'Moderate sea state. Small boat operators should exercise caution near shore.'
   },
   {
     id: 'mumbai-coast',
@@ -63,6 +63,7 @@ const COASTAL_ZONES: CoastalZone[] = [
 ];
 
 export default function MarineSafetyPage() {
+  const { t } = useLanguage();
   const [selectedZone, setSelectedZone] = useState<CoastalZone>(COASTAL_ZONES[0]);
 
   const alertColor = 
@@ -80,9 +81,9 @@ export default function MarineSafetyPage() {
               <Anchor className="w-4 h-4" />
               <span>Marine, Coastal & Fisherman Safety Portal</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black">દરિયાઈ હવામાન અને માછીમાર ચેતવણી</h1>
+            <h1 className="text-2xl sm:text-4xl font-black">{t('marine_title', 'Marine & Coastal Safety Advisory')}</h1>
             <p className="text-sm text-cyan-100 mt-1 max-w-xl">
-              Wave height monitoring, high tide schedules, sea surface temperature, and coastal fisherman warnings.
+              {t('marine_subtitle', 'Tidal height, wave dynamics, sea surface temperature, and fisherman warnings.')}
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, ShieldAlert, Volume2, VolumeX, Radio } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface LightningTrackerProps {
   className?: string;
@@ -12,6 +13,7 @@ export const LightningTracker: React.FC<LightningTrackerProps> = ({ className = 
   const [direction, setDirection] = useState('NW');
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [flashActive, setFlashActive] = useState(false);
+  const { t } = useLanguage();
 
   // Simulate real-time lightning strike events
   useEffect(() => {
@@ -51,6 +53,7 @@ export const LightningTracker: React.FC<LightningTrackerProps> = ({ className = 
   }, [audioEnabled]);
 
   const threatLevel = distanceKm < 5 ? 'Danger' : distanceKm < 12 ? 'Caution' : 'Safe';
+  const threatLabel = distanceKm < 5 ? t('lightning_danger', 'Danger') : distanceKm < 12 ? t('lightning_caution', 'Caution') : t('lightning_safe', 'Safe');
   const threatColor = 
     threatLevel === 'Danger' ? 'bg-red-500/15 text-red-600 border-red-500/30' :
     threatLevel === 'Caution' ? 'bg-amber-500/15 text-amber-600 border-amber-500/30' :
@@ -81,10 +84,10 @@ export const LightningTracker: React.FC<LightningTrackerProps> = ({ className = 
             <Zap className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <h3 className="font-extrabold text-sm text-foreground">Live Lightning Proximity Radar</h3>
+            <h3 className="font-extrabold text-sm text-foreground">{t('lightning_title', 'Live Lightning Proximity Radar')}</h3>
             <p className="text-[11px] text-muted-foreground flex items-center gap-1">
               <Radio className="w-3 h-3 text-red-500 animate-ping" />
-              <span>Real-Time Charge Sensors Active</span>
+              <span>{t('lightning_subtitle', 'Real-Time Charge Sensors Active')}</span>
             </p>
           </div>
         </div>
@@ -100,24 +103,24 @@ export const LightningTracker: React.FC<LightningTrackerProps> = ({ className = 
             {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
           <span className={`px-2.5 py-1 rounded-full text-xs font-bold border uppercase tracking-wider ${threatColor}`}>
-            {threatLevel}
+            {threatLabel}
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         <div className="p-3 rounded-2xl bg-muted/50 border border-border/50 text-center">
-          <span className="text-[10px] font-extrabold text-muted-foreground uppercase">Closest Strike</span>
+          <span className="text-[10px] font-extrabold text-muted-foreground uppercase">{t('lightning_closest', 'Closest Strike')}</span>
           <div className="text-xl font-black text-amber-500 mt-0.5">{distanceKm} <span className="text-xs font-bold">km</span></div>
         </div>
 
         <div className="p-3 rounded-2xl bg-muted/50 border border-border/50 text-center">
-          <span className="text-[10px] font-extrabold text-muted-foreground uppercase">Bearing</span>
+          <span className="text-[10px] font-extrabold text-muted-foreground uppercase">{t('lightning_bearing', 'Bearing')}</span>
           <div className="text-xl font-black text-primary mt-0.5">{direction}</div>
         </div>
 
         <div className="p-3 rounded-2xl bg-muted/50 border border-border/50 text-center">
-          <span className="text-[10px] font-extrabold text-muted-foreground uppercase">Strikes 30m</span>
+          <span className="text-[10px] font-extrabold text-muted-foreground uppercase">{t('lightning_strikes', 'Strikes 30m')}</span>
           <div className="text-xl font-black text-foreground mt-0.5">{strikeCount}</div>
         </div>
       </div>
@@ -125,7 +128,7 @@ export const LightningTracker: React.FC<LightningTrackerProps> = ({ className = 
       <div className="mt-3.5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between text-xs text-amber-700 dark:text-amber-300">
         <div className="flex items-center gap-2">
           <ShieldAlert className="w-4 h-4 flex-shrink-0" />
-          <span>{distanceKm < 10 ? 'High thunder charge detected nearby — Avoid open fields & tall trees.' : 'Moderate convective thunderstorm activity in regional radar.'}</span>
+          <span>{distanceKm < 10 ? t('lightning_warning_near', 'High thunder charge detected nearby — Avoid open fields & tall trees.') : t('lightning_warning_far', 'Moderate convective thunderstorm activity in regional radar.')}</span>
         </div>
       </div>
     </motion.div>

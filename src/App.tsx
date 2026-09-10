@@ -9,31 +9,36 @@ import VoiceAssistantPage from './pages/VoiceAssistantPage';
 import AgriculturePage from './pages/AgriculturePage';
 import TravelPlannerPage from './pages/TravelPlannerPage';
 import MarineSafetyPage from './pages/MarineSafetyPage';
+import LanguageSelectionPage from './pages/LanguageSelectionPage';
 import { ThemeProvider } from './hooks/useTheme';
 import { WeatherAlertsProvider } from './hooks/useWeatherAlerts';
 import { UserProfileProvider } from './hooks/useUserProfile';
+import { LanguageProvider } from './hooks/useLanguage';
 
 function App() {
   return (
     <ThemeProvider>
       <UserProfileProvider>
-        <WeatherAlertsProvider>
-          <Routes>
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="map" element={<WeatherMapPage />} />
-              <Route path="alerts" element={<AlertsPage />} />
-              <Route path="climate" element={<ClimatePage />} />
-              <Route path="agriculture" element={<AgriculturePage />} />
-              <Route path="travel" element={<TravelPlannerPage />} />
-              <Route path="marine" element={<MarineSafetyPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="assistant" element={<VoiceAssistantPage />} />
-              <Route path="chat" element={<VoiceAssistantPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
-        </WeatherAlertsProvider>
+        <LanguageProvider>
+          <WeatherAlertsProvider>
+            <Routes>
+              <Route path="/" element={<MainLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="map" element={<WeatherMapPage />} />
+                <Route path="alerts" element={<AlertsPage />} />
+                <Route path="climate" element={<ClimatePage />} />
+                <Route path="agriculture" element={<AgriculturePage />} />
+                <Route path="travel" element={<TravelPlannerPage />} />
+                <Route path="marine" element={<MarineSafetyPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="language" element={<LanguageSelectionPage />} />
+                <Route path="assistant" element={<VoiceAssistantPage />} />
+                <Route path="chat" element={<VoiceAssistantPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </Routes>
+          </WeatherAlertsProvider>
+        </LanguageProvider>
       </UserProfileProvider>
     </ThemeProvider>
   );

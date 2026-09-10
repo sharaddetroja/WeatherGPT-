@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
-import { Car, MapPin, ArrowRight, ShieldCheck, AlertTriangle, Clock, CloudRain, Sun, Wind, Navigation, Download } from 'lucide-react';
-import { motion } from 'motion/react';
-import { useUserProfile } from '../hooks/useUserProfile';
-import { exportWeatherCSV } from '../utils/exportReports';
+import { useState } from 'react';
+import { Car, ShieldCheck, AlertTriangle, Clock, CloudRain, Sun, Navigation } from 'lucide-react';
+import { useLanguage } from '../hooks/useLanguage';
 
 export interface RouteOption {
   id: string;
@@ -70,7 +68,7 @@ const ROUTES: RouteOption[] = [
 ];
 
 export default function TravelPlannerPage() {
-  const { profile } = useUserProfile();
+  const { t } = useLanguage();
   const [selectedRoute, setSelectedRoute] = useState<RouteOption>(ROUTES[0]);
 
   return (
@@ -83,9 +81,9 @@ export default function TravelPlannerPage() {
               <Car className="w-4 h-4" />
               <span>Smart Travel Weather & Highway Radar</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black">Road Trip & Highway Weather Planner</h1>
+            <h1 className="text-2xl sm:text-4xl font-black">{t('travel_title', 'Highway & Trip Safety Planner')}</h1>
             <p className="text-sm text-blue-100 mt-1 max-w-xl">
-              Hour-by-hour highway rain hazard bands, road visibility scores, and optimal departure time windows.
+              {t('travel_subtitle', 'Real-time road weather conditions, highway visibility, and travel recommendations.')}
             </p>
           </div>
         </div>
