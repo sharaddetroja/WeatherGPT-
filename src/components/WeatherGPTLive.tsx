@@ -262,7 +262,7 @@ export function WeatherGPTLive({ className, defaultQuestion = '' }: WeatherGPTLi
             </button>
             <article className="prose dark:prose-invert max-w-none prose-p:my-2 prose-headings:font-bold prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5 prose-strong:text-primary whitespace-pre-line">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {response.answer}
+                {typeof response.answer === 'string' ? response.answer : String(response.answer || '')}
               </ReactMarkdown>
             </article>
           </div>
@@ -305,7 +305,7 @@ export function WeatherGPTLive({ className, defaultQuestion = '' }: WeatherGPTLi
               {response.riskScores.alerts.map((alert, idx) => (
                 <div key={idx} className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-600 dark:text-red-400 text-xs font-semibold flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>{alert}</span>
+                  <span>{typeof alert === 'string' ? alert : (alert as any).message || JSON.stringify(alert)}</span>
                 </div>
               ))}
             </div>
@@ -318,7 +318,7 @@ export function WeatherGPTLive({ className, defaultQuestion = '' }: WeatherGPTLi
                 <div className="p-4 bg-muted/50 border border-border rounded-xl">
                   <span className="text-2xl mb-2 block">{response.advisories.mood.emoji}</span>
                   <h5 className="font-bold text-sm mb-1">{response.advisories.mood.summary}</h5>
-                  {response.advisories.mood.clothing && response.advisories.mood.clothing.length > 0 && (
+                  {Array.isArray(response.advisories.mood.clothing) && response.advisories.mood.clothing.length > 0 && (
                     <p className="text-xs text-muted-foreground mt-2">
                       <span className="font-semibold text-foreground">Wear:</span> {response.advisories.mood.clothing.join(', ')}
                     </p>

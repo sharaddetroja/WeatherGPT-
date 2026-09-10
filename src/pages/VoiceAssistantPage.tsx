@@ -1576,7 +1576,7 @@ export default function VoiceAssistantPage() {
                               </div>
                             )}
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {message.content}
+                              {typeof message.content === 'string' ? message.content : String(message.content || '')}
                             </ReactMarkdown>
                             {message.explainWhy && (
                               <details className="mt-3 text-xs border border-amber-500/20 bg-amber-500/5 rounded-lg overflow-hidden group/explain cursor-pointer">

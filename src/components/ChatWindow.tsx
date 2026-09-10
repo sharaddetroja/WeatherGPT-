@@ -248,7 +248,7 @@ export default function ChatWindow() {
                   )}
                   <div className="prose dark:prose-invert max-w-none text-xs leading-relaxed prose-p:my-1 prose-headings:font-bold prose-headings:my-1.5 prose-ul:my-1 prose-li:my-0.5 whitespace-pre-line overflow-x-auto">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {msg.content}
+                      {typeof msg.content === 'string' ? msg.content : String(msg.content || '')}
                     </ReactMarkdown>
                   </div>
                   {msg.explainWhy && (
