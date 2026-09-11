@@ -1,4 +1,4 @@
-﻿import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
   Map, 
@@ -18,7 +18,10 @@ import {
   ArrowUpRight,
   AlertTriangle,
   Droplets,
-  Gauge
+  Gauge,
+  X,
+  ChevronUp,
+  Zap
 } from 'lucide-react';
 import { Card, CardContent } from '../components/Card';
 import { cn } from '../utils/cn';
@@ -26,6 +29,7 @@ import L from 'leaflet';
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
+import { Weather3DCanvas } from '../components/3d/Weather3DCanvas';
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -91,7 +95,7 @@ export const WEATHER_EFFECT_ZONES: WeatherEffectZone[] = [
     center: [22.3039, 70.8022],
     radiusMeters: 38000,
     severity: 'Critical',
-    intensityBadge: '≡ƒîº∩╕Å Heavy Rainfront (1.89 in/hr)',
+    intensityBadge: 'Heavy Rainfront (1.89 in/hr)',
     metricValue: '1.89 in/hr (48 mm/h)',
     etaText: 'Incoming in 25 min',
     precipRateInches: 1.89,
@@ -112,7 +116,7 @@ export const WEATHER_EFFECT_ZONES: WeatherEffectZone[] = [
     center: [19.0760, 72.8777],
     radiusMeters: 42000,
     severity: 'High',
-    intensityBadge: '≡ƒîº∩╕Å Tropical Downpour (1.65 in/hr)',
+    intensityBadge: 'Tropical Downpour (1.65 in/hr)',
     metricValue: '1.65 in/hr (42 mm/h)',
     etaText: 'Incoming in 15 min',
     precipRateInches: 1.65,
@@ -133,7 +137,7 @@ export const WEATHER_EFFECT_ZONES: WeatherEffectZone[] = [
     center: [23.0225, 72.5714],
     radiusMeters: 46000,
     severity: 'Critical',
-    intensityBadge: 'ΓÜí Severe Cloudburst (2.17 in/hr)',
+    intensityBadge: 'Severe Cloudburst (2.17 in/hr)',
     metricValue: '2.17 in/hr (55 mm/h)',
     etaText: 'Incoming in 35 min',
     precipRateInches: 2.17,
@@ -143,7 +147,7 @@ export const WEATHER_EFFECT_ZONES: WeatherEffectZone[] = [
     precipTotal24hMm: 106.7,
     precipProbability: 98,
     precipClassification: 'Severe Thunderstorm & Torrential Cloudburst',
-    description: 'Severe multi-cell thunderstorm with active lightning, rapid temperature drop (-4┬░C), and microburst risks.',
+    description: 'Severe multi-cell thunderstorm with active lightning, rapid temperature drop (-4°C), and microburst risks.',
     safetyAdvice: 'Stay indoors away from metal structures and tall trees during lightning.'
   },
   {
@@ -154,8 +158,8 @@ export const WEATHER_EFFECT_ZONES: WeatherEffectZone[] = [
     center: [21.1500, 71.4000],
     radiusMeters: 52000,
     severity: 'Critical',
-    intensityBadge: '≡ƒÆ¿ Fast Gale Wind Corridor',
-    metricValue: '62 km/h NW ΓÇó 0.31 in/hr rain',
+    intensityBadge: 'Fast Gale Wind Corridor',
+    metricValue: '62 km/h NW | 0.31 in/hr rain',
     etaText: 'Active High Wind Warning',
     precipRateInches: 0.31,
     precipTotal24hInches: 0.75,
@@ -166,7 +170,7 @@ export const WEATHER_EFFECT_ZONES: WeatherEffectZone[] = [
     precipClassification: 'Coastal Squall & Gale Showers',
     windSpeedKph: 62,
     windSpeedMph: 38.5,
-    windDirection: 'NW (315┬░)',
+    windDirection: 'NW (315°)',
     description: 'Severe offshore pressure gradient creating sustained gale-force squalls and dangerous ocean swells (3.8m).',
     safetyAdvice: 'Small boat warnings in effect. Secure loose construction sheeting and rooftop antennas.',
     streamlines: [
@@ -184,8 +188,8 @@ export const WEATHER_EFFECT_ZONES: WeatherEffectZone[] = [
     center: [22.6500, 69.8000],
     radiusMeters: 40000,
     severity: 'High',
-    intensityBadge: '≡ƒÆ¿ Coastal Wind Squall',
-    metricValue: '54 km/h WNW ΓÇó 0.20 in/hr rain',
+    intensityBadge: 'Coastal Wind Squall',
+    metricValue: '54 km/h WNW | 0.20 in/hr rain',
     etaText: 'Active Wind Gusts',
     precipRateInches: 0.20,
     precipTotal24hInches: 0.45,
@@ -196,7 +200,7 @@ export const WEATHER_EFFECT_ZONES: WeatherEffectZone[] = [
     precipClassification: 'Scattered Marine Drizzle',
     windSpeedKph: 54,
     windSpeedMph: 33.5,
-    windDirection: 'WNW (290┬░)',
+    windDirection: 'WNW (290°)',
     description: 'Strong coastal thermal winds channeling through Kutch gulf with localized dust haze and choppy waters.',
     safetyAdvice: 'High-profile vehicles should reduce speed across open coastal bridges.',
     streamlines: [
@@ -295,7 +299,7 @@ const createRainEffectIcon = (zone: WeatherEffectZone) => {
 
         <!-- Floating Glassmorphism Badge showing Rain in Inches -->
         <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 9999px; background: rgba(15, 23, 42, 0.94); color: #ffffff; border: 1.5px solid rgba(59, 130, 246, 0.85); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5); backdrop-filter: blur(8px); white-space: nowrap; font-family: sans-serif;">
-          <span style="font-size: 16px;">≡ƒîº∩╕Å</span>
+          <span style="font-size: 16px;">🌧️</span>
           <div style="display: flex; flex-direction: column; text-align: left;">
             <div style="display: flex; align-items: baseline; gap: 4px;">
               <span style="font-size: 12px; font-weight: 800; color: #60a5fa; letter-spacing: 0.2px;">${zone.precipRateInches} in/hr</span>
@@ -329,7 +333,7 @@ const createWindEffectIcon = (zone: WeatherEffectZone) => {
 
         <!-- Floating Glassmorphism Badge -->
         <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 9999px; background: rgba(15, 23, 42, 0.94); color: #ffffff; border: 1.5px solid rgba(20, 184, 166, 0.85); box-shadow: 0 6px 20px rgba(20, 184, 166, 0.45); backdrop-filter: blur(8px); white-space: nowrap; font-family: sans-serif;">
-          <span style="font-size: 16px;">≡ƒÆ¿</span>
+          <span style="font-size: 16px;">💨</span>
           <div style="display: flex; flex-direction: column; text-align: left;">
             <span style="font-size: 12px; font-weight: 800; color: #2dd4bf; letter-spacing: 0.2px;">${zone.windSpeedKph} km/h ${zone.windDirection}</span>
             <span style="font-size: 9px; font-weight: 600; color: #cbd5e1;">Rain: <strong style="color: #5eead4;">${zone.precipTotal24hInches} in</strong> (${zone.precipRateInches} in/hr)</span>
@@ -354,7 +358,7 @@ const createStormEffectIcon = (zone: WeatherEffectZone) => {
 
         <!-- Floating Glassmorphism Badge showing Rain in Inches -->
         <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 9999px; background: rgba(15, 23, 42, 0.95); color: #ffffff; border: 1.5px solid rgba(239, 68, 68, 0.85); box-shadow: 0 6px 22px rgba(239, 68, 68, 0.6); backdrop-filter: blur(8px); white-space: nowrap; font-family: sans-serif;">
-          <span style="font-size: 16px;">ΓÜí</span>
+          <span style="font-size: 16px;">⚡</span>
           <div style="display: flex; flex-direction: column; text-align: left;">
             <div style="display: flex; align-items: baseline; gap: 4px;">
               <span style="font-size: 12px; font-weight: 800; color: #f87171; letter-spacing: 0.2px;">${zone.precipRateInches} in/hr</span>
@@ -381,7 +385,7 @@ const createClickPinIcon = (rainInfo: MapClickRainInfo) => {
     html: `
       <div style="position: relative; transform: translate(-50%, -100%); cursor: pointer;">
         <div style="display: flex; align-items: center; gap: 6px; background: rgba(15, 23, 42, 0.96); border: 2px solid ${color}; color: white; padding: 4px 10px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(0,0,0,0.5); white-space: nowrap; font-family: sans-serif;">
-          <span style="font-size: 13px;">${isHeavy ? 'ΓÜí' : isRain ? '≡ƒîº∩╕Å' : '≡ƒôì'}</span>
+          <span style="font-size: 13px;">${isHeavy ? '⚡' : isRain ? '🌧️' : '📍'}</span>
           <span style="font-size: 11px; font-weight: 800; color: ${color};">${rainInfo.rainRateInches.toFixed(2)} in/hr</span>
         </div>
         <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid ${color}; margin: 0 auto;"></div>
@@ -487,7 +491,7 @@ const mapThemes = [
   },
 ];
 
-// Component to fly the map to a new location ΓÇö only when coordinates actually change
+// Component to fly the map to a new location — only when coordinates actually change
 function FlyToLocation({ position, zoom }: { position: [number, number]; zoom?: number }) {
   const map = useMap();
   const posKey = `${position[0]},${position[1]},${zoom}`;
@@ -517,6 +521,45 @@ interface SearchResult {
   lat: number;
   lon: number;
   name: string;
+}
+
+function FloatingPanel({ 
+  title, 
+  icon: Icon, 
+  onClose, 
+  children,
+  accentColor 
+}: { 
+  title: string, 
+  icon: any, 
+  onClose: () => void, 
+  children: React.ReactNode,
+  accentColor: string 
+}) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  return (
+    <div className={`bg-background/85 backdrop-blur-xl border border-border/60 shadow-2xl rounded-2xl overflow-hidden flex flex-col w-full sm:w-[320px] pointer-events-auto transition-all duration-300`}>
+      <div className="flex items-center justify-between p-3 border-b border-border/40 bg-muted/20">
+        <div className="flex items-center gap-2">
+          <Icon className={`w-4 h-4 ${accentColor}`} />
+          <span className="text-sm font-bold text-foreground">{title}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button type="button" onClick={() => setIsCollapsed(!isCollapsed)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors cursor-pointer">
+            {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+          </button>
+          <button type="button" onClick={onClose} className="p-1.5 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      {!isCollapsed && (
+        <div className="p-2 relative bg-black/20">
+          {children}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function WeatherMapPage() {
@@ -646,12 +689,12 @@ export default function WeatherMapPage() {
     });
   };
 
-  // Map Click Handler ΓÇö computes localized rainfall in inches for any clicked area
+  // Map Click Handler — computes localized rainfall in inches for any clicked area
   const handleMapClick = async (lat: number, lon: number) => {
     const rainInfo = calculateRainfallAtPoint(lat, lon);
     
     // Reverse geocode to get human-friendly location name if not already attached to a known zone
-    let placeName = rainInfo.zoneMatched ? rainInfo.zoneMatched.name : `${lat.toFixed(3)}┬░, ${lon.toFixed(3)}┬░`;
+    let placeName = rainInfo.zoneMatched ? rainInfo.zoneMatched.name : `${lat.toFixed(3)}°, ${lon.toFixed(3)}°`;
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=12`,
@@ -877,21 +920,7 @@ export default function WeatherMapPage() {
         </div>
       )}
 
-      {/* Active Effects Status Banner (Moved from Map) */}
-      <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-background/95 border border-border rounded-xl shadow-sm text-xs font-semibold text-foreground">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-          </span>
-          <span className="hidden sm:inline">Active Effects:</span>
-          <span className="text-blue-500 font-bold">≡ƒîº∩╕Å 3 Rainfronts</span>
-          <span className="text-muted-foreground">ΓÇó</span>
-          <span className="text-teal-500 font-bold">≡ƒÆ¿ 2 Wind Gale Belts</span>
-          <span className="text-muted-foreground">ΓÇó</span>
-          <span className="text-amber-500 font-medium text-[11px] hidden md:inline">Click anywhere on map to inspect rainfall (inches)</span>
-        </div>
-      </div>
+
 
       {/* Main Map + Sidebar Area */}
       <div className="flex flex-col md:flex-row gap-4 h-full">
@@ -1098,13 +1127,19 @@ export default function WeatherMapPage() {
                         )}
                       >
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <span className="text-base flex-shrink-0">
-                            {zone.type === 'storm' ? 'ΓÜí' : zone.type === 'rain' ? '≡ƒîº∩╕Å' : '≡ƒÆ¿'}
-                          </span>
+                          <div className="flex-shrink-0">
+                            {zone.type === 'storm' ? (
+                              <Zap className="w-4 h-4 text-amber-500" />
+                            ) : zone.type === 'rain' ? (
+                              <CloudRain className="w-4 h-4 text-blue-500" />
+                            ) : (
+                              <Wind className="w-4 h-4 text-teal-500" />
+                            )}
+                          </div>
                           <div className="truncate">
                             <div className="text-xs font-bold truncate">{zone.name}</div>
                             <div className="text-[10px] text-muted-foreground truncate">
-                              {zone.precipRateInches} in/hr ΓÇó Total {zone.precipTotal24hInches} in
+                              {zone.precipRateInches} in/hr | Total {zone.precipTotal24hInches} in
                             </div>
                           </div>
                         </div>
@@ -1198,10 +1233,10 @@ export default function WeatherMapPage() {
                     <div className="flex justify-between text-[10px] font-semibold text-muted-foreground">
                       <span>Intensity Level</span>
                       <span className="font-bold text-foreground">
-                        {clickedRainfall.rainRateInches >= 1.0 ? '≡ƒÜ¿ Cloudburst (>1.0 in/h)' :
-                         clickedRainfall.rainRateInches >= 0.3 ? '≡ƒîº∩╕Å Heavy (0.3-1.0 in/h)' :
-                         clickedRainfall.rainRateInches >= 0.1 ? '≡ƒîª∩╕Å Moderate (0.1-0.3 in/h)' :
-                         clickedRainfall.rainRateInches > 0 ? '≡ƒÆº Light (<0.1 in/h)' : 'ΓÿÇ∩╕Å Dry & Clear'}
+                        {clickedRainfall.rainRateInches >= 1.0 ? 'Cloudburst (>1.0 in/h)' :
+                         clickedRainfall.rainRateInches >= 0.3 ? 'Heavy (0.3-1.0 in/h)' :
+                         clickedRainfall.rainRateInches >= 0.1 ? 'Moderate (0.1-0.3 in/h)' :
+                         clickedRainfall.rainRateInches > 0 ? 'Light (<0.1 in/h)' : 'Dry & Clear'}
                       </span>
                     </div>
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden p-0.5 border border-border/60 flex">
@@ -1260,7 +1295,7 @@ export default function WeatherMapPage() {
                 <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20 space-y-1.5">
                   <p className="text-xs font-bold text-primary">{searchResult.name}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {searchResult.lat.toFixed(4)}┬░, {searchResult.lon.toFixed(4)}┬░
+                    {searchResult.lat.toFixed(4)}°, {searchResult.lon.toFixed(4)}°
                   </p>
                 </div>
               </div>
@@ -1270,7 +1305,41 @@ export default function WeatherMapPage() {
 
         {/* Interactive Leaflet Map Container */}
         <div className="flex-1 rounded-2xl border bg-muted overflow-hidden relative shadow-sm min-h-[450px]">
+          
+          {/* Floating Effects Popups */}
+          <div className="absolute bottom-4 left-4 right-4 z-[400] flex flex-col sm:flex-row justify-between items-end gap-4 pointer-events-none">
+            {/* Left side: Rain Radar Popup */}
+            {showRainEffects && (
+              <div className="w-full sm:w-auto">
+                <FloatingPanel 
+                  title={t('map_rain_radar', 'Rain Radar')} 
+                  icon={CloudRain} 
+                  accentColor="text-blue-500"
+                  onClose={() => setShowRainEffects(false)}
+                >
+                  <div className="h-48 w-full rounded-xl overflow-hidden relative border border-border/30 bg-slate-900/50">
+                    <Weather3DCanvas initialMode="rain" showControls={false} />
+                  </div>
+                </FloatingPanel>
+              </div>
+            )}
 
+            {/* Right side: Wind Flow Popup */}
+            {showWindEffects && (
+              <div className="w-full sm:w-auto ml-auto">
+                <FloatingPanel 
+                  title={t('map_wind_flow', 'Wind Flow')} 
+                  icon={Wind} 
+                  accentColor="text-teal-500"
+                  onClose={() => setShowWindEffects(false)}
+                >
+                  <div className="h-48 w-full rounded-xl overflow-hidden relative border border-border/30 bg-slate-900/50">
+                    <Weather3DCanvas initialMode="wind" showControls={false} />
+                  </div>
+                </FloatingPanel>
+              </div>
+            )}
+          </div>
 
           <MapContainer center={defaultCenter} zoom={6} maxZoom={21} className="w-full h-full z-0">
             {/* Base Tile Layer with active selected theme */}
@@ -1353,7 +1422,7 @@ export default function WeatherMapPage() {
                   <Popup>
                     <div className="font-sans p-1.5 space-y-2 text-center min-w-[210px]">
                       <div className="flex items-center justify-center gap-1.5 text-sm font-bold text-foreground">
-                        <span>{zone.type === 'storm' ? 'ΓÜí' : '≡ƒîº∩╕Å'}</span>
+                        <span>{zone.type === 'storm' ? '⚡' : '🌧️'}</span>
                         <span>{zone.name}</span>
                       </div>
                       
@@ -1384,7 +1453,7 @@ export default function WeatherMapPage() {
                       </div>
 
                       <p className="text-[11px] text-muted-foreground leading-tight">
-                        {zone.etaText} ΓÇó {zone.description}
+                        {zone.etaText} • {zone.description}
                       </p>
                       
                       <button
@@ -1450,7 +1519,7 @@ export default function WeatherMapPage() {
                   <Popup>
                     <div className="font-sans p-1.5 space-y-2 text-center min-w-[210px]">
                       <div className="flex items-center justify-center gap-1.5 text-sm font-bold text-foreground">
-                        <span>≡ƒÆ¿</span>
+                        <Wind className="w-4 h-4 text-teal-500" />
                         <span>{zone.name}</span>
                       </div>
 
@@ -1477,7 +1546,7 @@ export default function WeatherMapPage() {
                       </div>
 
                       <p className="text-[11px] text-muted-foreground leading-tight">
-                        {zone.etaText} ΓÇó {zone.description}
+                        {zone.etaText} | {zone.description}
                       </p>
                       <button
                         onClick={() => navigate(`/assistant?prompt=${encodeURIComponent(`What is the wind speed advisory and gale warning for ${zone.name}? Wind is ${zone.windSpeedKph} km/h and rain is ${zone.precipTotal24hInches} inches.`)}`)}
@@ -1552,7 +1621,7 @@ export default function WeatherMapPage() {
                   <div className="text-center font-sans p-1">
                     <p className="font-bold text-sm text-foreground">{searchResult.name}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {searchResult.lat.toFixed(4)}┬░, {searchResult.lon.toFixed(4)}┬░
+                      {searchResult.lat.toFixed(4)}°, {searchResult.lon.toFixed(4)}°
                     </p>
                   </div>
                 </Popup>

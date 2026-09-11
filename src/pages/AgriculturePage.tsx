@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sprout, Droplets, Sun, Wind, Download, Sparkles, MapPin, Loader2, Radio } from 'lucide-react';
+import { Sprout, Droplets, Sun, Wind, Download, Sparkles, MapPin, Loader2 } from 'lucide-react';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { getWeatherData } from '../services/weatherService';
@@ -111,43 +111,37 @@ export default function AgriculturePage() {
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-800 text-white shadow-xl relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-emerald-200 font-bold text-xs uppercase tracking-wider mb-1">
-              <Sprout className="w-4 h-4 animate-bounce" />
-              <span>Kisan Agriculture & Agronomy Hub</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-black">ખેડૂત હવામાન અને પાક સલાહકાર Portal</h1>
-            <p className="text-sm text-emerald-100 mt-1 max-w-xl">
-              Real-time soil moisture tracking, rainfall advisory, and live WeatherGPT AI assistance tailored for Gujarat farming.
-            </p>
+      <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
+            <Sprout className="w-4 h-4" />
+            <span>Kisan Agriculture Advisory</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">ખેડૂત હવામાન અને પાક સલાહકાર</h1>
+          <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+            Real-time soil moisture tracking, crop advisory, and rainfall forecasting.
+          </p>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleExportPDF}
-              className="px-4 py-2.5 bg-white text-emerald-900 hover:bg-emerald-50 rounded-xl text-xs font-extrabold transition-all shadow-md flex items-center gap-2 cursor-pointer"
-            >
-              <Download className="w-4 h-4 text-emerald-600" />
-              <span>Download Crop Advisory PDF</span>
-            </button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportPDF}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export Crop Report</span>
+          </button>
         </div>
       </div>
 
       {/* Location & Live Stream Status Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-card rounded-2xl border border-border gap-3">
-        <div className="flex items-center gap-2 font-bold text-foreground">
-          <MapPin className="w-5 h-5 text-emerald-500" />
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <MapPin className="w-4 h-4 text-emerald-500" />
           <span>Farming Belt: {profile.location || 'Rajkot & Saurashtra District'}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1.5">
-            <Radio className="w-3.5 h-3.5 animate-pulse text-emerald-500" />
-            Live Kisan Data Stream Active
-          </span>
-          <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20">
+          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-muted text-muted-foreground">
             Kharif Season
           </span>
         </div>

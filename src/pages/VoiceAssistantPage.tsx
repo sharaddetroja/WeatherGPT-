@@ -738,16 +738,6 @@ export default function VoiceAssistantPage() {
     }
   };
 
-  const restartListening = () => {
-    stopSpeaking();
-    stopSpeechRecognition();
-    setTimeout(() => {
-      if (isLiveVoiceModeRef.current) {
-        startSpeechRecognition();
-      }
-    }, 150);
-  };
-
   // Text-to-Speech function with smart voice matching by language code
   const speakText = (text: string, langCode: string = selectedLangRef.current.speechLang) => {
     if (isAudioMutedRef.current || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -835,7 +825,6 @@ export default function VoiceAssistantPage() {
       recognition.lang = recLang;
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognitionRef.current = recognition;
 
       transcriptRef.current = '';
 
@@ -903,6 +892,16 @@ export default function VoiceAssistantPage() {
     if (voiceState === 'listening') {
       setVoiceState('idle');
     }
+  };
+
+  const restartListening = () => {
+    stopSpeaking();
+    stopSpeechRecognition();
+    setTimeout(() => {
+      if (isLiveVoiceModeRef.current) {
+        startSpeechRecognition();
+      }
+    }, 150);
   };
 
   // Generate Multilingual Realistic AI Weather Response for ALL languages
@@ -1448,8 +1447,7 @@ export default function VoiceAssistantPage() {
               </button>
             )}
             <div className="hidden sm:flex items-center gap-2">
-              <span className="font-bold text-foreground">WeatherGPT</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">4.0</span>
+              <span className="font-bold text-foreground">WeatherGPT AI Assistant</span>
             </div>
           </div>
 
@@ -1808,9 +1806,6 @@ export default function VoiceAssistantPage() {
               >
                 <Send className="w-5 h-5" />
               </button>
-            </div>
-            <div className="text-[10px] font-medium text-muted-foreground text-center">
-              WeatherGPT 4.0 • Live Voice & Multilingual Radar AI
             </div>
           </div>
         </div>

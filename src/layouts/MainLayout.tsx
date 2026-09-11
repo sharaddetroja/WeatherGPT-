@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import NotificationToast from '../components/NotificationToast';
 import { CommunityReportModal } from '../components/CommunityReportModal';
-import { ShieldAlert } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 export default function MainLayout() {
@@ -24,16 +23,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
 
-      {!isAssistantPage && (
-        <button
-          onClick={() => setIsReportModalOpen(true)}
-          className="fixed bottom-5 left-5 bg-card/90 hover:bg-card border border-border/80 text-foreground px-3.5 py-2 rounded-full shadow-md transition-all z-40 flex items-center gap-2 text-xs font-semibold backdrop-blur-md cursor-pointer hover:border-primary/50"
-          title="Report current local weather conditions"
-        >
-          <ShieldAlert className="w-4 h-4 text-primary" />
-          <span className="hidden sm:inline">Report Weather</span>
-        </button>
-      )}
+
 
       <CommunityReportModal 
         isOpen={isReportModalOpen} 

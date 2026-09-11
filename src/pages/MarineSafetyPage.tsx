@@ -73,19 +73,17 @@ export default function MarineSafetyPage() {
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
-      {/* Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-teal-700 via-cyan-800 to-blue-900 text-white shadow-xl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-cyan-200 font-bold text-xs uppercase tracking-wider mb-1">
-              <Anchor className="w-4 h-4" />
-              <span>Marine, Coastal & Fisherman Safety Portal</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-black">{t('marine_title', 'Marine & Coastal Safety Advisory')}</h1>
-            <p className="text-sm text-cyan-100 mt-1 max-w-xl">
-              {t('marine_subtitle', 'Tidal height, wave dynamics, sea surface temperature, and fisherman warnings.')}
-            </p>
+      {/* Header Banner */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 font-bold text-xs uppercase tracking-wider mb-1">
+            <Anchor className="w-4 h-4" />
+            <span>Marine & Coastal Safety</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('marine_title', 'Marine Safety Advisory')}</h1>
+          <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+            {t('marine_subtitle', 'Tidal height, wave dynamics, sea surface temperature, and fisherman warnings.')}
+          </p>
         </div>
       </div>
 

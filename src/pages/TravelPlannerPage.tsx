@@ -73,19 +73,17 @@ export default function TravelPlannerPage() {
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
-      {/* Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white shadow-xl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-blue-200 font-bold text-xs uppercase tracking-wider mb-1">
-              <Car className="w-4 h-4" />
-              <span>Smart Travel Weather & Highway Radar</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-black">{t('travel_title', 'Highway & Trip Safety Planner')}</h1>
-            <p className="text-sm text-blue-100 mt-1 max-w-xl">
-              {t('travel_subtitle', 'Real-time road weather conditions, highway visibility, and travel recommendations.')}
-            </p>
+      {/* Header Banner */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider mb-1">
+            <Car className="w-4 h-4" />
+            <span>Highway Travel Weather</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('travel_title', 'Highway Safety Planner')}</h1>
+          <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+            {t('travel_subtitle', 'Real-time road weather conditions, highway visibility, and travel recommendations.')}
+          </p>
         </div>
       </div>
 

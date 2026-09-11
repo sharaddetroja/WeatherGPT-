@@ -1,8 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { 
   CloudRain, 
-  MapPin,
-  Map,
+  Map, 
   LayoutDashboard, 
   Bell, 
   BarChart2, 
@@ -41,10 +40,9 @@ export default function Navbar() {
 
   const mainNavItems = [
     { icon: LayoutDashboard, label: t('nav_dashboard', 'Dashboard'), path: '/' },
-    { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
     { icon: CloudRain, label: t('nav_alerts', 'Alerts'), path: '/alerts' },
+    { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
     { icon: BarChart2, label: t('nav_climate', 'Climate'), path: '/climate' },
-    { icon: Sparkles, label: t('nav_voice_ai', 'Voice AI'), path: '/assistant' },
   ];
 
   const { 
@@ -52,6 +50,7 @@ export default function Navbar() {
     unreadCount, 
     permissionStatus, 
     requestNotificationPermission, 
+    triggerHeavyRainTestAlert, 
     markAsRead, 
     markAllAsRead 
   } = useWeatherAlerts();
@@ -112,7 +111,7 @@ export default function Navbar() {
 
         <div className="ml-auto flex items-center space-x-3">
           <div className="hidden lg:flex items-center bg-muted/50 rounded-full px-3.5 py-1 text-xs font-semibold">
-            <MapPin className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+            <Map className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
             <span>{profile.location || 'Rajkot, Gujarat'}</span>
           </div>
 
@@ -140,7 +139,7 @@ export default function Navbar() {
                   <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 flex items-center justify-between">
                     <span>Select Language</span>
                     <Link to="/language" onClick={() => setLangOpen(false)} className="text-primary hover:underline font-extrabold">
-                      View All ΓåÆ
+                      View All →
                     </Link>
                   </div>
 
@@ -235,20 +234,29 @@ export default function Navbar() {
                   </div>
 
                   {/* Push Notification Permission Quick-Bar */}
-                  {permissionStatus !== 'granted' && (
-                    <div className="px-3.5 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-2">
-                      <div className="text-[11px] font-medium text-foreground">
-                        <span className="font-bold">Weather Alerts: </span>
-                        <span className="text-amber-600 font-semibold">Push Off</span>
-                      </div>
+                  <div className="px-3.5 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-2">
+                    <div className="text-[11px] font-medium text-foreground">
+                      <span className="font-bold">Desktop Push Alerts: </span>
+                      <span className={permissionStatus === 'granted' ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold"}>
+                        {permissionStatus === 'granted' ? "Active ✓" : "Off"}
+                      </span>
+                    </div>
+                    {permissionStatus !== 'granted' ? (
                       <button
                         onClick={requestNotificationPermission}
                         className="px-2.5 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer shadow-2xs"
                       >
                         Enable Push
                       </button>
-                    </div>
-                  )}
+                    ) : (
+                      <button
+                        onClick={triggerHeavyRainTestAlert}
+                        className="px-2.5 py-1 bg-card hover:bg-muted border border-border text-foreground text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-2xs"
+                      >
+                        ⚡ Test Alert
+                      </button>
+                    )}
+                  </div>
 
                   {/* Alerts List */}
                   <div className="max-h-72 overflow-y-auto divide-y divide-border/60">
@@ -268,7 +276,7 @@ export default function Navbar() {
                             alert.severity === 'High' ? "bg-orange-500/15 text-orange-600 border border-orange-500/30" :
                             "bg-amber-500/15 text-amber-600 border border-amber-500/30"
                           )}>
-                            {alert.severity} ΓÇó {alert.type}
+                            {alert.severity} • {alert.type}
                           </span>
                           <span className="text-[10px] text-muted-foreground">{alert.timestamp}</span>
                         </div>
@@ -285,13 +293,20 @@ export default function Navbar() {
                   </div>
 
                   {/* Footer Link */}
-                  <div className="p-2.5 bg-muted/40 border-t border-border flex items-center justify-end">
+                  <div className="p-2.5 bg-muted/40 border-t border-border flex items-center justify-between">
+                    <button
+                      onClick={triggerHeavyRainTestAlert}
+                      className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer flex items-center gap-1"
+                      title="Simulate a real-time heavy rain warning with sound & notification"
+                    >
+                      <span>⛈️ Test Heavy Rain Alert</span>
+                    </button>
                     <Link
                       to="/alerts"
                       onClick={() => setNotifOpen(false)}
                       className="text-[11px] font-bold text-primary hover:underline"
                     >
-                      View All Advisories ΓåÆ
+                      View All Advisories →
                     </Link>
                   </div>
                 </motion.div>
