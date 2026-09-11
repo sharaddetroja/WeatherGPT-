@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
-import { Cloud, Lock, Mail, User } from 'lucide-react';
+import { Cloud, Lock, Mail, User, Loader2 } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,16 +10,51 @@ const AuthPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      login();
-    } else {
-      // Assuming a basic validation, then signup
-      if (name && email && password) {
-        signup();
+    setIsLoading(true);
+
+    try {
+      if (isLogin) {
+        // Here you could also send a login notification email if desired
+        // For now we just login
+        login();
+      } else {
+        if (name && email && password) {
+          // Implement EmailJS for Signup
+          // Replace these strings with your actual EmailJS IDs
+          const serviceID = 'YOUR_SERVICE_ID';
+          const templateID = 'YOUR_TEMPLATE_ID';
+          const publicKey = 'YOUR_PUBLIC_KEY';
+
+          try {
+            // Note: If you don't have these set up yet, this will fail.
+            // Comment this out or replace with actual keys to make it work.
+            if (serviceID !== 'YOUR_SERVICE_ID') {
+              await emailjs.send(
+                serviceID,
+                templateID,
+                {
+                  to_name: name,
+                  to_email: email,
+                  message: 'Welcome to WeatherGPT! Your account has been created successfully.',
+                },
+                publicKey
+              );
+            } else {
+              console.log('EmailJS not configured with actual keys. Skipping email send.');
+            }
+          } catch (error) {
+            console.error('Error sending email via EmailJS:', error);
+          }
+
+          signup();
+        }
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,9 +128,17 @@ const AuthPage = () => {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors mt-6"
+              disabled={isLoading}
+              className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLogin ? 'Sign In' : 'Sign Up'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  {isLogin ? 'Signing In...' : 'Signing Up...'}
+                </>
+              ) : (
+                isLogin ? 'Sign In' : 'Sign Up'
+              )}
             </button>
           </form>
 

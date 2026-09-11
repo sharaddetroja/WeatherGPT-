@@ -124,52 +124,6 @@ export default function Navbar() {
               </Link>
             );
           })}
-
-          {/* Hubs Dropdown */}
-          <div className="relative" ref={hubsRef}>
-            <button
-              onClick={() => setHubsOpen(!hubsOpen)}
-              className={cn(
-                "relative px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer",
-                isHubActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <span>Hubs</span>
-              <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", hubsOpen && "rotate-180")} />
-            </button>
-
-            <AnimatePresence>
-              {hubsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full left-0 mt-2 w-64 bg-card border border-border rounded-2xl shadow-2xl p-2 z-50 space-y-1"
-                >
-                  {hubsNavItems.map((hub) => (
-                    <Link
-                      key={hub.path}
-                      to={hub.path}
-                      onClick={() => setHubsOpen(false)}
-                      className={cn(
-                        "flex items-start gap-3 p-2.5 rounded-xl transition-all hover:bg-muted/70",
-                        location.pathname === hub.path && "bg-primary/10"
-                      )}
-                    >
-                      <div className={cn("p-2 rounded-lg bg-muted flex-shrink-0 mt-0.5", hub.color)}>
-                        <hub.icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-extrabold text-foreground">{hub.label}</div>
-                        <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">{hub.desc}</div>
-                      </div>
-                    </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
 
         <div className="ml-auto flex items-center space-x-3">
@@ -428,25 +382,6 @@ export default function Navbar() {
                 >
                   <item.icon className="w-5 h-5 mr-3" />
                   {item.label}
-                </Link>
-              ))}
-
-              <div className="pt-2 pb-1 text-[11px] font-extrabold text-muted-foreground uppercase tracking-wider px-4">
-                Specialized Hubs
-              </div>
-
-              {hubsNavItems.map((hub) => (
-                <Link
-                  key={hub.path}
-                  to={hub.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors",
-                    location.pathname === hub.path ? "bg-primary/10 text-primary font-bold" : "text-foreground hover:bg-muted"
-                  )}
-                >
-                  <hub.icon className={cn("w-5 h-5 mr-3", hub.color)} />
-                  {hub.label}
                 </Link>
               ))}
 
