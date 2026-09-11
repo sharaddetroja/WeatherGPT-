@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   CloudRain, 
   MapPin,
+  Map,
   LayoutDashboard, 
   Bell, 
   BarChart2, 
@@ -40,6 +41,7 @@ export default function Navbar() {
 
   const mainNavItems = [
     { icon: LayoutDashboard, label: t('nav_dashboard', 'Dashboard'), path: '/' },
+    { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
     { icon: CloudRain, label: t('nav_alerts', 'Alerts'), path: '/alerts' },
     { icon: BarChart2, label: t('nav_climate', 'Climate'), path: '/climate' },
     { icon: Sparkles, label: t('nav_voice_ai', 'Voice AI'), path: '/assistant' },
@@ -138,7 +140,7 @@ export default function Navbar() {
                   <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 flex items-center justify-between">
                     <span>Select Language</span>
                     <Link to="/language" onClick={() => setLangOpen(false)} className="text-primary hover:underline font-extrabold">
-                      View All →
+                      View All ΓåÆ
                     </Link>
                   </div>
 
@@ -266,7 +268,7 @@ export default function Navbar() {
                             alert.severity === 'High' ? "bg-orange-500/15 text-orange-600 border border-orange-500/30" :
                             "bg-amber-500/15 text-amber-600 border border-amber-500/30"
                           )}>
-                            {alert.severity} • {alert.type}
+                            {alert.severity} ΓÇó {alert.type}
                           </span>
                           <span className="text-[10px] text-muted-foreground">{alert.timestamp}</span>
                         </div>
@@ -289,7 +291,7 @@ export default function Navbar() {
                       onClick={() => setNotifOpen(false)}
                       className="text-[11px] font-bold text-primary hover:underline"
                     >
-                      View All Advisories →
+                      View All Advisories ΓåÆ
                     </Link>
                   </div>
                 </motion.div>
