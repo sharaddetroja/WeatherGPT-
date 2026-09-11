@@ -43,6 +43,7 @@ export default function Navbar() {
     { icon: CloudRain, label: t('nav_alerts', 'Alerts'), path: '/alerts' },
     { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
     { icon: BarChart2, label: t('nav_climate', 'Climate'), path: '/climate' },
+    { icon: Sparkles, label: t('nav_voice_ai', 'Voice AI'), path: '/assistant' },
   ];
 
   const { 
