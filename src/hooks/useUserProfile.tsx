@@ -52,7 +52,7 @@ const UserProfileContext = createContext<UserProfileContextType | undefined>(und
 export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('weathergpt_auth');
+      const saved = localStorage.getItem('weathergpt_auth_v2');
       if (saved) return JSON.parse(saved);
     } catch (e) {
       console.error('Error loading auth from localStorage:', e);
@@ -94,7 +94,7 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // Sync to localStorage when states update
   useEffect(() => {
     try {
-      localStorage.setItem('weathergpt_auth', JSON.stringify(isAuthenticated));
+      localStorage.setItem('weathergpt_auth_v2', JSON.stringify(isAuthenticated));
     } catch (e) {
       console.error('Error saving auth:', e);
     }
