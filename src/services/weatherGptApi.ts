@@ -69,7 +69,7 @@ export interface AskApiResponse {
     reason?: string;
     safetyScore?: number;
   };
-  explainWhy?: string;
+  explainWhy?: any;
 }
 
 const BASE_URL = 'https://weathergpt-backend-46or.onrender.com';

@@ -545,7 +545,7 @@ export interface ChatMessage {
   language?: string;
   image?: string;
   lensData?: import('../services/weatherGptApi').WeatherLensResponse;
-  explainWhy?: string;
+  explainWhy?: any;
 }
 
 export interface ChatSession {
@@ -1586,7 +1586,19 @@ export default function VoiceAssistantPage() {
                                   <ChevronDown className="w-3.5 h-3.5 ml-auto group-open/explain:rotate-180 transition-transform" />
                                 </summary>
                                 <div className="px-3 pb-3 pt-1 text-muted-foreground whitespace-pre-line">
-                                  {message.explainWhy}
+                                  {typeof message.explainWhy === 'string' ? message.explainWhy : (
+                                    <>
+                                      <div className="font-bold text-foreground mb-1">{message.explainWhy.title || 'Analysis'}</div>
+                                      <div>{message.explainWhy.summary}</div>
+                                      {message.explainWhy.factors && message.explainWhy.factors.length > 0 && (
+                                        <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                                          {message.explainWhy.factors.map((f: any, i: number) => (
+                                            <li key={i}>{typeof f === 'string' ? f : JSON.stringify(f)}</li>
+                                          ))}
+                                        </ul>
+                                      )}
+                                    </>
+                                  )}
                                 </div>
                               </details>
                             )}

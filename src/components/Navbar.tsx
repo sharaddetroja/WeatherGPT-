@@ -12,10 +12,7 @@ import {
   Moon, 
   Sparkles, 
   CheckCheck, 
-  BellRing, 
-  Sprout, 
-  Car, 
-  Waves,
+  BellRing,
   Languages,
   ChevronDown
 } from 'lucide-react';
@@ -47,12 +44,6 @@ export default function Navbar() {
     { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
     { icon: BarChart2, label: t('nav_climate', 'Climate'), path: '/climate' },
     { icon: Sparkles, label: t('nav_voice_ai', 'Voice AI'), path: '/assistant' },
-  ];
-
-  const hubsNavItems = [
-    { icon: Sprout, label: t('nav_kisan_hub', 'Kisan Hub'), desc: 'Crop weather & agronomy advisory', path: '/agriculture', color: 'text-emerald-500' },
-    { icon: Car, label: t('nav_trip_planner', 'Trip Planner'), desc: 'Highway weather & route safety', path: '/travel', color: 'text-blue-500' },
-    { icon: Waves, label: t('nav_marine_safety', 'Marine Safety'), desc: 'Tides, waves & fisherman alerts', path: '/marine', color: 'text-teal-500' },
   ];
 
   const { 

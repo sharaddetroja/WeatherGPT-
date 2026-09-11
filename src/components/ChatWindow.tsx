@@ -12,16 +12,15 @@ interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  image?: string; // For user uploaded image preview
-  lensData?: WeatherLensResponse; // For AI lens response
-  explainWhy?: string; // For Explainable AI
+  image?: string;
+  lensData?: WeatherLensResponse;
+  explainWhy?: any;
 }
 
 export default function ChatWindow() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
-
 
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -258,7 +257,19 @@ export default function ChatWindow() {
                         <ChevronDown className="w-3.5 h-3.5 transition-transform group-open/details:rotate-180" />
                       </summary>
                       <div className="p-2 mt-1 text-[11px] text-muted-foreground bg-background rounded-lg border border-border/50">
-                        {msg.explainWhy}
+                        {typeof msg.explainWhy === 'string' ? msg.explainWhy : (
+                          <>
+                            <div className="font-bold text-foreground mb-1">{msg.explainWhy.title || 'Analysis'}</div>
+                            <div>{msg.explainWhy.summary}</div>
+                            {msg.explainWhy.factors && msg.explainWhy.factors.length > 0 && (
+                              <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                                {msg.explainWhy.factors.map((f: any, i: number) => (
+                                  <li key={i}>{typeof f === 'string' ? f : JSON.stringify(f)}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </>
+                        )}
                       </div>
                     </details>
                   )}
