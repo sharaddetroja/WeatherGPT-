@@ -16,6 +16,10 @@ export interface UserPreferences {
 }
 
 interface UserProfileContextType {
+  isAuthenticated: boolean;
+  login: () => void;
+  logout: () => void;
+  signup: () => void;
   profile: UserProfile;
   preferences: UserPreferences;
   updateProfile: (data: Partial<UserProfile>) => void;
@@ -46,6 +50,16 @@ const DEFAULT_PREFERENCES: UserPreferences = {
 const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('weathergpt_auth');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Error loading auth from localStorage:', e);
+    }
+    return false;
+  });
+
   const [profile, setProfile] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem('weathergpt_user_profile');
@@ -80,6 +94,14 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // Sync to localStorage when states update
   useEffect(() => {
     try {
+      localStorage.setItem('weathergpt_auth', JSON.stringify(isAuthenticated));
+    } catch (e) {
+      console.error('Error saving auth:', e);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    try {
       localStorage.setItem('weathergpt_user_profile', JSON.stringify(profile));
     } catch (e) {
       console.error('Error saving profile:', e);
@@ -93,6 +115,10 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       console.error('Error saving preferences:', e);
     }
   }, [preferences]);
+
+  const login = () => setIsAuthenticated(true);
+  const logout = () => setIsAuthenticated(false);
+  const signup = () => setIsAuthenticated(true);
 
   const updateProfile = (data: Partial<UserProfile>) => {
     setProfile((prev) => {
@@ -163,6 +189,10 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
   return (
     <UserProfileContext.Provider
       value={{
+        isAuthenticated,
+        login,
+        logout,
+        signup,
         profile,
         preferences,
         updateProfile,

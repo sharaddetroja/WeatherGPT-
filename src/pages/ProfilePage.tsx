@@ -13,7 +13,8 @@ export default function ProfilePage() {
     preferences, 
     saveChanges, 
     lastSavedNotification, 
-    dismissNotification 
+    dismissNotification,
+    logout
   } = useUserProfile();
 
   // Local form states for editing
@@ -221,9 +222,12 @@ export default function ProfilePage() {
 
       {/* Save Changes Bottom Action */}
       <div className="flex items-center justify-between pt-2">
-        <span className="text-xs text-muted-foreground">
-          Current Unit: <strong className="text-foreground">{formPreferences.tempUnit === 'fahrenheit' ? 'Fahrenheit (°F)' : 'Celsius (°C)'}</strong>
-        </span>
+        <button
+          onClick={logout}
+          className="flex items-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all shadow-md cursor-pointer border border-red-500/50 text-red-500 hover:bg-red-500/10"
+        >
+          <span>Logout</span>
+        </button>
 
         <button 
           onClick={handleSaveAll}

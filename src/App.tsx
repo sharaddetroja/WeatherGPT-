@@ -10,10 +10,38 @@ import AgriculturePage from './pages/AgriculturePage';
 import TravelPlannerPage from './pages/TravelPlannerPage';
 import MarineSafetyPage from './pages/MarineSafetyPage';
 import LanguageSelectionPage from './pages/LanguageSelectionPage';
+import AuthPage from './pages/AuthPage';
 import { ThemeProvider } from './hooks/useTheme';
 import { WeatherAlertsProvider } from './hooks/useWeatherAlerts';
-import { UserProfileProvider } from './hooks/useUserProfile';
+import { UserProfileProvider, useUserProfile } from './hooks/useUserProfile';
 import { LanguageProvider } from './hooks/useLanguage';
+
+function AppRoutes() {
+  const { isAuthenticated } = useUserProfile();
+
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="map" element={<WeatherMapPage />} />
+        <Route path="alerts" element={<AlertsPage />} />
+        <Route path="climate" element={<ClimatePage />} />
+        <Route path="agriculture" element={<AgriculturePage />} />
+        <Route path="travel" element={<TravelPlannerPage />} />
+        <Route path="marine" element={<MarineSafetyPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="language" element={<LanguageSelectionPage />} />
+        <Route path="assistant" element={<VoiceAssistantPage />} />
+        <Route path="chat" element={<VoiceAssistantPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+}
 
 function App() {
   return (
@@ -21,22 +49,7 @@ function App() {
       <UserProfileProvider>
         <LanguageProvider>
           <WeatherAlertsProvider>
-            <Routes>
-              <Route path="/" element={<MainLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="map" element={<WeatherMapPage />} />
-                <Route path="alerts" element={<AlertsPage />} />
-                <Route path="climate" element={<ClimatePage />} />
-                <Route path="agriculture" element={<AgriculturePage />} />
-                <Route path="travel" element={<TravelPlannerPage />} />
-                <Route path="marine" element={<MarineSafetyPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="language" element={<LanguageSelectionPage />} />
-                <Route path="assistant" element={<VoiceAssistantPage />} />
-                <Route path="chat" element={<VoiceAssistantPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Route>
-            </Routes>
+            <AppRoutes />
           </WeatherAlertsProvider>
         </LanguageProvider>
       </UserProfileProvider>
