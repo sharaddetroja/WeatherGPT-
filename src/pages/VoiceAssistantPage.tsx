@@ -729,6 +729,12 @@ export default function VoiceAssistantPage() {
     }
   }, []);
 
+  const stopSpeaking = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
   // Text-to-Speech function with native voice matching & Gujarati Devanagari fallback
   const speakText = (text: string, langCode: string = selectedLangRef.current.speechLang) => {
     if (isAudioMutedRef.current || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -1124,6 +1130,7 @@ export default function VoiceAssistantPage() {
 
   // Handle Sending a Message with Dynamic Language Recognition & Live API connection
   const handleSendMessage = async (textToSend?: string, isVoiceInput: boolean = false) => {
+    stopSpeaking(); // 🛑 Stop any ongoing speech immediately
     const messageContent = (textToSend || input).trim();
     if ((!messageContent && !previewImage) || isTyping) return;
 
@@ -1234,7 +1241,19 @@ export default function VoiceAssistantPage() {
     if (shouldSpeakAloud) {
       // Clean markdown symbols for natural TTS speech output
       const cleanTtsText = aiResponseText.replace(/[*#`_-]/g, ' ');
-      speakText(cleanTtsText, effectiveLangObj.speechLang);
+      
+      let targetSpeechLang = 'en-IN';
+      if (responseLang === 'gu') {
+        targetSpeechLang = 'gu-IN';
+      } else if (responseLang === 'hi' || responseLang === 'hinglish') {
+        targetSpeechLang = 'hi-IN';
+      } else if (responseLang) {
+        // Fallback to match if possible, otherwise en-IN
+        const matched = SUPPORTED_LANGUAGES.find(l => l.code === responseLang);
+        if (matched) targetSpeechLang = matched.speechLang;
+      }
+      
+      speakText(cleanTtsText, targetSpeechLang);
     } else {
       setVoiceState('idle');
     }
@@ -1314,6 +1333,7 @@ export default function VoiceAssistantPage() {
 
   // Enter Live Voice Mode
   const handleEnterLiveVoiceMode = () => {
+    stopSpeaking();
     setIsLiveVoiceMode(true);
     // Start listening right away!
     startSpeechRecognition();
@@ -1666,7 +1686,10 @@ export default function VoiceAssistantPage() {
               
               {/* Mic Speech Dictation Button */}
               <button
-                onClick={isSpeechRecognitionActive ? stopSpeechRecognition : startSpeechRecognition}
+                onClick={() => {
+                  stopSpeaking();
+                  isSpeechRecognitionActive ? stopSpeechRecognition() : startSpeechRecognition();
+                }}
                 className={cn(
                   "p-3 rounded-full transition-all cursor-pointer flex-shrink-0",
                   isSpeechRecognitionActive 
@@ -1750,7 +1773,12 @@ export default function VoiceAssistantPage() {
                 <input
                   type="text"
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onFocus={stopSpeaking}
+                  onClick={stopSpeaking}
+                  onChange={(e) => {
+                    stopSpeaking();
+                    setInput(e.target.value);
+                  }}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder={isSpeechRecognitionActive ? `Listening...` : `Ask WeatherGPT...`}
                   className="w-full bg-transparent border-none outline-none text-base px-2 text-foreground placeholder:text-muted-foreground"

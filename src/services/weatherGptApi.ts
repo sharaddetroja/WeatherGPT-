@@ -102,33 +102,26 @@ export async function askWeatherGPT(params: AskWeatherGPTParams | string): Promi
   }
 
   try {
-    let langCode = "en";
-    try {
-      const savedLang = localStorage.getItem('weathergpt_ui_lang');
-      if (savedLang) {
-        const parsed = JSON.parse(savedLang);
-        if (parsed && parsed.code) {
-          langCode = parsed.code;
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-
     const convId = requestParams.conversationId || localStorage.getItem('weathergpt_conversation_id') || undefined;
+
+    const payload: any = {
+      question: requestParams.question.trim(),
+    };
+    
+    if (requestParams.location) {
+      payload.location = requestParams.location;
+    }
+    
+    if (convId) {
+      payload.conversationId = convId;
+    }
 
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        question: requestParams.question.trim(),
-        language: langCode,
-        location: requestParams.location,
-        persona: requestParams.persona || 'general',
-        conversationId: convId
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
