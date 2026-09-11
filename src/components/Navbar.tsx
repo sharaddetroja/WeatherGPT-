@@ -50,7 +50,6 @@ export default function Navbar() {
     unreadCount, 
     permissionStatus, 
     requestNotificationPermission, 
-    triggerHeavyRainTestAlert, 
     markAsRead, 
     markAllAsRead 
   } = useWeatherAlerts();
@@ -234,29 +233,20 @@ export default function Navbar() {
                   </div>
 
                   {/* Push Notification Permission Quick-Bar */}
-                  <div className="px-3.5 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-2">
-                    <div className="text-[11px] font-medium text-foreground">
-                      <span className="font-bold">Desktop Push Alerts: </span>
-                      <span className={permissionStatus === 'granted' ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold"}>
-                        {permissionStatus === 'granted' ? "Active ✓" : "Off"}
-                      </span>
-                    </div>
-                    {permissionStatus !== 'granted' ? (
+                  {permissionStatus !== 'granted' && (
+                    <div className="px-3.5 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-2">
+                      <div className="text-[11px] font-medium text-foreground">
+                        <span className="font-bold">Weather Alerts: </span>
+                        <span className="text-amber-600 font-semibold">Push Off</span>
+                      </div>
                       <button
                         onClick={requestNotificationPermission}
                         className="px-2.5 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-lg hover:bg-primary/90 transition-colors cursor-pointer shadow-2xs"
                       >
                         Enable Push
                       </button>
-                    ) : (
-                      <button
-                        onClick={triggerHeavyRainTestAlert}
-                        className="px-2.5 py-1 bg-card hover:bg-muted border border-border text-foreground text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-2xs"
-                      >
-                        ⚡ Test Alert
-                      </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Alerts List */}
                   <div className="max-h-72 overflow-y-auto divide-y divide-border/60">
@@ -293,14 +283,7 @@ export default function Navbar() {
                   </div>
 
                   {/* Footer Link */}
-                  <div className="p-2.5 bg-muted/40 border-t border-border flex items-center justify-between">
-                    <button
-                      onClick={triggerHeavyRainTestAlert}
-                      className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer flex items-center gap-1"
-                      title="Simulate a real-time heavy rain warning with sound & notification"
-                    >
-                      <span>⛈️ Test Heavy Rain Alert</span>
-                    </button>
+                  <div className="p-2.5 bg-muted/40 border-t border-border flex items-center justify-end">
                     <Link
                       to="/alerts"
                       onClick={() => setNotifOpen(false)}

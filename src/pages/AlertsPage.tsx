@@ -1,4 +1,4 @@
-import { AlertTriangle, Info, ShieldAlert, CloudRain, Wind, ThermometerSun, Bell, BellRing, Volume2, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, Info, ShieldAlert, CloudRain, Wind, ThermometerSun, Bell, Volume2, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '../components/Card';
 import { cn } from '../utils/cn';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
@@ -10,7 +10,6 @@ export default function AlertsPage() {
     alerts, 
     permissionStatus, 
     requestNotificationPermission, 
-    triggerHeavyRainTestAlert, 
     sendAlertNotification 
   } = useWeatherAlerts();
 
@@ -40,20 +39,10 @@ export default function AlertsPage() {
         <div className="flex items-center gap-3">
           <ShieldAlert className="w-8 h-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('alerts_title', 'Weather Alerts & Warning Center')}</h1>
-            <p className="text-xs text-muted-foreground">{t('alerts_subtitle', 'Real-time Doppler radar advisories and severe warning center')}</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t('alerts_title', 'Weather Alerts & Advisories')}</h1>
+            <p className="text-xs text-muted-foreground">{t('alerts_subtitle', 'Severe weather warnings and real-time advisories')}</p>
           </div>
         </div>
-
-        {/* Test Alert Action */}
-        <button
-          onClick={triggerHeavyRainTestAlert}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer hover:scale-105"
-          title="Trigger a live simulated heavy rain alert notification with sound and toast"
-        >
-          <BellRing className="w-4 h-4 animate-pulse" />
-          <span>{t('test_alert', 'Test Heavy Rain Alert')}</span>
-        </button>
       </div>
 
       {/* Push Notification Setup Banner */}
@@ -65,40 +54,33 @@ export default function AlertsPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-foreground">Heavy Rain & Severe Weather Push Alerts</h3>
+                <h3 className="font-bold text-sm text-foreground">Severe Weather Push Alerts</h3>
                 {permissionStatus === 'granted' ? (
                   <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/20">
                     <CheckCircle2 className="w-3 h-3" /> Enabled
                   </span>
                 ) : (
                   <span className="text-[10px] font-bold text-amber-600 bg-amber-500/15 px-2 py-0.5 rounded-full border border-amber-500/20">
-                    Not Allowed
+                    Off
                   </span>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Receive instant sound chimes and desktop notifications when heavy rain, cyclones or thunderstorms threaten your area.
+                Receive instant notifications when heavy rain, cyclones or severe weather threaten your area.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {permissionStatus !== 'granted' ? (
+          {permissionStatus !== 'granted' && (
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={requestNotificationPermission}
                 className="px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-xl text-xs hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
               >
                 Enable Notifications
               </button>
-            ) : (
-              <button
-                onClick={triggerHeavyRainTestAlert}
-                className="px-4 py-2 bg-card hover:bg-muted border border-border text-foreground font-semibold rounded-xl text-xs transition-colors cursor-pointer shadow-2xs"
-              >
-                Send Test Alert
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       

@@ -27,10 +27,11 @@ export default function MainLayout() {
       {!isAssistantPage && (
         <button
           onClick={() => setIsReportModalOpen(true)}
-          className="fixed bottom-6 left-6 lg:bottom-8 lg:left-8 bg-gradient-to-r from-red-600 to-rose-600 text-white px-4 py-3 rounded-full shadow-xl hover:shadow-2xl hover:shadow-red-500/40 transition-all transform hover:-translate-y-0.5 hover:scale-105 z-50 flex items-center gap-2 border border-white/20 backdrop-blur-md cursor-pointer"
+          className="fixed bottom-5 left-5 bg-card/90 hover:bg-card border border-border/80 text-foreground px-3.5 py-2 rounded-full shadow-md transition-all z-40 flex items-center gap-2 text-xs font-semibold backdrop-blur-md cursor-pointer hover:border-primary/50"
+          title="Report current local weather conditions"
         >
-          <ShieldAlert className="w-5 h-5" />
-          <span className="font-semibold text-sm tracking-wide hidden sm:inline">Report Local Weather</span>
+          <ShieldAlert className="w-4 h-4 text-primary" />
+          <span className="hidden sm:inline">Report Weather</span>
         </button>
       )}
 

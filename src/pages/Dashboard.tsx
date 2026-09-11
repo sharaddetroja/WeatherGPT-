@@ -10,30 +10,23 @@ import {
   Wind, 
   Eye, 
   CloudLightning, 
-  Leaf, 
-  Car, 
-  AlertTriangle,
-  Globe2,
-  Sparkles,
-  Download
+  Sparkles, 
+  Download,
+  Send,
+  ArrowRight,
+  Compass
 } from 'lucide-react';
-import { cn } from '../utils/cn';
 import { getWeatherData } from '../services/weatherService';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { WeatherStatCard } from '../components/WeatherStatCard';
 import { format } from 'date-fns';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLanguage } from '../hooks/useLanguage';
-import { Weather3DCanvas, type Weather3DMode } from '../components/3d/Weather3DCanvas';
-import { WeatherGlobe3D } from '../components/3d/WeatherGlobe3D';
 import { WeatherOrb3D } from '../components/3d/WeatherOrb3D';
 import { AQICard } from '../components/AQICard';
 import { LightningTracker } from '../components/LightningTracker';
 import { exportWeatherPDF } from '../utils/exportReports';
-import { useMagnetic } from '../utils/gsapEffects';
-import { motion, AnimatePresence } from 'motion/react';
-import { KisanAdvisoryCard } from '../components/KisanAdvisoryCard';
-import { CircularGauge } from '../components/ui/CircularGauge';
+import { motion } from 'motion/react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -41,100 +34,84 @@ export default function Dashboard() {
   const { t } = useLanguage();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [active3DMode, setActive3DMode] = useState<Weather3DMode>('rain');
-  const [show3DGlobe, setShow3DGlobe] = useState(false);
-
-  // Magnetic button hooks via GSAP
-  const locationBtnRef = useMagnetic(0.25);
-  const radarBtnRef = useMagnetic(0.3);
-  const windBtnRef = useMagnetic(0.3);
+  const [aiPrompt, setAiPrompt] = useState('');
 
   useEffect(() => {
     getWeatherData().then(res => {
       setData(res);
-      const cond = res?.current?.condition?.text?.toLowerCase() || '';
-      if (cond.includes('sun') || cond.includes('clear')) setActive3DMode('sun');
-      else if (cond.includes('cloud')) setActive3DMode('clouds');
-      else if (cond.includes('wind')) setActive3DMode('wind');
-      else if (cond.includes('snow')) setActive3DMode('snow');
-      else setActive3DMode('rain');
       setLoading(false);
     });
   }, []);
 
+  const handleAiSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!aiPrompt.trim()) return;
+    navigate(`/assistant?prompt=${encodeURIComponent(aiPrompt.trim())}`);
+  };
+
+  const handleQuickPillClick = (promptText: string) => {
+    navigate(`/assistant?prompt=${encodeURIComponent(promptText)}`);
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
+      <div className="flex items-center justify-center h-[65vh]">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatType: 'reverse' }}
-          className="flex flex-col items-center gap-4 text-primary"
+          transition={{ duration: 0.4, repeat: Infinity, repeatType: 'reverse' }}
+          className="flex flex-col items-center gap-3 text-primary"
         >
-          <CloudRain className="w-16 h-16 animate-bounce" />
-          <p className="text-lg font-bold text-muted-foreground">Initializing 3D Weather Environment...</p>
+          <CloudRain className="w-12 h-12 animate-bounce text-primary" />
+          <p className="text-sm font-semibold text-muted-foreground">Loading WeatherGPT...</p>
         </motion.div>
       </div>
     );
   }
 
-  const getInsightIcon = (type: string) => {
-    switch (type) {
-      case 'rain': return CloudRain;
-      case 'car': return Car;
-      case 'leaf': return Leaf;
-      default: return AlertTriangle;
-    }
-  };
-
-  const getInsightColor = (type: string) => {
-    switch (type) {
-      case 'warning': return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
-      case 'info': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-      case 'success': return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
-      default: return 'bg-muted text-muted-foreground border-border';
-    }
-  };
-
   const displayLocation = profile.location || `${data.location.name}, ${data.location.country}`;
 
-  return (
-    <div className="relative space-y-6 pb-8 animate-in fade-in duration-500">
-      {/* ========================================================================= */}
-      {/* 3D WebGL Atmospheric Canvas Engine (Three.js)                             */}
-      {/* ========================================================================= */}
-      <Weather3DCanvas 
-        initialMode={active3DMode} 
-        showControls={false}
-        className="rounded-3xl border border-border/60 shadow-xl mb-4"
-      />
+  const quickPrompts = [
+    "Will it rain today?",
+    "7-Day Weather Outlook",
+    "What should I wear?",
+    "Air Quality & Outdoor advice"
+  ];
 
-      {/* Header Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: -15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-      >
+  return (
+    <div className="max-w-6xl mx-auto space-y-6 pb-8 animate-in fade-in duration-400">
+      
+      {/* 1. Header & Location Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-1">
         <div>
-          <div className="flex items-center gap-2 text-primary font-bold text-xl">
-            <MapPin className="w-6 h-6 animate-pulse" />
-            <h2>{displayLocation}</h2>
+          <div className="flex items-center gap-2 text-foreground font-bold text-xl sm:text-2xl tracking-tight">
+            <MapPin className="w-5 h-5 text-primary" />
+            <span>{displayLocation}</span>
           </div>
-          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground font-medium">
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-primary/70" />
-              <span>{format(new Date(), 'EEEE, do MMM')}</span>
+              <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>{format(new Date(), 'EEEE, do MMMM')}</span>
             </div>
+            <span>•</span>
             <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-primary/70" />
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
               <span>{format(new Date(), 'h:mm a')}</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Export PDF Weather Report */}
+        {/* Utility Actions */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button 
+            onClick={() => navigate('/map?locate=true')}
+            className="px-3.5 py-2 bg-muted/60 hover:bg-muted text-foreground font-semibold rounded-xl text-xs transition-colors border border-border/60 flex items-center gap-1.5 cursor-pointer"
+            title="Use current GPS location"
+          >
+            <Compass className="w-3.5 h-3.5 text-primary" />
+            <span>Detect Location</span>
+          </button>
+
           <button
             onClick={() => exportWeatherPDF({
               location: displayLocation,
@@ -142,7 +119,7 @@ export default function Dashboard() {
               temp: `${convertTemp(data.current.temp_c)}°${tempUnitSymbol}`,
               condition: data.current.condition.text,
               humidity: data.current.humidity,
-              wind: `${data.current.wind_kph} km/h NW`,
+              wind: `${data.current.wind_kph} km/h`,
               pressure: `${data.current.pressure_mb} mb`,
               uv: data.current.uv,
               rainChance: data.forecast[0].chance_of_rain,
@@ -155,183 +132,104 @@ export default function Dashboard() {
                 rainChance: f.chance_of_rain
               }))
             })}
-            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-            title="Download formatted PDF weather report"
+            className="px-3.5 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-xs font-semibold transition-colors border border-primary/20 flex items-center gap-1.5 cursor-pointer"
+            title="Download PDF report"
           >
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Export PDF</span>
-          </button>
-
-          {/* Toggle 3D Globe Visualizer */}
-          <button
-            onClick={() => setShow3DGlobe(!show3DGlobe)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer ${
-              show3DGlobe 
-                ? 'bg-primary text-primary-foreground shadow-md scale-105' 
-                : 'bg-card hover:bg-muted border border-border text-foreground'
-            }`}
-          >
-            <Globe2 className="w-4 h-4 text-primary" />
-            <span>{show3DGlobe ? 'Hide 3D Globe' : '3D Global Radar'}</span>
-          </button>
-
-          {/* Location button with GSAP magnetic physics */}
-          <button 
-            ref={locationBtnRef}
-            onClick={() => navigate('/map?locate=true')}
-            className="px-4 py-2 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-semibold rounded-xl transition-all shadow-xs flex items-center gap-2 cursor-pointer group"
-            title="Detect location and shift to interactive map"
-          >
-            <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            <span>Use my location</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>Export Report</span>
           </button>
         </div>
-      </motion.div>
-
-      {/* 3D Global Weather Globe Visualizer Modal / Drawer */}
-      <AnimatePresence>
-        {show3DGlobe && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, scale: 0.95 }}
-            animate={{ opacity: 1, height: 'auto', scale: 1 }}
-            exit={{ opacity: 0, height: 0, scale: 0.95 }}
-            transition={{ duration: 0.45, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <WeatherGlobe3D className="mb-4" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Real-time Specific Area Weather Effects Banner */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Incoming Rainfront Alert Card */}
-        <motion.div 
-          whileHover={{ y: -3, scale: 1.01 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-          className="p-4 rounded-2xl bg-gradient-to-r from-blue-600/15 via-blue-500/10 to-indigo-600/10 border border-blue-500/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-        >
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-500 text-white shadow-md flex-shrink-0">
-              <CloudRain className="w-6 h-6 animate-bounce" />
-              <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-              </span>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                  Incoming Rainfront
-                </span>
-                <span className="text-[10px] bg-red-500/15 text-red-600 font-bold px-1.5 py-0.5 rounded-md border border-red-500/20">
-                  ETA 25m
-                </span>
-              </div>
-              <h4 className="text-sm font-bold text-foreground">Rajkot & Central Saurashtra (1.89 in/hr)</h4>
-              <p className="text-xs text-muted-foreground mt-0.5">Heavy monsoon precipitation band arriving shortly (3.45 in 24h total).</p>
-            </div>
-          </div>
-          <button
-            ref={radarBtnRef}
-            onClick={() => navigate('/map?effect=rain&zone=rain-rajkot')}
-            className="w-full sm:w-auto px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:scale-105 flex-shrink-0 cursor-pointer text-center"
-          >
-            Inspect Rain Radar
-          </button>
-        </motion.div>
-
-        {/* Fast Wind Gale Advisory Card */}
-        <motion.div 
-          whileHover={{ y: -3, scale: 1.01 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-          className="p-4 rounded-2xl bg-gradient-to-r from-teal-600/15 via-emerald-500/10 to-teal-500/10 border border-teal-500/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-        >
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-teal-600 text-white shadow-md flex-shrink-0">
-              <Wind className="w-6 h-6 animate-pulse" />
-              <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-              </span>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-teal-600 dark:text-teal-400 uppercase tracking-wider">
-                  Fast Wind Gale Warning
-                </span>
-                <span className="text-[10px] bg-amber-500/15 text-amber-600 font-bold px-1.5 py-0.5 rounded-md border border-amber-500/20">
-                  62 km/h NW
-                </span>
-              </div>
-              <h4 className="text-sm font-bold text-foreground">Saurashtra Coast & Gulf of Khambhat</h4>
-              <p className="text-xs text-muted-foreground mt-0.5">Sustained gale squalls & rough sea conditions.</p>
-            </div>
-          </div>
-          <button
-            ref={windBtnRef}
-            onClick={() => navigate('/map?effect=wind&zone=wind-saurashtra-coast')}
-            className="w-full sm:w-auto px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:scale-105 flex-shrink-0 cursor-pointer text-center"
-          >
-            Inspect Wind Flow
-          </button>
-        </motion.div>
       </div>
 
-      {/* Kisan / Smart Crop Advisory Tab */}
-      <KisanAdvisoryCard location={displayLocation} language="gu" />
+      {/* 2. Prominent AI Weather Chat Bar */}
+      <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-blue-500/10 border-primary/20 shadow-sm overflow-hidden">
+        <CardContent className="p-4 sm:p-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+              <span>Ask WeatherGPT AI Assistant</span>
+            </div>
+            <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">
+              Instant AI Weather Answers
+            </span>
+          </div>
 
-      {/* Main Grid: Hero 3D Card & Stats */}
+          <form onSubmit={handleAiSubmit} className="relative flex items-center">
+            <input
+              type="text"
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="Ask about the weather, forecasts, clothing recommendations..."
+              className="w-full bg-background border border-border focus:border-primary rounded-2xl py-3.5 pl-4 pr-12 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all shadow-xs"
+            />
+            <button
+              type="submit"
+              disabled={!aiPrompt.trim()}
+              className="absolute right-2 p-2 bg-primary text-primary-foreground rounded-xl disabled:opacity-40 hover:bg-primary/90 transition-all cursor-pointer shadow-2xs"
+              title="Ask AI"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
+
+          {/* Quick Prompt Suggestions */}
+          <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-0.5 hide-scrollbar">
+            <span className="text-[11px] text-muted-foreground font-semibold flex-shrink-0">Suggestions:</span>
+            {quickPrompts.map((prompt, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleQuickPillClick(prompt)}
+                className="px-3 py-1 bg-background hover:bg-muted border border-border/70 rounded-full text-xs font-medium text-foreground hover:text-primary transition-all flex-shrink-0 cursor-pointer shadow-2xs"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 3. Main Weather Overview Card & Key Stats Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Current Weather Card with 3D Holographic Object */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ y: -4, transition: { type: 'spring', stiffness: 300 } }}
-          className="lg:col-span-1"
-        >
-          <Card className="h-full bg-gradient-to-br from-primary to-accent-foreground text-primary-foreground border-none shadow-2xl relative overflow-hidden">
-            <CardContent className="p-7 relative z-10 flex flex-col h-full justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5 text-primary-foreground/90 font-semibold text-xs tracking-wider uppercase">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-                    <span>Live 3D Hologram</span>
-                  </div>
-                  <span className="text-xs px-2.5 py-0.5 bg-primary-foreground/20 rounded-full font-extrabold border border-primary-foreground/30">
-                    {tempUnitSymbol}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-4 my-2">
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <h1 className="text-6xl sm:text-7xl font-black tracking-tighter drop-shadow-md">
-                        {convertTemp(data.current.temp_c)}°
-                      </h1>
-                      <span className="text-2xl font-bold text-primary-foreground/80">{tempUnitSymbol}</span>
-                    </div>
-                    <p className="text-xl font-bold mt-2 text-primary-foreground drop-shadow-xs">
-                      {data.current.condition.text}
-                    </p>
-                  </div>
-
-                  {/* 3D Holographic Condition Object */}
-                  <WeatherOrb3D condition={data.current.condition.text} />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-primary-foreground/20 text-primary-foreground/90 text-xs font-semibold">
-                  <span className="px-2 py-1 bg-black/15 rounded-lg">H: {convertTemp(data.forecast[0].max_temp)}°</span>
-                  <span className="px-2 py-1 bg-black/15 rounded-lg">L: {convertTemp(data.forecast[0].min_temp)}°</span>
-                  <span className="px-2 py-1 bg-black/15 rounded-lg">Feels like {convertTemp(data.current.feelslike_c)}°</span>
-                </div>
+        {/* Primary Current Weather Card */}
+        <Card className="lg:col-span-1 bg-card border-border shadow-sm relative overflow-hidden flex flex-col justify-between">
+          <CardContent className="p-6 relative z-10 flex flex-col h-full justify-between space-y-6">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Current Conditions
+                </span>
+                <span className="text-xs px-2.5 py-0.5 bg-muted rounded-full font-bold text-foreground">
+                  {tempUnitSymbol}
+                </span>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
 
-        {/* Stats Grid with Motion Spring Physics */}
+              <div className="flex items-center justify-between gap-4 my-4">
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-6xl font-black text-foreground tracking-tighter">
+                      {convertTemp(data.current.temp_c)}°
+                    </span>
+                    <span className="text-2xl font-bold text-muted-foreground">{tempUnitSymbol}</span>
+                  </div>
+                  <p className="text-lg font-bold text-foreground mt-1">
+                    {data.current.condition.text}
+                  </p>
+                </div>
+
+                <WeatherOrb3D condition={data.current.condition.text} />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-border/60 text-xs font-medium text-muted-foreground">
+              <span>High: <strong className="text-foreground">{convertTemp(data.forecast[0].max_temp)}°</strong></span>
+              <span>Low: <strong className="text-foreground">{convertTemp(data.forecast[0].min_temp)}°</strong></span>
+              <span>Feels like: <strong className="text-foreground">{convertTemp(data.current.feelslike_c)}°</strong></span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 6 Useful Weather Stats Grid */}
         <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
           <WeatherStatCard 
             index={0}
@@ -339,7 +237,7 @@ export default function Dashboard() {
             label={t('humidity', 'Humidity')} 
             value={data.current.humidity} 
             unit="%" 
-            description={`The dew point is ${convertTemp(22)}° right now`} 
+            description="Moisture level" 
           />
           <WeatherStatCard 
             index={1}
@@ -347,15 +245,15 @@ export default function Dashboard() {
             label={t('wind_speed', 'Wind Speed')} 
             value={data.current.wind_kph} 
             unit="km/h" 
-            description="Wind direction is NW" 
+            description="Wind direction NW" 
           />
           <WeatherStatCard 
             index={2}
             icon={CloudRain} 
-            label={t('rain_prob', 'Rain Prob.')} 
+            label={t('rain_prob', 'Rain Chance')} 
             value={data.forecast[0].chance_of_rain} 
             unit="%" 
-            description="Expected in afternoon" 
+            description="Precipitation probability" 
           />
           <WeatherStatCard 
             index={3}
@@ -363,7 +261,7 @@ export default function Dashboard() {
             label={t('visibility', 'Visibility')} 
             value={data.current.visibility_km} 
             unit="km" 
-            description="It's clear right now" 
+            description="Atmospheric clarity" 
           />
           <WeatherStatCard 
             index={4}
@@ -371,7 +269,7 @@ export default function Dashboard() {
             label={t('uv_index', 'UV Index')} 
             value={data.current.uv} 
             unit="" 
-            description="Moderate level today" 
+            description="Solar radiation level" 
           />
           <WeatherStatCard 
             index={5}
@@ -379,141 +277,118 @@ export default function Dashboard() {
             label={t('pressure', 'Pressure')} 
             value={data.current.pressure_mb} 
             unit="mb" 
-            description="Rising slowly" 
+            description="Barometric reading" 
           />
         </div>
       </div>
 
-      {/* AI Risk Dashboard */}
-      <Card className="shadow-lg border-red-500/10 bg-gradient-to-tr from-background to-red-500/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            AI Risk & Vulnerability Dashboard
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 py-4">
-            <CircularGauge value={85} max={100} title="Overall Risk" color="text-red-500" icon={<AlertTriangle className="w-5 h-5" />} size={120} strokeWidth={8} />
-            <CircularGauge value={70} max={100} title="Flood Risk" color="text-blue-500" icon={<Droplets className="w-5 h-5" />} size={120} strokeWidth={8} />
-            <CircularGauge value={45} max={100} title="Heat Wave" color="text-amber-500" icon={<Sun className="w-5 h-5" />} size={120} strokeWidth={8} />
-            <CircularGauge value={90} max={100} title="Wind Gale" color="text-teal-500" icon={<Wind className="w-5 h-5" />} size={120} strokeWidth={8} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Live AQI Score & Lightning Radar Proximity Tracker */}
+      {/* 4. Air Quality & Lightning Tracker Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <AQICard score={64} />
         <LightningTracker />
       </div>
 
-      {/* AI Insights & Hourly Grid */}
+      {/* 5. Hourly Forecast & AI Insights Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 shadow-lg">
-          <CardHeader>
+        
+        {/* Hourly Forecast */}
+        <Card className="lg:col-span-2 shadow-xs">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle>{t('hourly_forecast', 'Hourly Forecast')}</CardTitle>
-              <span className="text-xs font-bold text-muted-foreground">Unit: {tempUnitSymbol}</span>
+              <CardTitle className="text-base font-bold">{t('hourly_forecast', 'Hourly Forecast')}</CardTitle>
+              <span className="text-xs text-muted-foreground font-semibold">Today</span>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex overflow-x-auto pb-4 gap-4 hide-scrollbar snap-x">
+            <div className="flex overflow-x-auto pb-2 gap-3 hide-scrollbar snap-x">
               {data.hourly.map((hour: any, idx: number) => (
-                <motion.div 
+                <div 
                   key={idx} 
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  whileHover={{ y: -5, scale: 1.05 }}
-                  className="flex flex-col items-center justify-center p-4 bg-muted/60 hover:bg-muted rounded-2xl min-w-[105px] snap-center border border-border/40 transition-all shadow-2xs cursor-pointer"
+                  className="flex flex-col items-center justify-center p-3.5 bg-muted/40 hover:bg-muted rounded-xl min-w-[95px] snap-center border border-border/40 transition-colors"
                 >
-                  <span className="text-xs font-semibold text-muted-foreground">{hour.time}</span>
-                  <div className="my-3">
+                  <span className="text-xs font-medium text-muted-foreground">{hour.time}</span>
+                  <div className="my-2">
                     {hour.icon.includes('rain') ? (
-                      <CloudRain className="w-8 h-8 text-blue-500 animate-pulse" />
+                      <CloudRain className="w-6 h-6 text-blue-500" />
                     ) : (
-                      <Sun className="w-8 h-8 text-amber-500 animate-spin" style={{ animationDuration: '10s' }} />
+                      <Sun className="w-6 h-6 text-amber-500" />
                     )}
                   </div>
-                  <span className="text-xl font-extrabold text-foreground">{convertTemp(hour.temp_c)}°</span>
-                  <div className="flex items-center gap-1 mt-1 text-xs text-blue-500 font-bold">
+                  <span className="text-base font-bold text-foreground">{convertTemp(hour.temp_c)}°</span>
+                  <div className="flex items-center gap-1 mt-1 text-[11px] text-blue-500 font-semibold">
                     <Droplets className="w-3 h-3" />
                     <span>{hour.chance_of_rain}%</span>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span className="bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">{t('ai_insights', 'AI Insights')}</span>
+        {/* AI Weather Insights */}
+        <Card className="shadow-xs">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>{t('ai_insights', 'AI Weather Summary')}</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {data.insights.map((insight: any, idx: number) => {
-              const Icon = getInsightIcon(insight.icon);
-              return (
-                <motion.div 
-                  key={idx} 
-                  whileHover={{ scale: 1.02 }}
-                  className={cn("p-4 rounded-2xl border transition-all shadow-2xs", getInsightColor(insight.type))}
-                >
-                  <div className="flex items-center gap-2 font-bold mb-1">
-                    <Icon className="w-4 h-4" />
-                    {insight.title}
-                  </div>
-                  <p className="text-xs leading-relaxed opacity-95">{insight.message}</p>
-                </motion.div>
-              );
-            })}
+          <CardContent className="space-y-3">
+            {data.insights.map((insight: any, idx: number) => (
+              <div 
+                key={idx} 
+                className="p-3.5 rounded-xl border border-border/60 bg-muted/30 text-xs space-y-1"
+              >
+                <div className="font-bold text-foreground">{insight.title}</div>
+                <p className="text-muted-foreground leading-relaxed">{insight.message}</p>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
 
-      {/* 7 Day Forecast */}
-      <Card className="shadow-lg">
-        <CardHeader>
+      {/* 6. 7-Day Weather Forecast */}
+      <Card className="shadow-xs">
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle>{t('seven_day_forecast', '7-Day Forecast')}</CardTitle>
-            <span className="text-xs font-bold text-muted-foreground">Unit: {tempUnitSymbol}</span>
+            <CardTitle className="text-base font-bold">{t('seven_day_forecast', '7-Day Forecast')}</CardTitle>
+            <button 
+              onClick={() => navigate('/map')} 
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>Explore Interactive Map</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="divide-y divide-border/60">
+          <div className="divide-y divide-border/50">
             {data.forecast.map((day: any, idx: number) => (
-              <motion.div 
+              <div 
                 key={idx} 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.04 }}
-                whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)', x: 4 }}
-                className="py-4 flex items-center justify-between px-2 rounded-xl transition-all cursor-pointer"
+                className="py-3 flex items-center justify-between px-1 hover:bg-muted/30 rounded-lg transition-colors text-sm"
               >
-                <div className="flex items-center gap-4 w-1/4">
-                  <span className="font-bold min-w-[3rem] text-foreground">{day.day}</span>
-                  <span className="text-xs text-muted-foreground hidden sm:block">{day.date.split('-').reverse().slice(0,2).join('/')}</span>
+                <div className="flex items-center gap-3 w-1/3">
+                  <span className="font-bold text-foreground w-16">{day.day}</span>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">{day.date.split('-').reverse().slice(0,2).join('/')}</span>
                 </div>
-                <div className="flex items-center gap-3 w-1/4 justify-center">
+                <div className="flex items-center gap-2 w-1/3 justify-center">
                   {day.condition.includes('Rain') ? (
-                    <CloudRain className="w-6 h-6 text-blue-500 animate-pulse" />
+                    <CloudRain className="w-5 h-5 text-blue-500" />
                   ) : (
-                    <Sun className="w-6 h-6 text-amber-500" />
+                    <Sun className="w-5 h-5 text-amber-500" />
                   )}
-                  <span className="text-sm font-semibold hidden md:block text-foreground">{day.condition}</span>
+                  <span className="text-xs font-medium text-foreground hidden md:inline">{day.condition}</span>
                 </div>
-                <div className="flex items-center gap-2 w-1/4 justify-center text-blue-500 text-sm font-bold">
-                  <Droplets className="w-4 h-4" />
+                <div className="flex items-center gap-1.5 w-1/6 justify-center text-blue-500 text-xs font-semibold">
+                  <Droplets className="w-3.5 h-3.5" />
                   <span>{day.chance_of_rain}%</span>
                 </div>
-                <div className="flex items-center gap-3 w-1/4 justify-end font-bold text-sm">
+                <div className="flex items-center gap-3 w-1/6 justify-end text-xs font-bold">
                   <span className="text-foreground">{convertTemp(day.max_temp)}°</span>
-                  <span className="text-muted-foreground">{convertTemp(day.min_temp)}°</span>
+                  <span className="text-muted-foreground font-normal">{convertTemp(day.min_temp)}°</span>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </CardContent>

@@ -685,6 +685,8 @@ export default function VoiceAssistantPage() {
   const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [voiceLang, setVoiceLang] = useState<'gu-IN' | 'hi-IN' | 'en-IN'>('gu-IN');
+  const voiceLangRef = useRef<'gu-IN' | 'hi-IN' | 'en-IN'>('gu-IN');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -701,6 +703,7 @@ export default function VoiceAssistantPage() {
   useEffect(() => { voiceStateRef.current = voiceState; }, [voiceState]);
   useEffect(() => { isAudioMutedRef.current = isAudioMuted; }, [isAudioMuted]);
   useEffect(() => { selectedLangRef.current = selectedLang; }, [selectedLang]);
+  useEffect(() => { voiceLangRef.current = voiceLang; }, [voiceLang]);
 
   const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
 
@@ -735,55 +738,64 @@ export default function VoiceAssistantPage() {
     }
   };
 
-  // Text-to-Speech function with native voice matching & Gujarati Devanagari fallback
+  const restartListening = () => {
+    stopSpeaking();
+    stopSpeechRecognition();
+    setTimeout(() => {
+      if (isLiveVoiceModeRef.current) {
+        startSpeechRecognition();
+      }
+    }, 150);
+  };
+
+  // Text-to-Speech function with smart voice matching by language code
   const speakText = (text: string, langCode: string = selectedLangRef.current.speechLang) => {
     if (isAudioMutedRef.current || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
     try {
-      window.speechSynthesis.cancel(); // Stop previous speech
-      
+      window.speechSynthesis.cancel();
+
       const voices = window.speechSynthesis.getVoices();
-      const langPrefix = langCode.slice(0, 2).toLowerCase();
-      let matchVoice = voices.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(langPrefix));
+      // Normalise: accept both 'gu' and 'gu-IN' formats
+      const prefix = langCode.slice(0, 2).toLowerCase();
 
       let textToSpeak = text;
       let targetLang = langCode;
+      let matchVoice: SpeechSynthesisVoice | undefined;
 
-      // Special handling for Gujarati (gu): If browser has no native 'gu' TTS voice, use Devanagari transliteration + Hindi/Indian voice!
-      if (langPrefix === 'gu') {
-        if (!matchVoice) {
-          matchVoice = voices.find(v => 
-            v.lang.toLowerCase().includes('hi') || 
-            v.lang.toLowerCase().includes('in') || 
-            v.name.toLowerCase().includes('india') ||
-            v.name.toLowerCase().includes('hindi')
-          );
-          // Transliterate Gujarati script to Devanagari so Hindi/Indian voice speaks Gujarati flawlessly!
+      if (prefix === 'gu') {
+        targetLang = 'gu-IN';
+        // Prefer Gujarati voice; fall back to Hindi/Indian if unavailable
+        matchVoice = voices.find(v => v.lang.startsWith('gu'))
+          || voices.find(v => v.lang.startsWith('hi'))
+          || voices.find(v => v.lang.toLowerCase().includes('in'));
+        // If no native Gujarati TTS, transliterate to Devanagari for Hindi voice
+        if (!voices.find(v => v.lang.startsWith('gu'))) {
           textToSpeak = gujaratiToDevanagari(text);
           targetLang = 'hi-IN';
         }
+      } else if (prefix === 'hi') {
+        targetLang = 'hi-IN';
+        matchVoice = voices.find(v => v.lang.startsWith('hi'));
+      } else {
+        // Default: English (Indian accent preferred)
+        targetLang = 'en-IN';
+        matchVoice = voices.find(v => v.lang === 'en-IN')
+          || voices.find(v => v.lang.startsWith('en'));
       }
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = targetLang;
-      utterance.rate = 0.92; // Slightly natural pace for clear Gujarati pronunciation
+      utterance.rate = 0.92;
       utterance.pitch = 1.0;
+      if (matchVoice) utterance.voice = matchVoice;
 
-      if (matchVoice) {
-        utterance.voice = matchVoice;
-      }
-
-      utterance.onstart = () => {
-        setVoiceState('speaking');
-      };
+      utterance.onstart = () => { setVoiceState('speaking'); };
       utterance.onend = () => {
         setVoiceState('idle');
-        // If in live mode, automatically resume listening!
         if (isLiveVoiceModeRef.current) {
           setTimeout(() => {
-            if (isLiveVoiceModeRef.current) {
-              startSpeechRecognition();
-            }
+            if (isLiveVoiceModeRef.current) startSpeechRecognition();
           }, 400);
         }
       };
@@ -816,12 +828,14 @@ export default function VoiceAssistantPage() {
 
     try {
       const recognition = new SpeechRec();
-      const recLang = selectedLangRef.current.code === 'auto'
-        ? (navigator.language || 'gu-IN')
-        : selectedLangRef.current.speechLang;
+      // In Live Voice Mode, use the user-selected voiceLang pill; otherwise use the chat's selectedLang
+      const recLang = isLiveVoiceModeRef.current
+        ? voiceLangRef.current
+        : (selectedLangRef.current.code === 'auto' ? (navigator.language || 'gu-IN') : selectedLangRef.current.speechLang);
       recognition.lang = recLang;
       recognition.continuous = false;
       recognition.interimResults = true;
+      recognitionRef.current = recognition;
 
       transcriptRef.current = '';
 
@@ -1816,7 +1830,18 @@ export default function VoiceAssistantPage() {
               Live {selectedLang.flag}
             </div>
           </div>
-
+          {/* Language Switcher Pills */}
+          <div className="flex items-center justify-center gap-2 my-3">
+            {[{ lang: 'gu-IN', label: '🇮🇳 ગુજરાતી' }, { lang: 'hi-IN', label: '🇮🇳 हिंदी' }, { lang: 'en-IN', label: '🌐 English' }].map(({ lang, label }) => (
+              <button
+                key={lang}
+                onClick={() => { setVoiceLang(lang as any); restartListening(); }}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${voiceLang === lang ? 'bg-primary text-primary-foreground scale-105' : 'bg-muted text-muted-foreground'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="flex-1 flex flex-col items-center justify-center w-full relative">
             <div className={cn(
               "absolute w-64 h-64 rounded-full blur-3xl opacity-40 transition-all duration-700 pointer-events-none",
