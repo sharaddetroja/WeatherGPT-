@@ -7,6 +7,7 @@ import { askWeatherGPT, getUserLocation, analyzeWeatherLens } from '../services/
 import type { WeatherLensResponse } from '../services/weatherGptApi';
 import { Send, Mic, Sparkles, X, Bot, User, Maximize2, Loader2, Edit2, Copy, Camera, Image as ImageIcon, ChevronDown, Share2 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 interface Message {
   id: string;
@@ -21,6 +22,7 @@ export default function ChatWindow() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
+  const { isAuthenticated } = useUserProfile();
 
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -136,7 +138,13 @@ export default function ChatWindow() {
   if (!isOpen) {
     return (
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          if (!isAuthenticated) {
+            navigate('/assistant');
+          } else {
+            setIsOpen(true);
+          }
+        }}
         className="fixed bottom-6 right-6 lg:bottom-8 lg:right-8 bg-gradient-to-r from-primary via-blue-600 to-indigo-600 text-primary-foreground px-4 py-3 md:px-5 md:py-3 rounded-full shadow-xl hover:shadow-2xl hover:shadow-primary/40 transition-all transform hover:-translate-y-0.5 hover:scale-105 z-50 flex items-center gap-2.5 border border-white/20 backdrop-blur-md cursor-pointer"
         title="Chat with WeatherGPT AI Assistant"
       >

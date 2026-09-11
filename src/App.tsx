@@ -16,13 +16,15 @@ import { WeatherAlertsProvider } from './hooks/useWeatherAlerts';
 import { UserProfileProvider, useUserProfile } from './hooks/useUserProfile';
 import { LanguageProvider } from './hooks/useLanguage';
 
-function AppRoutes() {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useUserProfile();
-
   if (!isAuthenticated) {
     return <AuthPage />;
   }
+  return <>{children}</>;
+}
 
+function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
@@ -35,8 +37,8 @@ function AppRoutes() {
         <Route path="marine" element={<MarineSafetyPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="language" element={<LanguageSelectionPage />} />
-        <Route path="assistant" element={<VoiceAssistantPage />} />
-        <Route path="chat" element={<VoiceAssistantPage />} />
+        <Route path="assistant" element={<ProtectedRoute><VoiceAssistantPage /></ProtectedRoute>} />
+        <Route path="chat" element={<ProtectedRoute><VoiceAssistantPage /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
