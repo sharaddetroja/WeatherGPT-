@@ -18,7 +18,7 @@ export default function MainLayout() {
         "flex-1 w-full mx-auto",
         isAssistantPage 
           ? "h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] p-2 md:p-3 overflow-hidden flex flex-col" 
-          : "overflow-x-hidden px-4 sm:px-6 lg:px-8 py-6"
+          : "overflow-x-hidden px-2 sm:px-4 py-4"
       )}>
         <Outlet />
       </main>

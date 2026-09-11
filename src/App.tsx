@@ -6,7 +6,6 @@ import AlertsPage from './pages/AlertsPage';
 import ClimatePage from './pages/ClimatePage';
 import ProfilePage from './pages/ProfilePage';
 import VoiceAssistantPage from './pages/VoiceAssistantPage';
-import WeatherMapPage from './pages/WeatherMapPage';
 import AgriculturePage from './pages/AgriculturePage';
 import TravelPlannerPage from './pages/TravelPlannerPage';
 import MarineSafetyPage from './pages/MarineSafetyPage';

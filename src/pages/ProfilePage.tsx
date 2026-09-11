@@ -58,7 +58,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500 relative">
+    <div className="w-full max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 relative">
       {/* Save Success Banner Notification */}
       {lastSavedNotification && (
         <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between gap-3 text-emerald-700 dark:text-emerald-400 shadow-sm animate-in slide-in-from-top-2">

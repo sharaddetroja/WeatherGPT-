@@ -46,7 +46,7 @@ export default function ClimatePage() {
   const increaseText = preferences.tempUnit === 'fahrenheit' ? '2.2°F' : '1.2°C';
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in duration-500">
+    <div className="space-y-6 w-full animate-in fade-in duration-500">
       <div className="flex items-center gap-3">
         <BarChart2 className="w-7 h-7 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">{t('climate_title', 'Climate Trends')}</h1>
