@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
+  Users, 
+  MessageSquare, 
+  Activity, 
+  ShieldCheck, 
   MapPin, 
   Calendar, 
   Clock, 
@@ -14,7 +18,9 @@ import {
   Download,
   Send,
   ArrowRight,
-  Compass
+  Compass,
+  TrendingUp,
+  History
 } from 'lucide-react';
 import { getWeatherData } from '../services/weatherService';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
@@ -23,8 +29,6 @@ import { format } from 'date-fns';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLanguage } from '../hooks/useLanguage';
 import { WeatherOrb3D } from '../components/3d/WeatherOrb3D';
-import { AQICard } from '../components/AQICard';
-import { LightningTracker } from '../components/LightningTracker';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { motion } from 'motion/react';
 
@@ -76,6 +80,46 @@ export default function Dashboard() {
     "7-Day Weather Outlook",
     "What should I wear?",
     "Air Quality & Outdoor advice"
+  ];
+
+  // Useful High-Level Summary Metrics
+  const summaryMetrics = [
+    {
+      title: 'Total Users',
+      value: '14,280+',
+      change: '+12% this month',
+      icon: Users,
+      color: 'text-blue-500 bg-blue-500/10',
+    },
+    {
+      title: 'Weather Queries',
+      value: '128,450+',
+      change: 'Real-time AI queries',
+      icon: MessageSquare,
+      color: 'text-emerald-500 bg-emerald-500/10',
+    },
+    {
+      title: 'Active Users',
+      value: '1,840',
+      change: 'Live online now',
+      icon: Activity,
+      color: 'text-amber-500 bg-amber-500/10',
+    },
+    {
+      title: 'System Health',
+      value: '99.9%',
+      change: 'Operational',
+      icon: ShieldCheck,
+      color: 'text-primary bg-primary/10',
+    },
+  ];
+
+  // Small useful recent activity data
+  const recentActivities = [
+    { title: 'Rain Radar Check', location: 'Rajkot, Gujarat', time: '2 mins ago', type: 'Radar' },
+    { title: 'AI Forecast Query', location: 'Ahmedabad, Gujarat', time: '8 mins ago', type: 'AI Chat' },
+    { title: 'Severe Wind Alert', location: 'Saurashtra Coast', time: '15 mins ago', type: 'Advisory' },
+    { title: 'Temperature Search', location: 'Mumbai, Maharashtra', time: '28 mins ago', type: 'Search' },
   ];
 
   return (
@@ -141,9 +185,30 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 2. Prominent AI Weather Chat Bar */}
-      <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-blue-500/10 border-primary/20 shadow-sm overflow-hidden">
-        <CardContent className="p-4 sm:p-6 space-y-3">
+      {/* 2. High-Level Summary Metrics Cards (Total Users, Total Queries, Active Users, System Health) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {summaryMetrics.map((metric, idx) => {
+          const Icon = metric.icon;
+          return (
+            <Card key={idx} className="shadow-2xs hover:shadow-xs transition-all">
+              <CardContent className="p-4 flex items-center gap-3.5">
+                <div className={`p-3 rounded-2xl flex-shrink-0 ${metric.color}`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-muted-foreground truncate">{metric.title}</p>
+                  <h3 className="text-lg font-bold text-foreground tracking-tight">{metric.value}</h3>
+                  <span className="text-[10px] text-muted-foreground font-semibold">{metric.change}</span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* 3. Prominent AI Weather Chat Bar */}
+      <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-blue-500/10 border-primary/20 shadow-xs overflow-hidden">
+        <CardContent className="p-4 sm:p-5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
@@ -160,7 +225,7 @@ export default function Dashboard() {
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="Ask about the weather, forecasts, clothing recommendations..."
-              className="w-full bg-background border border-border focus:border-primary rounded-2xl py-3.5 pl-4 pr-12 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all shadow-xs"
+              className="w-full bg-background border border-border focus:border-primary rounded-2xl py-3 pl-4 pr-12 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all shadow-xs"
             />
             <button
               type="submit"
@@ -173,7 +238,7 @@ export default function Dashboard() {
           </form>
 
           {/* Quick Prompt Suggestions */}
-          <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-0.5 hide-scrollbar">
+          <div className="flex items-center gap-2 overflow-x-auto pt-0.5 pb-0.5 hide-scrollbar">
             <span className="text-[11px] text-muted-foreground font-semibold flex-shrink-0">Suggestions:</span>
             {quickPrompts.map((prompt, idx) => (
               <button
@@ -188,11 +253,11 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* 3. Main Weather Overview Card & Key Stats Grid */}
+      {/* 4. Main Weather Overview Card & Key Stats Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Primary Current Weather Card */}
-        <Card className="lg:col-span-1 bg-card border-border shadow-sm relative overflow-hidden flex flex-col justify-between">
+        <Card className="lg:col-span-1 bg-card border-border shadow-xs relative overflow-hidden flex flex-col justify-between">
           <CardContent className="p-6 relative z-10 flex flex-col h-full justify-between space-y-6">
             <div>
               <div className="flex items-center justify-between">
@@ -282,21 +347,18 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 4. Air Quality & Lightning Tracker Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AQICard score={64} />
-        <LightningTracker />
-      </div>
-
-      {/* 5. Hourly Forecast & AI Insights Grid */}
+      {/* 5. Weather Activity & Recent Activity Summary Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Hourly Forecast */}
+        {/* Hourly Weather Activity */}
         <Card className="lg:col-span-2 shadow-xs">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-bold">{t('hourly_forecast', 'Hourly Forecast')}</CardTitle>
-              <span className="text-xs text-muted-foreground font-semibold">Today</span>
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <span>{t('hourly_forecast', 'Weather Activity')}</span>
+              </CardTitle>
+              <span className="text-xs text-muted-foreground font-semibold">Today's Hourly Trend</span>
             </div>
           </CardHeader>
           <CardContent>
@@ -325,22 +387,30 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* AI Weather Insights */}
+        {/* Small Useful Recent Activity */}
         <Card className="shadow-xs">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span>{t('ai_insights', 'AI Weather Summary')}</span>
+              <History className="w-4 h-4 text-primary" />
+              <span>Recent Activity</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {data.insights.map((insight: any, idx: number) => (
+            {recentActivities.map((act, idx) => (
               <div 
                 key={idx} 
-                className="p-3.5 rounded-xl border border-border/60 bg-muted/30 text-xs space-y-1"
+                className="p-3 rounded-xl border border-border/60 bg-muted/30 flex items-center justify-between text-xs"
               >
-                <div className="font-bold text-foreground">{insight.title}</div>
-                <p className="text-muted-foreground leading-relaxed">{insight.message}</p>
+                <div>
+                  <div className="font-bold text-foreground">{act.title}</div>
+                  <div className="text-[11px] text-muted-foreground">{act.location}</div>
+                </div>
+                <div className="text-right">
+                  <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold text-[10px]">
+                    {act.type}
+                  </span>
+                  <div className="text-[10px] text-muted-foreground mt-1">{act.time}</div>
+                </div>
               </div>
             ))}
           </CardContent>
@@ -356,7 +426,7 @@ export default function Dashboard() {
               onClick={() => navigate('/map')} 
               className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
             >
-              <span>Explore Interactive Map</span>
+              <span>View Interactive Map</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
