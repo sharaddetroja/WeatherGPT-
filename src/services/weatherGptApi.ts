@@ -101,94 +101,49 @@ export async function askWeatherGPT(params: AskWeatherGPTParams | string): Promi
     throw new Error('Please enter a weather query.');
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
-
   try {
-    let activeLanguageName = "English";
+    let langCode = "en";
     try {
       const savedLang = localStorage.getItem('weathergpt_ui_lang');
       if (savedLang) {
         const parsed = JSON.parse(savedLang);
-        if (parsed && parsed.name) {
-          activeLanguageName = `${parsed.name} (${parsed.nativeName})`;
+        if (parsed && parsed.code) {
+          langCode = parsed.code;
         }
       }
     } catch (e) {
       console.error(e);
     }
 
-    const systemDirective = `\n\n[System Directive: The user has selected the language: ${activeLanguageName} in the UI. You MUST respond entirely in ${activeLanguageName} using its correct native script. Translate all weather terms, UI labels, descriptions, and insights. Do not use English unless the selected language is English.]`;
-
-    const payload: any = {
-      question: requestParams.question.trim() + systemDirective,
-    };
-
-    if (requestParams.location) {
-      payload.location = requestParams.location;
-    }
-    
-    // Automatically retrieve conversationId from localStorage if not provided
-    const convId = requestParams.conversationId || localStorage.getItem('weathergpt_conversation_id');
-    if (convId) {
-      payload.conversationId = convId;
-    }
-
-    if (requestParams.persona) {
-      payload.persona = requestParams.persona;
-    } else {
-      payload.persona = 'general';
-    }
+    const convId = requestParams.conversationId || localStorage.getItem('weathergpt_conversation_id') || undefined;
 
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
+      body: JSON.stringify({
+        question: requestParams.question.trim(),
+        language: langCode,
+        location: requestParams.location,
+        persona: requestParams.persona || 'general',
+        conversationId: convId
+      }),
     });
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      let parsedError = 'WeatherGPT API error occurred.';
-      try {
-        const errJson = JSON.parse(errorText);
-        parsedError = errJson?.error?.message || errJson?.message || parsedError;
-      } catch {
-        if (response.status === 404) parsedError = 'API Endpoint not found.';
-        else if (response.status >= 500) parsedError = 'Server error. Please try again in a few moments.';
-      }
-      return {
-        success: false,
-        answer: '',
-        language: 'en',
-        conversationId: '',
-        error: parsedError,
-      };
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.error?.message || "Failed to fetch weather data.");
     }
 
     const data: AskApiResponse = await response.json();
     
-    // Store conversationId for future requests
     if (data.conversationId) {
       localStorage.setItem('weathergpt_conversation_id', data.conversationId);
     }
     
     return data;
   } catch (err: any) {
-    clearTimeout(timeoutId);
-    if (err.name === 'AbortError') {
-      return {
-        success: false,
-        answer: '',
-        language: 'en',
-        conversationId: '',
-        error: 'Request timed out while connecting to WeatherGPT live server. Please retry.',
-      };
-    }
     return {
       success: false,
       answer: '',
@@ -309,13 +264,22 @@ export async function analyzeWeatherLens(
   location: string,
   language: string = 'en'
 ): Promise<WeatherLensResponse> {
+  
+  let locationObj: any = undefined;
+  if (location && location !== 'Unknown') {
+    const [lat, lon] = location.split(',');
+    if (lat && lon) {
+      locationObj = { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+    }
+  }
+
   const response = await fetch(`${BASE_URL}/api/weather/lens`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       image: imageBase64,
       question,
-      location,
+      location: locationObj,
       language
     }),
   });

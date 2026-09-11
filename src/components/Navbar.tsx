@@ -31,7 +31,6 @@ import { useMagnetic } from '../utils/gsapEffects';
 export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [hubsOpen, setHubsOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { profile } = useUserProfile();
@@ -39,7 +38,6 @@ export default function Navbar() {
   const [notifOpen, setNotifOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
-  const hubsRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
   const askAIBtnRef = useMagnetic<HTMLAnchorElement>(0.3);
 
@@ -72,9 +70,6 @@ export default function Navbar() {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setNotifOpen(false);
       }
-      if (hubsRef.current && !hubsRef.current.contains(event.target as Node)) {
-        setHubsOpen(false);
-      }
       if (langRef.current && !langRef.current.contains(event.target as Node)) {
         setLangOpen(false);
       }
@@ -82,8 +77,6 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const isHubActive = hubsNavItems.some(h => location.pathname === h.path);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
