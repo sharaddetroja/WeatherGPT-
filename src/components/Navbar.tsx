@@ -30,7 +30,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const { profile } = useUserProfile();
+  const { profile, isAuthenticated } = useUserProfile();
   const { currentLang, setLanguage, t } = useLanguage();
   const [notifOpen, setNotifOpen] = useState(false);
 
@@ -329,9 +329,9 @@ export default function Navbar() {
           <Link 
             to="/profile" 
             className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all border border-primary/20 shadow-2xs hover:scale-110 flex-shrink-0"
-            title={`Profile & Settings: ${profile.name}`}
+            title={isAuthenticated ? `Profile & Settings: ${profile.name}` : 'Settings'}
           >
-            {profile.avatarInitials || 'SD'}
+            {isAuthenticated ? (profile.avatarInitials || 'SD') : <User className="w-4 h-4" />}
           </Link>
 
           <button 
