@@ -14,7 +14,8 @@ export default function ProfilePage() {
     saveChanges, 
     lastSavedNotification, 
     dismissNotification,
-    logout
+    logout,
+    isAuthenticated
   } = useUserProfile();
 
   // Local form states for editing
@@ -222,12 +223,20 @@ export default function ProfilePage() {
 
       {/* Save Changes Bottom Action */}
       <div className="flex items-center justify-between pt-2">
-        <button
-          onClick={logout}
-          className="flex items-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all shadow-md cursor-pointer border border-red-500/50 text-red-500 hover:bg-red-500/10"
-        >
-          <span>Logout</span>
-        </button>
+        {isAuthenticated ? (
+          <button
+            onClick={() => {
+              logout();
+              alert('Successfully logged out from WeatherGPT AI.');
+              window.location.href = '/';
+            }}
+            className="flex items-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all shadow-md cursor-pointer border border-red-500/50 text-red-500 hover:bg-red-500/10"
+          >
+            <span>Logout</span>
+          </button>
+        ) : (
+          <div></div> // Spacer
+        )}
 
         <button 
           onClick={handleSaveAll}
