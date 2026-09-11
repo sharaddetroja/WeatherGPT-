@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import NotificationToast from '../components/NotificationToast';
 import { CommunityReportModal } from '../components/CommunityReportModal';
-import ChatWindow from '../components/ChatWindow';
 import { ShieldAlert } from 'lucide-react';
 import { cn } from '../utils/cn';
 
@@ -17,10 +16,10 @@ export default function MainLayout() {
       <Navbar />
       <NotificationToast />
       <main className={cn(
-        "flex-1 w-full max-w-7xl mx-auto",
+        "flex-1 w-full mx-auto",
         isAssistantPage 
           ? "h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] p-2 md:p-3 overflow-hidden flex flex-col" 
-          : "overflow-x-hidden px-4 md:px-8 py-6"
+          : "overflow-x-hidden px-4 sm:px-6 lg:px-8 py-6"
       )}>
         <Outlet />
       </main>
@@ -39,8 +38,6 @@ export default function MainLayout() {
         isOpen={isReportModalOpen} 
         onClose={() => setIsReportModalOpen(false)} 
       />
-      
-      <ChatWindow />
     </div>
   );
 }

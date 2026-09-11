@@ -71,7 +71,7 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-      <div className="flex h-16 items-center px-4 md:px-6 max-w-7xl mx-auto">
+      <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8 w-full mx-auto">
         <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
           <motion.div 
             whileHover={{ rotate: 15, scale: 1.15 }}

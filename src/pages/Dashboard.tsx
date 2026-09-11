@@ -209,9 +209,9 @@ export default function Dashboard() {
         <motion.div 
           whileHover={{ y: -3, scale: 1.01 }}
           transition={{ type: 'spring', stiffness: 300 }}
-          className="p-4 rounded-2xl bg-gradient-to-r from-blue-600/15 via-blue-500/10 to-indigo-600/10 border border-blue-500/30 shadow-xs flex items-center justify-between gap-3"
+          className="p-4 rounded-2xl bg-gradient-to-r from-blue-600/15 via-blue-500/10 to-indigo-600/10 border border-blue-500/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-start sm:items-center gap-3">
             <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-500 text-white shadow-md flex-shrink-0">
               <CloudRain className="w-6 h-6 animate-bounce" />
               <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -235,7 +235,7 @@ export default function Dashboard() {
           <button
             ref={radarBtnRef}
             onClick={() => navigate('/map?effect=rain&zone=rain-rajkot')}
-            className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:scale-105 flex-shrink-0 cursor-pointer"
+            className="w-full sm:w-auto px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:scale-105 flex-shrink-0 cursor-pointer text-center"
           >
             Inspect Rain Radar
           </button>
@@ -245,9 +245,9 @@ export default function Dashboard() {
         <motion.div 
           whileHover={{ y: -3, scale: 1.01 }}
           transition={{ type: 'spring', stiffness: 300 }}
-          className="p-4 rounded-2xl bg-gradient-to-r from-teal-600/15 via-emerald-500/10 to-teal-500/10 border border-teal-500/30 shadow-xs flex items-center justify-between gap-3"
+          className="p-4 rounded-2xl bg-gradient-to-r from-teal-600/15 via-emerald-500/10 to-teal-500/10 border border-teal-500/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-start sm:items-center gap-3">
             <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-teal-600 text-white shadow-md flex-shrink-0">
               <Wind className="w-6 h-6 animate-pulse" />
               <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -271,7 +271,7 @@ export default function Dashboard() {
           <button
             ref={windBtnRef}
             onClick={() => navigate('/map?effect=wind&zone=wind-saurashtra-coast')}
-            className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:scale-105 flex-shrink-0 cursor-pointer"
+            className="w-full sm:w-auto px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs hover:scale-105 flex-shrink-0 cursor-pointer text-center"
           >
             Inspect Wind Flow
           </button>
