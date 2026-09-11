@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
-import WeatherMapPage from './pages/WeatherMapPage';
+
 import AlertsPage from './pages/AlertsPage';
 import ClimatePage from './pages/ClimatePage';
 import ProfilePage from './pages/ProfilePage';
@@ -29,7 +29,6 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
-        <Route path="map" element={<WeatherMapPage />} />
         <Route path="alerts" element={<AlertsPage />} />
         <Route path="climate" element={<ClimatePage />} />
         <Route path="agriculture" element={<AgriculturePage />} />

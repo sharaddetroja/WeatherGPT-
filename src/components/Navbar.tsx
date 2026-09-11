@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { 
   CloudRain, 
-  Map, 
+  MapPin,
   LayoutDashboard, 
   Bell, 
   BarChart2, 
@@ -41,7 +41,6 @@ export default function Navbar() {
   const mainNavItems = [
     { icon: LayoutDashboard, label: t('nav_dashboard', 'Dashboard'), path: '/' },
     { icon: CloudRain, label: t('nav_alerts', 'Alerts'), path: '/alerts' },
-    { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
     { icon: BarChart2, label: t('nav_climate', 'Climate'), path: '/climate' },
     { icon: Sparkles, label: t('nav_voice_ai', 'Voice AI'), path: '/assistant' },
   ];
@@ -112,7 +111,7 @@ export default function Navbar() {
 
         <div className="ml-auto flex items-center space-x-3">
           <div className="hidden lg:flex items-center bg-muted/50 rounded-full px-3.5 py-1 text-xs font-semibold">
-            <Map className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+            <MapPin className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
             <span>{profile.location || 'Rajkot, Gujarat'}</span>
           </div>
 
