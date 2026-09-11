@@ -89,29 +89,47 @@ export default function ProfilePage() {
       {/* Profile Overview Card */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 rounded-full flex items-center justify-center text-primary text-3xl font-extrabold shadow-inner">
-              {profile.avatarInitials || 'JD'}
-            </div>
-            <div className="flex-1 text-center md:text-left space-y-2">
-              <h2 className="text-2xl font-bold text-foreground">{profile.name}</h2>
-              <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-1.5 text-sm">
-                <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                {profile.email}
-              </p>
-              <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-primary bg-primary/10 w-fit mx-auto md:mx-0 px-3.5 py-1 rounded-full border border-primary/20">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span>{profile.location}</span>
+          {!isAuthenticated ? (
+            <div className="flex flex-col items-center justify-center text-center space-y-4 py-4">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-primary" />
               </div>
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Not Logged In</h2>
+                <p className="text-sm text-muted-foreground mt-1">Log in to sync your weather preferences and access the AI Chat.</p>
+              </div>
+              <button 
+                onClick={() => window.location.href = '/assistant'}
+                className="mt-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-md transition-all hover:scale-105"
+              >
+                Log In / Sign Up
+              </button>
             </div>
-            <button 
-              onClick={handleOpenEditModal}
-              className="flex items-center gap-2 px-4 py-2.5 border border-border bg-card hover:bg-muted font-medium rounded-xl transition-all cursor-pointer shadow-2xs hover:scale-105"
-            >
-              <Edit3 className="w-4 h-4 text-primary" />
-              <span>Edit Profile</span>
-            </button>
-          </div>
+          ) : (
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 rounded-full flex items-center justify-center text-primary text-3xl font-extrabold shadow-inner">
+                {profile.avatarInitials || 'JD'}
+              </div>
+              <div className="flex-1 text-center md:text-left space-y-2">
+                <h2 className="text-2xl font-bold text-foreground">{profile.name}</h2>
+                <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-1.5 text-sm">
+                  <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                  {profile.email}
+                </p>
+                <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-primary bg-primary/10 w-fit mx-auto md:mx-0 px-3.5 py-1 rounded-full border border-primary/20">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span>{profile.location}</span>
+                </div>
+              </div>
+              <button 
+                onClick={handleOpenEditModal}
+                className="flex items-center gap-2 px-4 py-2.5 border border-border bg-card hover:bg-muted font-medium rounded-xl transition-all cursor-pointer shadow-2xs hover:scale-105"
+              >
+                <Edit3 className="w-4 h-4 text-primary" />
+                <span>Edit Profile</span>
+              </button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
