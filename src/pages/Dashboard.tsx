@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
@@ -8,7 +8,8 @@ import {
   Globe2, 
   Download, 
   RefreshCw, 
-  AlertTriangle 
+  AlertTriangle,
+  MapPin
 } from 'lucide-react';
 import { getWeatherData } from '../services/weatherService';
 import { format } from 'date-fns';
@@ -18,6 +19,61 @@ import { WeatherGlobe3D } from '../components/3d/WeatherGlobe3D';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { useMagnetic } from '../utils/gsapEffects';
 import { motion, AnimatePresence } from 'motion/react';
+
+// Popular cities and districts for instant search suggestions
+const POPULAR_CITIES = [
+  // Gujarat Cities & Districts
+  { name: 'Rajkot', region: 'Gujarat', country: 'India' },
+  { name: 'Ahmedabad', region: 'Gujarat', country: 'India' },
+  { name: 'Surat', region: 'Gujarat', country: 'India' },
+  { name: 'Vadodara', region: 'Gujarat', country: 'India' },
+  { name: 'Morbi', region: 'Gujarat', country: 'India' },
+  { name: 'Jamnagar', region: 'Gujarat', country: 'India' },
+  { name: 'Bhavnagar', region: 'Gujarat', country: 'India' },
+  { name: 'Junagadh', region: 'Gujarat', country: 'India' },
+  { name: 'Gandhinagar', region: 'Gujarat', country: 'India' },
+  { name: 'Anand', region: 'Gujarat', country: 'India' },
+  { name: 'Bharuch', region: 'Gujarat', country: 'India' },
+  { name: 'Porbandar', region: 'Gujarat', country: 'India' },
+  { name: 'Mehsana', region: 'Gujarat', country: 'India' },
+  { name: 'Bhuj', region: 'Gujarat', country: 'India' },
+  { name: 'Navsari', region: 'Gujarat', country: 'India' },
+  { name: 'Valsad', region: 'Gujarat', country: 'India' },
+  { name: 'Patan', region: 'Gujarat', country: 'India' },
+  { name: 'Amreli', region: 'Gujarat', country: 'India' },
+  { name: 'Surendranagar', region: 'Gujarat', country: 'India' },
+  { name: 'Somnath', region: 'Gujarat', country: 'India' },
+  { name: 'Dwarka', region: 'Gujarat', country: 'India' },
+
+  // Major Indian Metros & Hubs
+  { name: 'Mumbai', region: 'Maharashtra', country: 'India' },
+  { name: 'Delhi', region: 'Delhi', country: 'India' },
+  { name: 'Bengaluru', region: 'Karnataka', country: 'India' },
+  { name: 'Hyderabad', region: 'Telangana', country: 'India' },
+  { name: 'Chennai', region: 'Tamil Nadu', country: 'India' },
+  { name: 'Kolkata', region: 'West Bengal', country: 'India' },
+  { name: 'Pune', region: 'Maharashtra', country: 'India' },
+  { name: 'Jaipur', region: 'Rajasthan', country: 'India' },
+  { name: 'Udaipur', region: 'Rajasthan', country: 'India' },
+  { name: 'Indore', region: 'Madhya Pradesh', country: 'India' },
+  { name: 'Bhopal', region: 'Madhya Pradesh', country: 'India' },
+  { name: 'Lucknow', region: 'Uttar Pradesh', country: 'India' },
+  { name: 'Chandigarh', region: 'Punjab', country: 'India' },
+  { name: 'Goa', region: 'Goa', country: 'India' },
+  { name: 'Kochi', region: 'Kerala', country: 'India' },
+  { name: 'Shimla', region: 'Himachal Pradesh', country: 'India' },
+  { name: 'Srinagar', region: 'Jammu & Kashmir', country: 'India' },
+
+  // Key International Cities
+  { name: 'Dubai', region: 'Dubai', country: 'UAE' },
+  { name: 'London', region: 'England', country: 'UK' },
+  { name: 'New York', region: 'New York', country: 'USA' },
+  { name: 'Tokyo', region: 'Tokyo', country: 'Japan' },
+  { name: 'Paris', region: 'Île-de-France', country: 'France' },
+  { name: 'Singapore', region: 'Singapore', country: 'Singapore' },
+  { name: 'Sydney', region: 'NSW', country: 'Australia' },
+  { name: 'Toronto', region: 'Ontario', country: 'Canada' },
+];
 
 // New Glass Weather Components
 import { WeatherHero } from '../components/weather/WeatherHero';
@@ -88,7 +144,32 @@ export default function Dashboard() {
   const [error, setError] = useState(false);
   const [show3DGlobe, setShow3DGlobe] = useState(false);
   const [citySearch, setCitySearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [timelineTab, setTimelineTab] = useState<'forecast' | 'history'>('forecast');
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Filter suggestions dynamically
+  const filteredSuggestions = citySearch.trim()
+    ? POPULAR_CITIES.filter((c) =>
+        c.name.toLowerCase().includes(citySearch.trim().toLowerCase()) ||
+        c.region.toLowerCase().includes(citySearch.trim().toLowerCase()) ||
+        c.country.toLowerCase().includes(citySearch.trim().toLowerCase())
+      ).slice(0, 6)
+    : [];
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Magnetic button hook via GSAP
   const locationBtnRef = useMagnetic(0.25);
@@ -117,11 +198,22 @@ export default function Dashboard() {
     fetchWeather();
   }, [profile.location]);
 
+  const handleSelectCity = (cityName: string) => {
+    updateProfile({ location: cityName });
+    setCitySearch('');
+    setShowSuggestions(false);
+  };
+
   const handleCitySearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!citySearch.trim()) return;
-    updateProfile({ location: citySearch.trim() });
-    setCitySearch('');
+    if (filteredSuggestions.length > 0) {
+      handleSelectCity(filteredSuggestions[0].name);
+    } else {
+      updateProfile({ location: citySearch.trim() });
+      setCitySearch('');
+      setShowSuggestions(false);
+    }
   };
 
   if (loading) {
@@ -159,17 +251,56 @@ export default function Dashboard() {
 
         {/* Action Controls: Search, My Location, 3D Radar, Export PDF */}
         <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto justify-start md:justify-end">
-          {/* Quick City Search Bar */}
-          <form onSubmit={handleCitySearchSubmit} className="relative flex items-center flex-1 sm:flex-initial">
-            <Search className="absolute left-3.5 w-3.5 h-3.5 text-white/50 pointer-events-none" />
-            <input
-              type="text"
-              value={citySearch}
-              onChange={(e) => setCitySearch(e.target.value)}
-              placeholder="Search city..."
-              className="w-full sm:w-44 lg:w-56 pl-9 pr-3 py-1.5 text-xs rounded-full glass-input transition-all"
-            />
-          </form>
+          {/* Quick City Search Bar with Suggestions */}
+          <div ref={searchContainerRef} className="relative flex-1 sm:flex-initial">
+            <form onSubmit={handleCitySearchSubmit} className="relative flex items-center">
+              <Search className="absolute left-3.5 w-3.5 h-3.5 text-white/50 pointer-events-none" />
+              <input
+                type="text"
+                value={citySearch}
+                onFocus={() => setShowSuggestions(true)}
+                onChange={(e) => {
+                  setCitySearch(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                placeholder="Search city..."
+                className="w-full sm:w-44 lg:w-56 pl-9 pr-3 py-1.5 text-xs rounded-full glass-input transition-all"
+              />
+            </form>
+
+            {/* Suggestions Dropdown */}
+            <AnimatePresence>
+              {showSuggestions && filteredSuggestions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 right-0 mt-2 py-1.5 bg-slate-900/90 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 min-w-[200px]"
+                >
+                  <div className="px-3 py-1 text-[10px] font-semibold text-white/40 uppercase tracking-wider">
+                    Suggestions
+                  </div>
+                  {filteredSuggestions.map((item) => (
+                    <button
+                      key={`${item.name}-${item.region}`}
+                      type="button"
+                      onClick={() => handleSelectCity(item.name)}
+                      className="w-full px-3 py-2 text-left text-xs text-white/90 hover:bg-white/15 flex items-center justify-between transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0 group-hover:scale-110 transition-transform" />
+                        <span className="font-semibold text-white truncate">{item.name}</span>
+                      </div>
+                      <span className="text-[10px] text-white/50 ml-2 shrink-0 truncate">
+                        {item.region}
+                      </span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Detect Current Location Button */}
           <button

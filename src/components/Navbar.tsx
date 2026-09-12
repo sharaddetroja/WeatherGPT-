@@ -10,8 +10,7 @@ import {
   X, 
   Sparkles, 
   CheckCheck, 
-  BellRing,
-  ChevronDown
+  BellRing
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
@@ -27,10 +26,8 @@ export default function Navbar() {
   const { profile, updateProfile, isAuthenticated } = useUserProfile();
   const { t } = useLanguage();
   const [notifOpen, setNotifOpen] = useState(false);
-  const [cityMenuOpen, setCityMenuOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
-  const cityMenuRef = useRef<HTMLDivElement>(null);
   const askAIBtnRef = useMagnetic<HTMLAnchorElement>(0.3);
 
   const mainNavItems = [
@@ -54,9 +51,6 @@ export default function Navbar() {
     function handleClickOutside(event: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setNotifOpen(false);
-      }
-      if (cityMenuRef.current && !cityMenuRef.current.contains(event.target as Node)) {
-        setCityMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -104,61 +98,7 @@ export default function Navbar() {
         </div>
 
         <div className="ml-auto flex items-center space-x-2.5 sm:space-x-3">
-          <div className="relative hidden lg:block" ref={cityMenuRef}>
-            <button
-              onClick={() => setCityMenuOpen(!cityMenuOpen)}
-              className="flex items-center bg-white/10 border border-white/15 rounded-full px-3.5 py-1 text-xs font-semibold text-white/90 backdrop-blur-md cursor-pointer hover:bg-white/20 transition-colors"
-            >
-              <Map className="w-3.5 h-3.5 mr-1.5 text-sky-200" />
-              <span>{profile.location || 'Rajkot, Gujarat'}</span>
-              <ChevronDown className={cn("w-3.5 h-3.5 ml-1.5 text-sky-200 transition-transform", cityMenuOpen && "rotate-180")} />
-            </button>
 
-            <AnimatePresence>
-              {cityMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50 py-1"
-                >
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40">
-                    Select City
-                  </div>
-                  <div className="max-h-60 overflow-y-auto">
-                    {[
-                      "Rajkot, Gujarat",
-                      "Ahmedabad, Gujarat",
-                      "Surat, Gujarat",
-                      "Mumbai, Maharashtra",
-                      "Delhi, India",
-                      "Bengaluru, Karnataka",
-                      "Chennai, Tamil Nadu",
-                      "Kolkata, West Bengal",
-                      "Pune, Maharashtra",
-                      "Jaipur, Rajasthan",
-                      "Lucknow, Uttar Pradesh"
-                    ].map((city) => (
-                      <button
-                        key={city}
-                        onClick={() => {
-                          updateProfile({ location: city });
-                          setCityMenuOpen(false);
-                        }}
-                        className={cn(
-                          "w-full text-left px-3 py-2 text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
-                          profile.location === city ? "bg-primary/10 text-primary font-bold" : "text-foreground"
-                        )}
-                      >
-                        {city}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
 
 
 
