@@ -47,36 +47,35 @@ export const YesterdayWeatherGlass: React.FC<YesterdayWeatherGlassProps> = ({
   const yAvg = convertTemp(yesterdayData.temp_c);
   const tCur = convertTemp(todayTempC);
 
+  const formattedUnit = tempUnit.startsWith('°') ? tempUnit : `°${tempUnit}`;
+
   const tempDiff = Number((tCur - yAvg).toFixed(1));
   const humidityDiff = todayHumidity - yesterdayData.humidity;
   const rainDiff = Number((todayPrecipMm - yesterdayData.precip_mm).toFixed(1));
   const windDiff = Number((todayWindKph - yesterdayData.wind_kph).toFixed(1));
 
   return (
-    <div className={`glass-panel rounded-3xl p-5 sm:p-6 text-white border border-white/15 shadow-xl relative overflow-hidden ${className}`}>
+    <div className={`glass-panel rounded-3xl p-5 sm:p-6 text-white space-y-6 ${className}`}>
       
-      {/* Background soft gradient orb */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-white/10 pb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center border border-white/15 text-sky-300">
-            <History className="w-4 h-4" />
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-amber-300 border border-white/15 shadow-inner">
+            <History className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white tracking-wide flex items-center gap-2">
-              <span>Yesterday's Weather & Comparison</span>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-white/10 text-sky-200 border border-white/15">
-                {yesterdayData.date}
+            <h2 className="text-base sm:text-lg font-bold text-white tracking-wide flex items-center gap-2">
+              <span>Yesterday vs Today</span>
+              <span className="text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-white/15 text-white/90 border border-white/20">
+                24h Delta
               </span>
             </h2>
-            <p className="text-xs text-white/60">Historical 24-hour recorded climate telemetry vs today</p>
+            <p className="text-xs text-white/60">Automated micro-climate shift comparison</p>
           </div>
         </div>
 
-        {/* Delta Quick Badge */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Dynamic Highlight Pill */}
+        <div className="flex items-center gap-2">
           <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
             tempDiff > 0 
               ? 'bg-amber-500/15 text-amber-200 border-amber-500/30' 
@@ -85,7 +84,7 @@ export const YesterdayWeatherGlass: React.FC<YesterdayWeatherGlassProps> = ({
               : 'bg-white/10 text-white/80 border-white/20'
           }`}>
             {tempDiff > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-            <span>{tempDiff > 0 ? `+${tempDiff}°${tempUnit} Warmer` : tempDiff < 0 ? `${tempDiff}°${tempUnit} Cooler` : 'Same Temp'} vs Yesterday</span>
+            <span>{tempDiff > 0 ? `+${tempDiff}${formattedUnit} Warmer` : tempDiff < 0 ? `${tempDiff}${formattedUnit} Cooler` : 'Same Temp'} vs Yesterday</span>
           </div>
         </div>
       </div>
@@ -112,9 +111,9 @@ export const YesterdayWeatherGlass: React.FC<YesterdayWeatherGlassProps> = ({
               <span className="text-sm font-semibold text-white/60">avg temp</span>
             </div>
             <div className="flex items-center gap-4 text-xs font-semibold text-white/70 mt-1">
-              <span>High: <strong className="text-white font-bold">{yMax}°{tempUnit}</strong></span>
+              <span>High: <strong className="text-white font-bold">{yMax}{formattedUnit}</strong></span>
               <span>•</span>
-              <span>Low: <strong className="text-white font-bold">{yMin}°{tempUnit}</strong></span>
+              <span>Low: <strong className="text-white font-bold">{yMin}{formattedUnit}</strong></span>
             </div>
           </div>
 
@@ -148,8 +147,8 @@ export const YesterdayWeatherGlass: React.FC<YesterdayWeatherGlassProps> = ({
             </div>
             <div className="flex items-baseline justify-between">
               <div>
-                <span className="text-xl font-bold text-white">{tCur}°{tempUnit}</span>
-                <span className="text-xs text-white/50 ml-1.5">vs {yAvg}°{tempUnit}</span>
+                <span className="text-xl font-bold text-white">{tCur}{formattedUnit}</span>
+                <span className="text-xs text-white/50 ml-1.5">vs {yAvg}{formattedUnit}</span>
               </div>
               <span className={`text-xs font-bold ${tempDiff >= 0 ? 'text-amber-300' : 'text-sky-300'}`}>
                 {tempDiff > 0 ? `+${tempDiff}°` : `${tempDiff}°`}

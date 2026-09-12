@@ -890,12 +890,12 @@ export default function WeatherMapPage() {
       {/* Main Map + Sidebar Area */}
       <div className="flex flex-col md:flex-row gap-4 h-full">
         {/* Controls Sidebar */}
-        <Card className="w-full md:w-80 flex-shrink-0 h-fit max-h-[calc(100vh-200px)] overflow-y-auto">
-          <CardContent className="p-4 space-y-5">
+        <Card className="w-full md:w-96 lg:w-[380px] flex-shrink-0 h-fit max-h-[calc(100vh-140px)] overflow-y-auto border-border/80 shadow-lg">
+          <CardContent className="p-4 sm:p-5 space-y-5">
             
             {/* Map Style Section with Custom Picture Dropdown */}
             <div className="relative" ref={dropdownRef}>
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2.5 flex items-center gap-2">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
                 <Palette className="w-4 h-4 text-primary" />
                 {t('map_mode')}
               </h3>
@@ -904,7 +904,7 @@ export default function WeatherMapPage() {
               <button
                 type="button"
                 onClick={() => setStyleDropdownOpen(!styleDropdownOpen)}
-                className="w-full flex items-center gap-3 border border-border rounded-xl p-2 bg-background hover:bg-muted/60 transition-all focus:ring-2 focus:ring-primary outline-none cursor-pointer shadow-sm text-left"
+                className="w-full flex items-center gap-3 border border-border rounded-xl p-2.5 bg-background hover:bg-muted/60 transition-all focus:ring-2 focus:ring-primary outline-none cursor-pointer shadow-sm text-left"
               >
                 {/* Small thumbnail picture */}
                 <div className={`relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-border shadow-xs bg-gradient-to-br ${currentTheme.fallbackGradient}`}>
@@ -980,15 +980,15 @@ export default function WeatherMapPage() {
             </div>
 
             {/* Map Weather Layers Section */}
-            <div>
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2.5 flex items-center gap-2">
+            <div className="pt-3 border-t border-border/60">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-primary" />
                 {t('map_weather_layers')}
               </h3>
               <div className="space-y-1.5">
                 <button 
                   onClick={() => setLayer('rain')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${layer === 'rain' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-foreground border border-border/50'}`}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${layer === 'rain' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-foreground border border-border/50'}`}
                 >
                   <div className="flex items-center gap-2">
                     <CloudRain className="w-4 h-4" />
@@ -998,7 +998,7 @@ export default function WeatherMapPage() {
                 </button>
                 <button 
                   onClick={() => setLayer('temp')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${layer === 'temp' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-foreground border border-border/50'}`}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${layer === 'temp' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-foreground border border-border/50'}`}
                 >
                   <div className="flex items-center gap-2">
                     <Gauge className="w-4 h-4" />
@@ -1008,7 +1008,7 @@ export default function WeatherMapPage() {
                 </button>
                 <button 
                   onClick={() => setLayer('clouds')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${layer === 'clouds' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-foreground border border-border/50'}`}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${layer === 'clouds' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-foreground border border-border/50'}`}
                 >
                   <div className="flex items-center gap-2">
                     <Droplets className="w-4 h-4" />
@@ -1020,13 +1020,13 @@ export default function WeatherMapPage() {
             </div>
 
             {/* Area Weather Effects Section (Incoming Rain & Fast Wind) */}
-            <div className="pt-2 border-t border-border space-y-3">
+            <div className="pt-3 border-t border-border/60 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-amber-500" />
                   {t('map_area_effects')}
                 </h3>
-                <span className="text-[10px] font-bold bg-amber-500/15 text-amber-600 px-2 py-0.5 rounded-full border border-amber-500/20">
+                <span className="text-[10px] font-bold bg-amber-500/15 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">
                   {WEATHER_EFFECT_ZONES.length} Active
                 </span>
               </div>
@@ -1037,43 +1037,43 @@ export default function WeatherMapPage() {
                   type="button"
                   onClick={() => setShowRainEffects(!showRainEffects)}
                   className={cn(
-                    "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer",
+                    "flex items-center justify-between p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer",
                     showRainEffects 
-                      ? "bg-blue-600/10 border-blue-500/40 text-blue-600 shadow-xs" 
+                      ? "bg-blue-500/20 border-blue-400/50 text-blue-200 shadow-xs" 
                       : "bg-muted/40 border-border text-muted-foreground hover:bg-muted"
                   )}
                 >
                   <div className="flex items-center gap-1.5 truncate">
-                    <CloudRain className={cn("w-4 h-4 flex-shrink-0", showRainEffects ? "text-blue-500 animate-bounce" : "text-muted-foreground")} />
+                    <CloudRain className={cn("w-4 h-4 flex-shrink-0", showRainEffects ? "text-blue-400 animate-bounce" : "text-muted-foreground")} />
                     <span className="truncate">{t('map_rain_radar')}</span>
                   </div>
-                  <div className={cn("w-2 h-2 rounded-full", showRainEffects ? "bg-blue-500" : "bg-muted-foreground/40")} />
+                  <div className={cn("w-2 h-2 rounded-full", showRainEffects ? "bg-blue-400" : "bg-muted-foreground/40")} />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setShowWindEffects(!showWindEffects)}
                   className={cn(
-                    "flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer",
+                    "flex items-center justify-between p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer",
                     showWindEffects 
-                      ? "bg-teal-600/10 border-teal-500/40 text-teal-600 shadow-xs" 
+                      ? "bg-teal-500/20 border-teal-400/50 text-teal-200 shadow-xs" 
                       : "bg-muted/40 border-border text-muted-foreground hover:bg-muted"
                   )}
                 >
                   <div className="flex items-center gap-1.5 truncate">
-                    <Wind className={cn("w-4 h-4 flex-shrink-0", showWindEffects ? "text-teal-500 animate-pulse" : "text-muted-foreground")} />
+                    <Wind className={cn("w-4 h-4 flex-shrink-0", showWindEffects ? "text-teal-400 animate-pulse" : "text-muted-foreground")} />
                     <span className="truncate">{t('map_wind_flow')}</span>
                   </div>
-                  <div className={cn("w-2 h-2 rounded-full", showWindEffects ? "bg-teal-500" : "bg-muted-foreground/40")} />
+                  <div className={cn("w-2 h-2 rounded-full", showWindEffects ? "bg-teal-400" : "bg-muted-foreground/40")} />
                 </button>
               </div>
 
               {/* Specific Area Quick Jumps */}
-              <div className="space-y-1.5">
-                <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              <div className="space-y-2">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                   {t('map_select_area', 'Select Specific Area')}
                 </div>
-                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
                   {WEATHER_EFFECT_ZONES.map((zone) => {
                     const isSelected = selectedZone?.id === zone.id;
                     const isRain = zone.type === 'rain' || zone.type === 'storm';
@@ -1083,32 +1083,32 @@ export default function WeatherMapPage() {
                         type="button"
                         onClick={() => handleJumpToZone(zone)}
                         className={cn(
-                          "w-full flex items-center justify-between p-2 rounded-xl text-left transition-all border cursor-pointer",
+                          "w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all border cursor-pointer",
                           isSelected
                             ? isRain 
-                              ? "bg-blue-500/15 border-blue-500 text-blue-700 dark:text-blue-300 font-bold shadow-xs" 
-                              : "bg-teal-500/15 border-teal-500 text-teal-700 dark:text-teal-300 font-bold shadow-xs"
+                              ? "bg-blue-500/25 border-blue-400 text-white font-bold shadow-sm ring-1 ring-blue-400/30" 
+                              : "bg-teal-500/25 border-teal-400 text-white font-bold shadow-sm ring-1 ring-teal-400/30"
                             : "bg-card hover:bg-muted/60 border-border/70 text-foreground"
                         )}
                       >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <div className="flex-shrink-0">
                             {zone.type === 'storm' ? (
-                              <Zap className="w-4 h-4 text-amber-500" />
+                              <Zap className="w-4 h-4 text-amber-400" />
                             ) : zone.type === 'rain' ? (
-                              <CloudRain className="w-4 h-4 text-blue-500" />
+                              <CloudRain className="w-4 h-4 text-blue-400" />
                             ) : (
-                              <Wind className="w-4 h-4 text-teal-500" />
+                              <Wind className="w-4 h-4 text-teal-400" />
                             )}
                           </div>
                           <div className="truncate">
-                            <div className="text-xs font-bold truncate">{zone.name}</div>
-                            <div className="text-[10px] text-muted-foreground truncate">
+                            <div className={`text-xs font-bold truncate ${isSelected ? 'text-white' : 'text-foreground'}`}>{zone.name}</div>
+                            <div className={`text-[10px] truncate ${isSelected ? 'text-blue-100/80' : 'text-muted-foreground'}`}>
                               {zone.precipRateInches} in/hr | Total {zone.precipTotal24hInches} in
                             </div>
                           </div>
                         </div>
-                        <ArrowUpRight className={cn("w-3.5 h-3.5 flex-shrink-0 ml-1 transition-transform", isSelected ? "rotate-45" : "text-muted-foreground")} />
+                        <ArrowUpRight className={cn("w-3.5 h-3.5 flex-shrink-0 ml-1 transition-transform", isSelected ? "rotate-45 text-white" : "text-muted-foreground")} />
                       </button>
                     );
                   })}
@@ -1119,11 +1119,11 @@ export default function WeatherMapPage() {
               {/* DEDICATED RAINFALL MEASUREMENT INSPECTOR (INCHES & MM) */}
               {/* ========================================================================= */}
               {clickedRainfall && (
-                <div className="p-3 bg-gradient-to-br from-blue-500/10 via-background to-blue-500/5 rounded-2xl border border-blue-500/30 space-y-3 shadow-sm">
+                <div className="p-3.5 bg-gradient-to-br from-blue-500/15 via-background to-blue-500/10 rounded-2xl border border-blue-400/40 space-y-3 shadow-sm">
                   {/* Card Title & Unit Switcher */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <CloudRain className="w-4 h-4 text-blue-500" />
+                      <CloudRain className="w-4 h-4 text-blue-400" />
                       <span className="text-xs font-bold text-foreground">{t('map_rainfall_measurement', 'Rainfall Measurement')}</span>
                     </div>
 
@@ -1165,27 +1165,27 @@ export default function WeatherMapPage() {
 
                   {/* Primary 3-Metric Breakdown Box */}
                   <div className="grid grid-cols-3 gap-1.5 p-2 bg-background/90 rounded-xl border border-border/80">
-                    <div className="text-center p-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                    <div className="text-center p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
                       <div className="text-[9px] font-bold text-muted-foreground uppercase">{t('map_current_rate', 'Current Rate')}</div>
-                      <div className="text-sm font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
+                      <div className="text-xs sm:text-sm font-extrabold text-blue-400 mt-0.5">
                         {unitMode === 'inches' 
                           ? `${clickedRainfall.rainRateInches.toFixed(2)} in/h`
                           : `${clickedRainfall.rainRateMm} mm/h`}
                       </div>
                     </div>
 
-                    <div className="text-center p-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                    <div className="text-center p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
                       <div className="text-[9px] font-bold text-muted-foreground uppercase">{t('map_24h_total', '24h Total')}</div>
-                      <div className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400 mt-0.5">
+                      <div className="text-xs sm:text-sm font-extrabold text-indigo-300 mt-0.5">
                         {unitMode === 'inches'
                           ? `${clickedRainfall.rainTotal24hInches.toFixed(2)} in`
                           : `${clickedRainfall.rainTotal24hMm.toFixed(1)} mm`}
                       </div>
                     </div>
 
-                    <div className="text-center p-1 rounded-lg bg-sky-500/10 border border-sky-500/20">
+                    <div className="text-center p-1.5 rounded-lg bg-sky-500/10 border border-sky-500/20">
                       <div className="text-[9px] font-bold text-muted-foreground uppercase">{t('map_next_3h', 'Next 3h')}</div>
-                      <div className="text-sm font-extrabold text-sky-600 dark:text-sky-400 mt-0.5">
+                      <div className="text-xs sm:text-sm font-extrabold text-sky-300 mt-0.5">
                         {unitMode === 'inches'
                           ? `${clickedRainfall.rain3hInches.toFixed(2)} in`
                           : `${Math.round(clickedRainfall.rain3hInches * 25.4)} mm`}
@@ -1221,18 +1221,18 @@ export default function WeatherMapPage() {
                   {/* Precipitation Probability & Advice */}
                   <div className="flex items-center justify-between text-[11px] p-2 bg-muted/60 rounded-xl border border-border/60">
                     <div className="flex items-center gap-1.5 font-bold text-foreground">
-                      <Droplets className="w-3.5 h-3.5 text-blue-500" />
+                      <Droplets className="w-3.5 h-3.5 text-blue-400" />
                       <span>{t('map_chance_rain', 'Chance of Rain:')}</span>
                     </div>
-                    <span className="font-extrabold text-blue-600 dark:text-blue-400">
+                    <span className="font-extrabold text-blue-300">
                       {clickedRainfall.probability}%
                     </span>
                   </div>
 
                   {/* Safety Advice or Warning if Heavy Rain */}
                   {(clickedRainfall.zoneMatched?.safetyAdvice || clickedRainfall.rainRateInches >= 0.5) && (
-                    <div className="p-2 bg-amber-500/10 dark:bg-amber-950/30 rounded-xl text-[10px] text-amber-700 dark:text-amber-300 border border-amber-500/20 flex items-start gap-1.5">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <div className="p-2 bg-amber-500/10 rounded-xl text-[10px] text-amber-300 border border-amber-500/20 flex items-start gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
                       <span>{clickedRainfall.zoneMatched?.safetyAdvice || 'High rainfall rate detected. Beware of sudden street pooling and low visibility.'}</span>
                     </div>
                   )}
@@ -1241,7 +1241,7 @@ export default function WeatherMapPage() {
                   <button
                     type="button"
                     onClick={() => navigate(`/assistant?prompt=${encodeURIComponent(`How much rainfall (in inches) is expected in ${clickedRainfall.placeName}? Current rate is ${clickedRainfall.rainRateInches} in/hr, 24h total is ${clickedRainfall.rainTotal24hInches} inches.`)}`)}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
+                    className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                     <span>{t('map_ask_ai_rainfall', 'Ask AI About This Rainfall')}</span>

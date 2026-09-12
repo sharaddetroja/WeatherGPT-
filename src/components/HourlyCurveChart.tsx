@@ -110,7 +110,7 @@ export function HourlyCurveChart({ hourly, className }: HourlyCurveChartProps) {
           <p className="text-xs text-slate-400 mt-0.5">Smooth forecast curve & rain intensity nodes</p>
         </div>
         <span className="text-xs font-bold px-3 py-1 bg-[#1e2f5b] border border-[#23386f] rounded-full text-amber-400">
-          °{tempUnitSymbol} Curve
+          {tempUnitSymbol.startsWith('°') ? tempUnitSymbol : `°${tempUnitSymbol}`} Curve
         </span>
       </div>
 

@@ -295,7 +295,7 @@ export default function Dashboard() {
             onClick={() => exportWeatherPDF({
               location: displayLocation,
               date: format(new Date(), 'EEEE, do MMM yyyy'),
-              temp: `${convertTemp(data.current.temp_c)}°${tempUnitSymbol}`,
+              temp: `${convertTemp(data.current.temp_c)}${tempUnitSymbol}`,
               condition: data.current.condition.text,
               humidity: data.current.humidity,
               wind: `${data.current.wind_kph} km/h NW`,
@@ -370,40 +370,15 @@ export default function Dashboard() {
       {/* ===================================================================== */}
       {/* ROW 2: TIMELINE (7-DAY FORECAST / LAST 7 DAYS HISTORY) & METRICS      */}
       {/* ===================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* 7-Day Forecast or Past 7 Days History with Pill Toggle Switcher */}
-        <div className="lg:col-span-7 space-y-3">
-          {/* Timeline Tab Switcher */}
-          <div className="flex items-center gap-2 p-1 rounded-2xl glass-panel text-white w-fit border border-white/10 shadow-xs">
-            <button
-              onClick={() => setTimelineTab('forecast')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                timelineTab === 'forecast'
-                  ? 'bg-white text-[#1D4ED8] shadow-md'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <span>🔮 7-Day Forecast</span>
-            </button>
-
-            <button
-              onClick={() => setTimelineTab('history')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                timelineTab === 'history'
-                  ? 'bg-white text-[#1D4ED8] shadow-md'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <span>📜 Last 7 Days History</span>
-            </button>
-          </div>
-
-          {/* Conditional Animation View */}
+        {/* 7-Day Forecast or Past 7 Days History */}
+        <div className="lg:col-span-7 h-full">
           <AnimatePresence mode="wait">
             {timelineTab === 'forecast' ? (
               <motion.div
                 key="forecast"
+                className="h-full"
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
@@ -413,11 +388,14 @@ export default function Dashboard() {
                   forecastData={data.forecast}
                   convertTemp={convertTemp}
                   tempUnit={tempUnitSymbol}
+                  timelineTab={timelineTab}
+                  onSelectTab={setTimelineTab}
                 />
               </motion.div>
             ) : (
               <motion.div
                 key="history"
+                className="h-full"
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
@@ -427,14 +405,16 @@ export default function Dashboard() {
                   historyData={data.history7Days || []}
                   convertTemp={convertTemp}
                   tempUnit={tempUnitSymbol}
+                  timelineTab={timelineTab}
+                  onSelectTab={setTimelineTab}
                 />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Weather Details, Air Quality & Weather Alerts Stack */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Weather Details */}
+        <div className="lg:col-span-5 h-full">
           {/* 8 Compact Glass Metric Details */}
           <WeatherDetailsGrid
             feelsLike={convertTemp(data.current.feelslike_c)}
@@ -448,7 +428,6 @@ export default function Dashboard() {
             precipMm={data.current.precip_mm || 0.0}
             rainProbability={data.forecast[0].chance_of_rain}
           />
-
         </div>
       </div>
 

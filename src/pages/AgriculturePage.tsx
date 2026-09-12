@@ -87,7 +87,7 @@ export default function AgriculturePage() {
     exportWeatherPDF({
       location: profile.location || 'Rajkot, Gujarat',
       date: new Date().toLocaleDateString(),
-      temp: `${convertTemp(liveWeatherData?.current?.temp_c || 28)}°${tempUnitSymbol}`,
+      temp: `${convertTemp(liveWeatherData?.current?.temp_c || 28)}${tempUnitSymbol}`,
       condition: liveWeatherData?.current?.condition?.text || 'Partly Cloudy & Monsoon Showers',
       humidity: liveWeatherData?.current?.humidity || 72,
       wind: `${liveWeatherData?.current?.wind_kph || 15.4} km/h NW`,
