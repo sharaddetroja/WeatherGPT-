@@ -11,17 +11,30 @@ export default function MainLayout() {
   const isAssistantPage = location.pathname.startsWith('/assistant') || location.pathname.startsWith('/chat');
 
   return (
-    <div className={cn("min-h-screen flex flex-col bg-background", isAssistantPage && "h-screen max-h-screen overflow-hidden")}>
-      <Navbar />
-      <NotificationToast />
-      <main className={cn(
-        "flex-1 w-full mx-auto max-w-[1240px]",
-        isAssistantPage 
-          ? "h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] p-3 md:p-4 overflow-hidden flex flex-col" 
-          : "overflow-x-hidden px-4 sm:px-6 lg:px-8 py-6 sm:py-8"
-      )}>
-        <Outlet />
-      </main>
+    <div className={cn(
+      "min-h-screen flex flex-col relative overflow-x-hidden transition-all duration-700 sky-gradient-default",
+      isAssistantPage && "h-screen max-h-screen overflow-hidden"
+    )}>
+      {/* Ambient Atmospheric Cloud Glow Layers */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute top-20 left-1/4 w-[550px] h-[200px] bg-white/[0.08] rounded-full blur-3xl animate-cloud-drift pointer-events-none" />
+        <div className="absolute top-72 -left-20 w-[600px] h-[220px] bg-white/[0.05] rounded-full blur-3xl animate-cloud-drift-slow pointer-events-none" />
+        <div className="absolute top-96 right-10 w-[480px] h-[180px] bg-white/[0.06] rounded-full blur-3xl animate-cloud-drift pointer-events-none" />
+      </div>
+
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Navbar />
+        <NotificationToast />
+        <main className={cn(
+          "flex-1 w-full mx-auto max-w-[1280px]",
+          isAssistantPage 
+            ? "h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] p-3 md:p-4 overflow-hidden flex flex-col" 
+            : "overflow-x-hidden px-4 sm:px-6 lg:px-8 py-5 sm:py-7"
+        )}>
+          <Outlet />
+        </main>
+      </div>
 
 
 

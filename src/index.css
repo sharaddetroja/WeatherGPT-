@@ -181,3 +181,106 @@
   animation: stormGlow 2s ease-in-out infinite;
 }
 
+/* =========================================================================
+   WEATHERGPT PREMIUM GLASSMORPHISM & ATMOSPHERIC SKY SYSTEM
+   ========================================================================= */
+
+.sky-gradient-default {
+  background: linear-gradient(180deg, #4A8DCC 0%, #72A9D6 48%, #285A96 100%);
+}
+
+.sky-gradient-sunny {
+  background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 45%, #1D4ED8 100%);
+}
+
+.sky-gradient-cloudy {
+  background: linear-gradient(180deg, #4A6572 0%, #6B8290 48%, #34495E 100%);
+}
+
+.sky-gradient-rain {
+  background: linear-gradient(180deg, #243B55 0%, #3E6088 50%, #141E30 100%);
+}
+
+.sky-gradient-thunderstorm {
+  background: linear-gradient(180deg, #161F30 0%, #233148 50%, #0D131D 100%);
+}
+
+.sky-gradient-night {
+  background: linear-gradient(180deg, #0B132B 0%, #1C2541 50%, #050814 100%);
+}
+
+/* Glass Surfaces */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.10);
+}
+
+.glass-panel-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.15);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+}
+
+.glass-pill-active {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px 0 rgba(255, 255, 255, 0.15);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.glass-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.40);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.20);
+}
+
+/* Subtle drifting atmospheric clouds */
+@keyframes cloudDrift {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(30px); }
+  100% { transform: translateX(0); }
+}
+
+.animate-cloud-drift {
+  animation: cloudDrift 20s ease-in-out infinite;
+}
+
+@keyframes cloudDriftSlow {
+  0% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-40px) translateY(10px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+.animate-cloud-drift-slow {
+  animation: cloudDriftSlow 32s ease-in-out infinite;
+}
+
