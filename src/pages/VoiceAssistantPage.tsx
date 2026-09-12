@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -608,6 +608,109 @@ const loadSessionsForUser = (userEmail: string, userName?: string): ChatSession[
   return createFreshSession(userName);
 };
 
+// Component for rendering AI response with progressive word highlighting and auto-scrolling during speech
+interface SpokenTextRendererProps {
+  content: string;
+  isSpeaking: boolean;
+  speakingCharIndex: number | null;
+}
+
+function SpokenTextRenderer({ content, isSpeaking, speakingCharIndex }: SpokenTextRendererProps) {
+  const activeWordRef = useRef<HTMLSpanElement>(null);
+
+  // Split content into words and whitespace tokens
+  const tokens = useMemo(() => {
+    if (!content) return [];
+    const result: { text: string; start: number; end: number; isWord: boolean }[] = [];
+    const regex = /\S+|\s+/g;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      result.push({
+        text: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+        isWord: /\S/.test(match[0]),
+      });
+    }
+    return result;
+  }, [content]);
+
+  // Determine which word index is currently being spoken
+  const activeWordIdx = useMemo(() => {
+    if (!isSpeaking || speakingCharIndex === null || speakingCharIndex === undefined) return -1;
+    for (let i = 0; i < tokens.length; i++) {
+      if (tokens[i].isWord && speakingCharIndex >= tokens[i].start && speakingCharIndex <= tokens[i].end + 4) {
+        return i;
+      }
+    }
+    for (let i = tokens.length - 1; i >= 0; i--) {
+      if (tokens[i].isWord && speakingCharIndex >= tokens[i].start) {
+        return i;
+      }
+    }
+    return 0;
+  }, [tokens, isSpeaking, speakingCharIndex]);
+
+  // Smoothly auto-scroll down to the currently highlighted spoken word
+  useEffect(() => {
+    if (isSpeaking && activeWordRef.current) {
+      activeWordRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+      });
+    }
+  }, [activeWordIdx, isSpeaking]);
+
+  if (!isSpeaking) {
+    return (
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {typeof content === 'string' ? content : String(content || '')}
+      </ReactMarkdown>
+    );
+  }
+
+  return (
+    <div className="text-sm leading-relaxed whitespace-pre-wrap font-normal">
+      {tokens.map((token, idx) => {
+        if (!token.isWord) {
+          return <span key={idx}>{token.text}</span>;
+        }
+
+        const isPast = activeWordIdx > idx;
+        const isCurrent = activeWordIdx === idx;
+
+        if (isCurrent) {
+          return (
+            <span
+              key={idx}
+              ref={activeWordRef}
+              className="inline-block bg-primary text-primary-foreground font-bold px-1.5 py-0.5 mx-0.5 rounded-lg shadow-lg scale-105 border border-primary/50 transition-all duration-150 animate-pulse ring-2 ring-primary/30"
+            >
+              {token.text}
+            </span>
+          );
+        }
+
+        if (isPast) {
+          return (
+            <span key={idx} className="text-foreground transition-opacity duration-200">
+              {token.text}
+            </span>
+          );
+        }
+
+        // Upcoming words: subtle dimming so focus remains on currently spoken portion
+        return (
+          <span key={idx} className="text-muted-foreground/35 transition-opacity duration-300">
+            {token.text}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function VoiceAssistantPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -703,6 +806,11 @@ export default function VoiceAssistantPage() {
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const activeAudioUrlRef = useRef<string | null>(null);
 
+  // Progressive speaking highlighting and tracking
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const [speakingCharIndex, setSpeakingCharIndex] = useState<number | null>(null);
+  const speechTickerRef = useRef<any>(null);
+
   const transcriptRef = useRef<string>('');
   const isLiveVoiceModeRef = useRef<boolean>(isLiveVoiceMode);
   const voiceStateRef = useRef<'idle' | 'listening' | 'thinking' | 'speaking'>(voiceState);
@@ -732,6 +840,13 @@ export default function VoiceAssistantPage() {
 
   // Stop any active audio and speech immediately
   const stopAllAudio = () => {
+    if (speechTickerRef.current) {
+      clearInterval(speechTickerRef.current);
+      speechTickerRef.current = null;
+    }
+    setSpeakingMessageId(null);
+    setSpeakingCharIndex(null);
+
     // 1. Pause and reset HTMLAudioElement instance if present
     if (activeAudioRef.current) {
       try {
@@ -785,14 +900,23 @@ export default function VoiceAssistantPage() {
   };
 
   // Fallback Text-to-Speech using browser Web SpeechSynthesis
-  const fallbackWebSpeechTTS = (text: string, langCode: string = selectedLangRef.current.speechLang) => {
+  const fallbackWebSpeechTTS = (text: string, langCode: string = selectedLangRef.current.speechLang, messageId?: string) => {
     if (isAudioMutedRef.current || typeof window === 'undefined' || !('speechSynthesis' in window)) {
       setVoiceState('idle');
+      setSpeakingMessageId(null);
+      setSpeakingCharIndex(null);
       return;
     }
 
     try {
       window.speechSynthesis.cancel();
+      if (speechTickerRef.current) {
+        clearInterval(speechTickerRef.current);
+        speechTickerRef.current = null;
+      }
+
+      setSpeakingMessageId(messageId || null);
+      setSpeakingCharIndex(0);
 
       const voices = window.speechSynthesis.getVoices();
       // Normalise: accept both 'gu' and 'gu-IN' formats
@@ -829,8 +953,36 @@ export default function VoiceAssistantPage() {
       utterance.pitch = 1.0;
       if (matchVoice) utterance.voice = matchVoice;
 
-      utterance.onstart = () => { setVoiceState('speaking'); };
+      utterance.onstart = () => {
+        setVoiceState('speaking');
+        // Progressive ticker fallback to highlight spoken words smoothly
+        const words = text.split(/\s+/);
+        let currWord = 0;
+        speechTickerRef.current = setInterval(() => {
+          currWord++;
+          if (currWord < words.length) {
+            const charIdx = words.slice(0, currWord).join(' ').length;
+            setSpeakingCharIndex(prev => Math.max(prev || 0, charIdx));
+          } else if (speechTickerRef.current) {
+            clearInterval(speechTickerRef.current);
+            speechTickerRef.current = null;
+          }
+        }, 300);
+      };
+
+      utterance.onboundary = (event) => {
+        if (typeof event.charIndex === 'number') {
+          setSpeakingCharIndex(event.charIndex);
+        }
+      };
+
       utterance.onend = () => {
+        if (speechTickerRef.current) {
+          clearInterval(speechTickerRef.current);
+          speechTickerRef.current = null;
+        }
+        setSpeakingMessageId(null);
+        setSpeakingCharIndex(null);
         setVoiceState('idle');
         if (isLiveVoiceModeRef.current) {
           setTimeout(() => {
@@ -838,8 +990,15 @@ export default function VoiceAssistantPage() {
           }, 400);
         }
       };
+
       utterance.onerror = (err) => {
         console.warn('Speech synthesis utterance error:', err);
+        if (speechTickerRef.current) {
+          clearInterval(speechTickerRef.current);
+          speechTickerRef.current = null;
+        }
+        setSpeakingMessageId(null);
+        setSpeakingCharIndex(null);
         setVoiceState('idle');
       };
 
@@ -847,16 +1006,25 @@ export default function VoiceAssistantPage() {
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.warn('Speech synthesis error:', e);
+      if (speechTickerRef.current) {
+        clearInterval(speechTickerRef.current);
+        speechTickerRef.current = null;
+      }
+      setSpeakingMessageId(null);
+      setSpeakingCharIndex(null);
       setVoiceState('idle');
     }
   };
 
   // Primary Text-to-Speech: Direct backend fetch to /api/voice/speak with HTML5 Audio, fallback to Web Speech
-  const speakText = async (text: string, langCode: string = selectedLangRef.current.speechLang) => {
+  const speakText = async (text: string, langCode: string = selectedLangRef.current.speechLang, messageId?: string) => {
     if (isAudioMutedRef.current) return;
 
     // 1. Stop any existing playing audio immediately
     stopAllAudio();
+
+    setSpeakingMessageId(messageId || null);
+    setSpeakingCharIndex(0);
 
     try {
       // 2. Fetch audio blob directly from Render backend (/api/voice/speak)
@@ -873,8 +1041,18 @@ export default function VoiceAssistantPage() {
           setVoiceState('speaking');
         };
 
+        audio.ontimeupdate = () => {
+          if (audio.duration > 0) {
+            const ratio = audio.currentTime / audio.duration;
+            const charIdx = Math.floor(ratio * text.length);
+            setSpeakingCharIndex(charIdx);
+          }
+        };
+
         audio.onended = () => {
           setVoiceState('idle');
+          setSpeakingMessageId(null);
+          setSpeakingCharIndex(null);
           if (activeAudioUrlRef.current) {
             URL.revokeObjectURL(activeAudioUrlRef.current);
             activeAudioUrlRef.current = null;
@@ -894,7 +1072,7 @@ export default function VoiceAssistantPage() {
             activeAudioUrlRef.current = null;
           }
           activeAudioRef.current = null;
-          fallbackWebSpeechTTS(text, langCode);
+          fallbackWebSpeechTTS(text, langCode, messageId);
         };
 
         await audio.play();
@@ -905,7 +1083,7 @@ export default function VoiceAssistantPage() {
     }
 
     // 3. Fallback to Web SpeechSynthesis if backend audio is not returned
-    fallbackWebSpeechTTS(text, langCode);
+    fallbackWebSpeechTTS(text, langCode, messageId);
   };
 
   // Speech Recognition (Live Voice Dictation)
@@ -1372,7 +1550,7 @@ export default function VoiceAssistantPage() {
         if (matched) targetSpeechLang = matched.speechLang;
       }
       
-      speakText(cleanTtsText, targetSpeechLang);
+      speakText(cleanTtsText, targetSpeechLang, aiMessage.id);
     } else {
       setVoiceState('idle');
     }
@@ -1728,9 +1906,11 @@ export default function VoiceAssistantPage() {
                                 </div>
                               </div>
                             )}
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {typeof message.content === 'string' ? message.content : String(message.content || '')}
-                            </ReactMarkdown>
+                            <SpokenTextRenderer
+                              content={typeof message.content === 'string' ? message.content : String(message.content || '')}
+                              isSpeaking={voiceState === 'speaking' && speakingMessageId === message.id}
+                              speakingCharIndex={speakingCharIndex}
+                            />
                             {message.explainWhy && (
                               <details className="mt-3 text-xs border border-amber-500/20 bg-amber-500/5 rounded-lg overflow-hidden group/explain cursor-pointer">
                                 <summary className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 hover:bg-amber-500/10 transition-colors outline-none list-none">
@@ -1764,7 +1944,7 @@ export default function VoiceAssistantPage() {
                           <button
                             onClick={() => {
                               const langObj = SUPPORTED_LANGUAGES.find(l => l.code === message.language) || selectedLang;
-                              speakText(message.content, langObj.speechLang);
+                              speakText(message.content, langObj.speechLang, message.id);
                             }}
                             className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                           >
