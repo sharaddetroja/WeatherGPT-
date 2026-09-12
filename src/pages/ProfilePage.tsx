@@ -156,7 +156,7 @@ export default function ProfilePage() {
                   const newUnit = e.target.value as TemperatureUnit;
                   setFormPreferences(prev => ({ ...prev, tempUnit: newUnit }));
                 }}
-                className="border border-border rounded-xl px-3.5 py-2 bg-background font-medium text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer shadow-2xs"
+                className="glass-input rounded-xl px-3.5 py-2 font-medium cursor-pointer"
               >
                 <option value="celsius">Celsius (°C)</option>
                 <option value="fahrenheit">Fahrenheit (°F)</option>
@@ -281,7 +281,7 @@ export default function ProfilePage() {
       {/* Interactive Edit Profile Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="glass-panel text-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
@@ -307,7 +307,7 @@ export default function ProfilePage() {
                   required
                   value={formProfile.name}
                   onChange={(e) => setFormProfile(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground font-medium focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl glass-input rounded-xl transition-all"
                   placeholder="e.g. John Doe"
                 />
               </div>
@@ -321,7 +321,7 @@ export default function ProfilePage() {
                   required
                   value={formProfile.email}
                   onChange={(e) => setFormProfile(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground font-medium focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl glass-input rounded-xl transition-all"
                   placeholder="e.g. john.doe@example.com"
                 />
               </div>
@@ -335,7 +335,7 @@ export default function ProfilePage() {
                   required
                   value={formProfile.location}
                   onChange={(e) => setFormProfile(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-border text-foreground font-medium focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl glass-input rounded-xl transition-all"
                   placeholder="e.g. Rajkot, Gujarat"
                 />
               </div>

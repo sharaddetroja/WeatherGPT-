@@ -19,8 +19,6 @@ import {
   AlertTriangle,
   Droplets,
   Gauge,
-  X,
-  ChevronUp,
   Zap
 } from 'lucide-react';
 import { Card, CardContent } from '../components/Card';
@@ -29,7 +27,6 @@ import L from 'leaflet';
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
-import { Weather3DCanvas } from '../components/3d/Weather3DCanvas';
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -521,45 +518,6 @@ interface SearchResult {
   lat: number;
   lon: number;
   name: string;
-}
-
-function FloatingPanel({ 
-  title, 
-  icon: Icon, 
-  onClose, 
-  children,
-  accentColor 
-}: { 
-  title: string, 
-  icon: any, 
-  onClose: () => void, 
-  children: React.ReactNode,
-  accentColor: string 
-}) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  return (
-    <div className={`bg-background/85 backdrop-blur-xl border border-border/60 shadow-2xl rounded-2xl overflow-hidden flex flex-col w-full sm:w-[320px] pointer-events-auto transition-all duration-300`}>
-      <div className="flex items-center justify-between p-3 border-b border-border/40 bg-muted/20">
-        <div className="flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${accentColor}`} />
-          <span className="text-sm font-bold text-foreground">{title}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <button type="button" onClick={() => setIsCollapsed(!isCollapsed)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors cursor-pointer">
-            {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-          </button>
-          <button type="button" onClick={onClose} className="p-1.5 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-500 transition-colors cursor-pointer">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-      {!isCollapsed && (
-        <div className="p-2 relative bg-black/20">
-          {children}
-        </div>
-      )}
-    </div>
-  );
 }
 
 export default function WeatherMapPage() {
@@ -1305,42 +1263,6 @@ export default function WeatherMapPage() {
 
         {/* Interactive Leaflet Map Container */}
         <div className="flex-1 rounded-2xl border bg-muted overflow-hidden relative shadow-sm min-h-[450px]">
-          
-          {/* Floating Effects Popups */}
-          <div className="absolute bottom-4 left-4 right-4 z-[400] flex flex-col sm:flex-row justify-between items-end gap-4 pointer-events-none">
-            {/* Left side: Rain Radar Popup */}
-            {showRainEffects && (
-              <div className="w-full sm:w-auto">
-                <FloatingPanel 
-                  title={t('map_rain_radar', 'Rain Radar')} 
-                  icon={CloudRain} 
-                  accentColor="text-blue-500"
-                  onClose={() => setShowRainEffects(false)}
-                >
-                  <div className="h-48 w-full rounded-xl overflow-hidden relative border border-border/30 bg-slate-900/50">
-                    <Weather3DCanvas initialMode="rain" showControls={false} />
-                  </div>
-                </FloatingPanel>
-              </div>
-            )}
-
-            {/* Right side: Wind Flow Popup */}
-            {showWindEffects && (
-              <div className="w-full sm:w-auto ml-auto">
-                <FloatingPanel 
-                  title={t('map_wind_flow', 'Wind Flow')} 
-                  icon={Wind} 
-                  accentColor="text-teal-500"
-                  onClose={() => setShowWindEffects(false)}
-                >
-                  <div className="h-48 w-full rounded-xl overflow-hidden relative border border-border/30 bg-slate-900/50">
-                    <Weather3DCanvas initialMode="wind" showControls={false} />
-                  </div>
-                </FloatingPanel>
-              </div>
-            )}
-          </div>
-
           <MapContainer center={defaultCenter} zoom={6} maxZoom={21} className="w-full h-full z-0">
             {/* Base Tile Layer with active selected theme */}
             <TileLayer

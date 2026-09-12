@@ -1369,7 +1369,7 @@ export default function VoiceAssistantPage() {
       {/* 1. COLLAPSIBLE SIDEBAR - CHAT HISTORY                                     */}
       {/* ========================================================================= */}
       <div className={cn(
-        "absolute md:relative z-40 h-full flex flex-col border-r border-border bg-card/80 backdrop-blur-xl transition-all duration-300 ease-in-out",
+        "absolute md:relative z-40 h-full flex flex-col border-r border-border glass-panel text-white/80 backdrop-blur-xl transition-all duration-300 ease-in-out",
         sidebarOpen ? "w-72 translate-x-0" : "w-72 -translate-x-full md:w-0 md:translate-x-0 overflow-hidden border-none"
       )}>
         <div className="p-4 border-b border-border flex items-center justify-between">
@@ -1463,7 +1463,7 @@ export default function VoiceAssistantPage() {
                 <ChevronDown className="w-3.5 h-3.5" />
               </button>
               {langDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
+                <div className="absolute top-full right-0 mt-2 w-56 glass-panel text-white border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50">
                   <div className="p-1 max-h-64 overflow-y-auto">
                     {SUPPORTED_LANGUAGES.map((l) => (
                       <button
@@ -1532,7 +1532,7 @@ export default function VoiceAssistantPage() {
                   <button
                     key={i}
                     onClick={() => handleSendMessage(suggestion)}
-                    className="p-3.5 rounded-2xl bg-card border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-sm font-medium text-left transition-all cursor-pointer shadow-xs group"
+                    className="p-3.5 rounded-2xl glass-panel text-white border border-white/20 hover:border-primary/40 hover:bg-primary/5 text-sm font-medium text-left transition-all cursor-pointer shadow-xs group"
                   >
                     <div className="text-foreground group-hover:text-primary transition-colors">{suggestion}</div>
                   </button>
@@ -1694,7 +1694,7 @@ export default function VoiceAssistantPage() {
           <div className="max-w-3xl mx-auto flex flex-col items-center gap-2 pointer-events-auto">
             
             {/* Input Bar with integrated Live Voice Call button */}
-            <div className="w-full bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl rounded-[2rem] p-2 flex items-center gap-2 transition-all focus-within:ring-2 focus-within:ring-primary/20">
+            <div className="w-full glass-panel text-white border border-white/20 shadow-2xl rounded-[2rem] p-2 flex items-center gap-2 transition-all focus-within:ring-2 focus-within:ring-primary/20">
               
               {/* Mic Speech Dictation Button */}
               <button
@@ -1734,7 +1734,7 @@ export default function VoiceAssistantPage() {
                 </button>
 
                 {showCameraOptions && (
-                  <div className="absolute bottom-full left-0 mb-2 w-48 bg-card border border-border shadow-xl rounded-xl p-2 z-50 animate-in slide-in-from-bottom-2">
+                  <div className="absolute bottom-full left-0 mb-2 w-48 glass-panel text-white border border-white/20 shadow-xl rounded-xl p-2 z-50 animate-in slide-in-from-bottom-2">
                     <input 
                       type="file" 
                       accept="image/*" 
