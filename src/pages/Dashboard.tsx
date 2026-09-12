@@ -23,7 +23,6 @@ import { cn } from '../utils/cn';
 import { getWeatherData } from '../services/weatherService';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { WeatherStatCard } from '../components/WeatherStatCard';
-import { WeatherGPTLive } from '../components/WeatherGPTLive';
 import { format } from 'date-fns';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLanguage } from '../hooks/useLanguage';
@@ -35,7 +34,6 @@ import { LightningTracker } from '../components/LightningTracker';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { useMagnetic } from '../utils/gsapEffects';
 import { motion, AnimatePresence } from 'motion/react';
-import { KisanAdvisoryCard } from '../components/KisanAdvisoryCard';
 import { CircularGauge } from '../components/ui/CircularGauge';
 
 function DashboardSkeleton() {
@@ -62,9 +60,6 @@ function DashboardSkeleton() {
           ))}
         </div>
       </div>
-
-      {/* AI Card Skeleton */}
-      <div className="h-64 bg-muted rounded-4xl" />
 
       {/* Forecast Skeleton */}
       <div className="h-56 bg-muted rounded-4xl" />
@@ -388,14 +383,6 @@ export default function Dashboard() {
           />
         </div>
       </div>
-
-      {/* MAIN AI FEATURE: WEATHERGPT SECTION */}
-      <section className="pt-2">
-        <WeatherGPTLive />
-      </section>
-
-      {/* Kisan Crop Advisory Card */}
-      <KisanAdvisoryCard location={displayLocation} language="gu" />
 
       {/* Live AQI Score & Lightning Radar Proximity Tracker */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
