@@ -246,8 +246,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* LEFT: Current Weather Hero (Seamless Sky Blend) */}
-        <div className="lg:col-span-4 flex flex-col justify-between py-2 sm:py-4">
+        <div className="lg:col-span-4 h-full">
           <WeatherHero
+            className="h-full"
             locationName={currentLocationName}
             region={data.location.region || data.location.country}
             condition={data.current.condition.text}
@@ -261,8 +262,9 @@ export default function Dashboard() {
         </div>
 
         {/* CENTER / RIGHT: Hourly Forecast & Smooth Temperature Spline Curve */}
-        <div className="lg:col-span-8 flex flex-col justify-center">
+        <div className="lg:col-span-8 h-full">
           <HourlyTemperatureChart
+            className="h-full"
             hourlyData={data.hourly}
             convertTemp={convertTemp}
             tempUnit={tempUnitSymbol}
