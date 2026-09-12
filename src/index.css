@@ -10,15 +10,15 @@
     --secondary-text: #B8C2D1; /* secondaryText */
     --card: #17345F; /* cardColor */
     --card-foreground: #FFFFFF;
-    --primary: #FFA45B; /* accentOrange */
-    --primary-foreground: #102A52;
+    --primary: #00A2ED; /* sky blue highlight */
+    --primary-foreground: #FFFFFF;
     --muted: #526887; /* selectedTab */
     --muted-foreground: #B8C2D1;
     --border: #2B4B78; /* borderColor */
     --accent: #43E58C; /* successGreen */
     --accent-foreground: #FFFFFF;
 
-    --accent-orange: #FFA45B;
+    --accent-orange: #00A2ED;
     --selected-tab: #526887;
     --success-green: #43E58C;
     --purple-accent: #B978F2;
@@ -39,15 +39,15 @@
     --secondary-text: #B8C2D1; /* secondaryText */
     --card: #17345F; /* cardColor */
     --card-foreground: #FFFFFF;
-    --primary: #FFA45B; /* accentOrange */
-    --primary-foreground: #102A52;
+    --primary: #00A2ED; /* sky blue highlight */
+    --primary-foreground: #FFFFFF;
     --muted: #526887; /* selectedTab */
     --muted-foreground: #B8C2D1;
     --border: #2B4B78; /* borderColor */
     --accent: #43E58C; /* successGreen */
     --accent-foreground: #FFFFFF;
 
-    --accent-orange: #FFA45B;
+    --accent-orange: #00A2ED;
     --selected-tab: #526887;
     --success-green: #43E58C;
     --purple-accent: #B978F2;

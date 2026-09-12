@@ -80,7 +80,7 @@ function DashboardErrorState({ onRetry }: { onRetry: () => void }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { convertTemp, tempUnitSymbol, profile } = useUserProfile();
+  const { convertTemp, tempUnitSymbol, profile, updateProfile } = useUserProfile();
   const { alerts } = useWeatherAlerts();
 
   const [data, setData] = useState<any>(null);
@@ -119,7 +119,8 @@ export default function Dashboard() {
   const handleCitySearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!citySearch.trim()) return;
-    navigate(`/map?search=${encodeURIComponent(citySearch.trim())}`);
+    updateProfile({ location: citySearch.trim() });
+    setCitySearch('');
   };
 
   if (loading) {

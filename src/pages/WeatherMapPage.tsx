@@ -27,6 +27,7 @@ import L from 'leaflet';
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -523,6 +524,7 @@ interface SearchResult {
 export default function WeatherMapPage() {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { updateProfile } = useUserProfile();
   const [searchParams] = useSearchParams();
   const [layer, setLayer] = useState<'temp' | 'rain' | 'clouds'>('rain');
   const [mapStyle, setMapStyle] = useState('google-hybrid'); // Google Satellite Hybrid with all cities & areas
@@ -716,6 +718,11 @@ export default function WeatherMapPage() {
         setMapCenter([lat, lon]);
         setMapZoom(12);
         setSearchError('');
+        
+        // Update global profile location
+        if (updateProfile) {
+          updateProfile({ location: name });
+        }
 
         // Trigger rainfall calculation for searched location
         handleMapClick(lat, lon);
