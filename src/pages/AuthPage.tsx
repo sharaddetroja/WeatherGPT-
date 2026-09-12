@@ -52,7 +52,8 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        login();
+        const displayName = name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        login({ name: displayName, email });
         navigate(from);
       } else {
         if (name && email && password) {
@@ -77,7 +78,7 @@ const AuthPage = () => {
             console.error('Error sending email:', error);
           }
 
-          signup();
+          signup({ name, email });
           navigate(from);
         }
       }
