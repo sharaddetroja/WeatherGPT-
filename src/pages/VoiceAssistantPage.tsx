@@ -2372,38 +2372,13 @@ export default function VoiceAssistantPage() {
               Live {selectedLang.flag}
             </div>
           </div>
-          {/* Language Switcher Pills */}
-          <div className="flex items-center justify-center gap-2 my-3 flex-wrap">
-            {[
-              { lang: 'auto', label: '🌐 Auto' },
-              { lang: 'gu-IN', label: '🇮🇳 ગુજરાતી' },
-              { lang: 'hi-IN', label: '🇮🇳 हिंदी' },
-              { lang: 'en-IN', label: '🌐 English' }
-            ].map(({ lang, label }) => (
-              <button
-                key={lang}
-                onClick={() => {
-                  setVoiceLang(lang as any);
-                  if (lang === 'auto') {
-                    setSelectedLang(SUPPORTED_LANGUAGES[0]);
-                  } else if (lang === 'gu-IN') {
-                    setSelectedLang(SUPPORTED_LANGUAGES.find(l => l.code === 'gu') || SUPPORTED_LANGUAGES[1]);
-                  } else if (lang === 'hi-IN') {
-                    setSelectedLang(SUPPORTED_LANGUAGES.find(l => l.code === 'hi') || SUPPORTED_LANGUAGES[2]);
-                  } else if (lang === 'en-IN') {
-                    setSelectedLang(SUPPORTED_LANGUAGES.find(l => l.code === 'en') || SUPPORTED_LANGUAGES[10]);
-                  }
-                  restartListening();
-                }}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  voiceLang === lang
-                    ? 'bg-primary text-primary-foreground scale-105 shadow-md ring-2 ring-primary/40'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          {/* Language Switcher Pill - Auto Detect instead of the three languages */}
+          <div className="flex items-center justify-center gap-2 my-3">
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-primary-foreground shadow-md ring-2 ring-primary/40">
+              <span className="text-sm">🌐</span>
+              <span>Auto Detect</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping ml-0.5" />
+            </div>
           </div>
           <div className="flex-1 flex flex-col items-center justify-center w-full relative">
             <div className={cn(
@@ -2418,11 +2393,11 @@ export default function VoiceAssistantPage() {
               <div className="text-2xl font-black">
                 {voiceState === 'listening' && (selectedLang.code === 'gu' ? "સાંભળી રહ્યો છું..." : "Listening...")}
                 {voiceState === 'thinking' && (selectedLang.code === 'gu' ? "વિચાર કરી રહ્યો છું..." : "Thinking...")}
-                {voiceState === 'speaking' && (selectedLang.code === 'gu' ? "WeatherGPT બોલી રહ્યો છે..." : "Speaking...")}
+                {voiceState === 'speaking' && (selectedLang.code === 'gu' ? "WeatherGPT બોલી રહ્યો છે..." : "WeatherGPT Speaking...")}
                 {voiceState === 'idle' && (selectedLang.code === 'gu' ? "બોલવા માટે માઇક દબાવો" : "Tap mic to speak")}
               </div>
               <div className="h-16 text-muted-foreground max-w-md mx-auto text-lg font-medium">
-                {liveTranscript || <span className="opacity-50">{selectedLang.code === 'gu' ? "હવે ગુજરાતીમાં બોલો..." : "Speak now..."}</span>}
+                {liveTranscript || <span className="opacity-60">Speak in any language (Gujarati, Hindi, English...)...</span>}
               </div>
             </div>
           </div>
