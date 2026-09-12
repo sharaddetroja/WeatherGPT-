@@ -1,56 +1,79 @@
 import { WEATHER_ENDPOINT } from './weatherGptApi';
 
 export interface YesterdayWeatherData {
-  date: string;
-  day: string;
   temp_c: number;
   max_temp: number;
   min_temp: number;
-  feelslike_c: number;
   condition: {
     text: string;
     icon: string;
   };
-  humidity: number;
   wind_kph: number;
-  wind_dir: string;
+  humidity: number;
   precip_mm: number;
   pressure_mb: number;
-  uv: number;
-  visibility_km: number;
-  aqi?: number;
-  summary: string;
+  date: string;
+  summary?: string;
 }
 
+export interface HistoricalWeatherDay {
+  date: string;
+  day: string;
+  min_temp: number;
+  max_temp: number;
+  avg_temp: number;
+  condition: string;
+  rainfall_mm: number;
+  humidity: number;
+  wind_kph: number;
+  pressure_mb: number;
+  uv: number;
+}
+
+export const generateLast7DaysHistory = (baseTemp: number = 28): HistoricalWeatherDay[] => {
+  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const conditions = [
+    { text: "Sunny", rain: 0.0, hum: 55, wind: 12 },
+    { text: "Partly Cloudy", rain: 0.5, hum: 62, wind: 14 },
+    { text: "Rain Showers", rain: 8.4, hum: 78, wind: 18 },
+    { text: "Thunderstorm", rain: 22.0, hum: 85, wind: 24 },
+    { text: "Clear Sky", rain: 0.0, hum: 50, wind: 10 },
+    { text: "Overcast", rain: 2.1, hum: 72, wind: 16 },
+    { text: "Scattered Clouds", rain: 0.0, hum: 58, wind: 13 },
+  ];
+
+  const list: HistoricalWeatherDay[] = [];
+  const now = new Date();
+
+  for (let i = 7; i >= 1; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dayName = daysOfWeek[d.getDay()];
+    const dateStr = d.toISOString().split('T')[0];
+    const cond = conditions[(i + 2) % conditions.length];
+    const offset = ((i % 3) - 1) * 1.5;
+    const maxT = Math.round((baseTemp + 4 + offset) * 10) / 10;
+    const minT = Math.round((baseTemp - 4 + offset) * 10) / 10;
+    const avgT = Math.round(((maxT + minT) / 2) * 10) / 10;
+
+    list.push({
+      date: dateStr,
+      day: dayName,
+      min_temp: minT,
+      max_temp: maxT,
+      avg_temp: avgT,
+      condition: cond.text,
+      rainfall_mm: cond.rain,
+      humidity: cond.hum,
+      wind_kph: cond.wind,
+      pressure_mb: 1010 + (i % 4),
+      uv: cond.rain > 0 ? 4 : 7,
+    });
+  }
+  return list;
+};
+
 export const getWeatherData = async (city: string = 'Rajkot') => {
-  const getYesterdayDate = () => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().split('T')[0];
-  };
-
-  const defaultYesterday: YesterdayWeatherData = {
-    date: getYesterdayDate(),
-    day: "Yesterday",
-    temp_c: 26,
-    max_temp: 31,
-    min_temp: 23,
-    feelslike_c: 28,
-    condition: {
-      text: "Scattered Rain",
-      icon: "cloud-rain"
-    },
-    humidity: 76,
-    wind_kph: 17.5,
-    wind_dir: "SW",
-    precip_mm: 8.4,
-    pressure_mb: 1010,
-    uv: 5,
-    visibility_km: 8.5,
-    aqi: 45,
-    summary: "Yesterday experienced scattered rainfall (8.4 mm) with highs of 31°C and humid southwest winds."
-  };
-
   try {
     const url = `${WEATHER_ENDPOINT}?city=${encodeURIComponent(city)}`;
     const response = await fetch(url);
@@ -58,8 +81,9 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
       throw new Error('Failed to fetch weather data');
     }
     const data = await response.json();
-    if (!data.yesterday) {
-      data.yesterday = defaultYesterday;
+    if (!data.history7Days) {
+      const baseT = data.current?.temp_c || 28;
+      data.history7Days = generateLast7DaysHistory(baseT);
     }
     return data;
   } catch (err) {
@@ -89,7 +113,6 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
         pressure_mb: 1012,
         precip_mm: 0.0
       },
-      yesterday: defaultYesterday,
       hourly: [
         { time: "09:00", temp_c: 27, icon: "sun", chance_of_rain: 10 },
         { time: "10:00", temp_c: 28, icon: "cloud-sun", chance_of_rain: 20 },
@@ -109,6 +132,7 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
         { date: "2026-09-13", day: "Sat", min_temp: 27, max_temp: 35, condition: "Sunny", chance_of_rain: 0 },
         { date: "2026-09-14", day: "Sun", min_temp: 26, max_temp: 34, condition: "Partly Cloudy", chance_of_rain: 20 },
       ],
+      history7Days: generateLast7DaysHistory(28),
       insights: [
         { title: "Rain Advisory", type: "warning", message: "Heavy rain may occur between 1 PM and 4 PM today.", icon: "rain" },
         { title: "Travel Recommendation", type: "info", message: "Travel conditions may become difficult during afternoon rainfall.", icon: "car" },

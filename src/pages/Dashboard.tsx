@@ -26,7 +26,7 @@ import { DailyForecastGlass } from '../components/weather/DailyForecastGlass';
 import { WeatherDetailsGrid } from '../components/weather/WeatherDetailsGrid';
 import { AirQualityGlass } from '../components/weather/AirQualityGlass';
 import { WeatherAlertsGlass } from '../components/weather/WeatherAlertsGlass';
-import { YesterdayWeatherGlass } from '../components/weather/YesterdayWeatherGlass';
+import { Last7DaysHistoryGlass } from '../components/weather/Last7DaysHistoryGlass';
 
 function DashboardSkeleton() {
   return (
@@ -88,6 +88,7 @@ export default function Dashboard() {
   const [error, setError] = useState(false);
   const [show3DGlobe, setShow3DGlobe] = useState(false);
   const [citySearch, setCitySearch] = useState('');
+  const [timelineTab, setTimelineTab] = useState<'forecast' | 'history'>('forecast');
 
   // Magnetic button hook via GSAP
   const locationBtnRef = useMagnetic(0.25);
@@ -270,17 +271,69 @@ export default function Dashboard() {
       </div>
 
       {/* ===================================================================== */}
-      {/* ROW 2: DAILY FORECAST (LEFT) & WEATHER DETAILS + AQI + ALERTS (RIGHT) */}
+      {/* ROW 2: TIMELINE (7-DAY FORECAST / LAST 7 DAYS HISTORY) & METRICS      */}
       {/* ===================================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* 7-Day Glass Daily Forecast */}
-        <div className="lg:col-span-7">
-          <DailyForecastGlass
-            forecastData={data.forecast}
-            convertTemp={convertTemp}
-            tempUnit={tempUnitSymbol}
-          />
+        {/* 7-Day Forecast or Past 7 Days History with Pill Toggle Switcher */}
+        <div className="lg:col-span-7 space-y-3">
+          {/* Timeline Tab Switcher */}
+          <div className="flex items-center gap-2 p-1 rounded-2xl glass-panel text-white w-fit border border-white/10 shadow-xs">
+            <button
+              onClick={() => setTimelineTab('forecast')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                timelineTab === 'forecast'
+                  ? 'bg-white text-[#1D4ED8] shadow-md'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <span>🔮 7-Day Forecast</span>
+            </button>
+
+            <button
+              onClick={() => setTimelineTab('history')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                timelineTab === 'history'
+                  ? 'bg-white text-[#1D4ED8] shadow-md'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <span>📜 Last 7 Days History</span>
+            </button>
+          </div>
+
+          {/* Conditional Animation View */}
+          <AnimatePresence mode="wait">
+            {timelineTab === 'forecast' ? (
+              <motion.div
+                key="forecast"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+              >
+                <DailyForecastGlass
+                  forecastData={data.forecast}
+                  convertTemp={convertTemp}
+                  tempUnit={tempUnitSymbol}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="history"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Last7DaysHistoryGlass
+                  historyData={data.history7Days || []}
+                  convertTemp={convertTemp}
+                  tempUnit={tempUnitSymbol}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Weather Details, Air Quality & Weather Alerts Stack */}
@@ -303,22 +356,7 @@ export default function Dashboard() {
       </div>
 
       {/* ===================================================================== */}
-      {/* ROW 3: YESTERDAY'S WEATHER & HISTORICAL COMPARISON TELEMETRY          */}
-      {/* ===================================================================== */}
-      {data.yesterday && (
-        <YesterdayWeatherGlass
-          yesterdayData={data.yesterday}
-          todayTempC={data.current.temp_c}
-          todayHumidity={data.current.humidity}
-          todayPrecipMm={data.current.precip_mm || 0.0}
-          todayWindKph={data.current.wind_kph}
-          convertTemp={convertTemp}
-          tempUnit={tempUnitSymbol}
-        />
-      )}
-
-      {/* ===================================================================== */}
-      {/* ROW 4: AIR QUALITY & WEATHER ALERTS                                   */}
+      {/* ROW 3: AIR QUALITY & WEATHER ALERTS                                   */}
       {/* ===================================================================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <AirQualityGlass
