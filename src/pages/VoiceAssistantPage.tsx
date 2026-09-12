@@ -615,27 +615,94 @@ const INITIAL_SESSIONS: ChatSession[] = [
   }
 ];
 
+// Helper to load chat sessions strictly scoped to the logged-in user's email
+const loadSessionsForUser = (userEmail: string, userName?: string): ChatSession[] => {
+  const normalizedKey = userEmail ? userEmail.toLowerCase().trim() : 'guest';
+  const key = `weathergpt_sessions_${normalizedKey}`;
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved sessions for user:', e);
+    }
+  }
+
+  // If this is guest mode, check for legacy migration
+  if (normalizedKey === 'guest') {
+    const legacy = localStorage.getItem('weathergpt_sessions');
+    if (legacy) {
+      try {
+        const parsed = JSON.parse(legacy);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch {}
+    }
+    return INITIAL_SESSIONS;
+  }
+
+  // Brand-new logged-in Google / email user: give them a fresh clean chat session
+  const name = userName ? userName.split(' ')[0] : 'there';
+  return [
+    {
+      id: `session-${Date.now()}`,
+      title: 'New Weather Chat',
+      dateCategory: 'Today',
+      languageCode: 'en',
+      updatedAt: Date.now(),
+      messages: [
+        {
+          id: `msg-${Date.now()}`,
+          role: 'assistant',
+          content: `👋 Hello ${name}! I am WeatherGPT, your real-time AI weather assistant. Ask me anything about current weather, rain alerts, forecasts, agricultural advice, or travel routes!`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          language: 'en'
+        }
+      ]
+    }
+  ];
+};
+
 export default function VoiceAssistantPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { formatTemp, profile } = useUserProfile();
+  const { formatTemp, profile, isAuthenticated } = useUserProfile();
 
-  // Sessions and Active Chat
+  // Current user key based on authenticated Gmail / email
+  const currentUserEmail = (isAuthenticated && profile?.email ? profile.email : 'guest').toLowerCase().trim();
+
+  // Sessions and Active Chat strictly scoped to the logged-in Gmail/email
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
-    const saved = localStorage.getItem('weathergpt_sessions');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return INITIAL_SESSIONS;
-      }
-    }
-    return INITIAL_SESSIONS;
+    return loadSessionsForUser(currentUserEmail, profile?.name);
   });
 
   const [activeSessionId, setActiveSessionId] = useState<string>(() => {
     return sessions[0]?.id || 'session-1';
   });
+
+  const prevUserEmailRef = useRef<string>(currentUserEmail);
+
+  // Automatically switch history when user logs in with a different Gmail or logs out
+  useEffect(() => {
+    if (prevUserEmailRef.current !== currentUserEmail) {
+      prevUserEmailRef.current = currentUserEmail;
+      const userSessions = loadSessionsForUser(currentUserEmail, profile?.name);
+      setSessions(userSessions);
+      setActiveSessionId(userSessions[0]?.id || 'session-1');
+    }
+  }, [currentUserEmail, profile?.name]);
+
+  // Save sessions to the user-specific localStorage key
+  useEffect(() => {
+    if (sessions && sessions.length > 0) {
+      const key = `weathergpt_sessions_${currentUserEmail}`;
+      localStorage.setItem(key, JSON.stringify(sessions));
+    }
+  }, [sessions, currentUserEmail]);
 
   const { currentLang, setLanguage: setGlobalLanguage } = useLanguage();
 
@@ -708,11 +775,6 @@ export default function VoiceAssistantPage() {
   useEffect(() => { voiceLangRef.current = voiceLang; }, [voiceLang]);
 
   const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
-
-  // Save sessions to localStorage
-  useEffect(() => {
-    localStorage.setItem('weathergpt_sessions', JSON.stringify(sessions));
-  }, [sessions]);
 
   // Handle URL query prompt (e.g. from Map page "Ask AI about this area")
   useEffect(() => {
@@ -1528,6 +1590,23 @@ export default function VoiceAssistantPage() {
               </div>
             );
           })}
+        </div>
+
+        {/* User Account / History Scoping Footer */}
+        <div className="p-3 border-t border-border bg-white/[0.02]">
+          <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl bg-white/[0.04] border border-white/5">
+            <div className="w-7 h-7 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+              {isAuthenticated && profile?.avatarInitials ? profile.avatarInitials : '👤'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-semibold text-white/90 truncate">
+                {isAuthenticated ? profile?.name : 'Guest User'}
+              </div>
+              <div className="text-[10px] text-white/50 truncate">
+                {isAuthenticated ? profile?.email : 'Local History'}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
