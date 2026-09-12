@@ -45,7 +45,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`relative flex flex-col justify-between text-white select-none pl-4 sm:pl-8 lg:pl-10 ${className}`}
+      className={`relative flex flex-col justify-between text-white select-none bg-white/10 backdrop-blur-md border border-white/20 shadow-xl rounded-3xl p-6 sm:p-8 lg:p-10 ${className}`}
     >
       {/* Top Location & Air Quality Badge */}
       <div className="flex items-center justify-between gap-4">
