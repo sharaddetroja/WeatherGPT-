@@ -8,14 +8,11 @@ import {
   User, 
   Menu, 
   X, 
-  Sun, 
-  Moon, 
   Sparkles, 
   CheckCheck, 
   BellRing
 } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { useTheme } from '../hooks/useTheme';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLanguage } from '../hooks/useLanguage';
@@ -26,7 +23,6 @@ import { useMagnetic } from '../utils/gsapEffects';
 export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
   const { profile, isAuthenticated } = useUserProfile();
   const { t } = useLanguage();
   const [notifOpen, setNotifOpen] = useState(false);
@@ -63,7 +59,7 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/15 bg-white/10 backdrop-blur-xl text-white shadow-xs">
-      <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8 w-full max-w-[1280px] mx-auto">
+      <div className="flex h-16 items-center px-2 sm:px-4 lg:px-6 w-full mx-auto">
         <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
           <div className="w-8 h-8 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center text-white shadow-xs backdrop-blur-md">
             <CloudRain className="h-4 h-4 text-sky-200" />
@@ -109,15 +105,7 @@ export default function Navbar() {
 
 
 
-          <motion.button
-            whileHover={{ scale: 1.15, rotate: 18 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-full hover:bg-white/15 text-white transition-colors cursor-pointer"
-            title="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-sky-200" />}
-          </motion.button>
+
           
           {/* Notifications Bell Dropdown */}
           <div className="relative" ref={notifRef}>

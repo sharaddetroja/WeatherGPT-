@@ -812,7 +812,7 @@ export default function WeatherMapPage() {
   };
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto h-[calc(100vh-120px)] flex flex-col animate-in fade-in duration-500">
+    <div className="space-y-4 w-full mx-auto h-[calc(100vh-120px)] flex flex-col animate-in fade-in duration-500">
       {/* Top Header Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">

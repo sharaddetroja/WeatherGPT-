@@ -1510,7 +1510,7 @@ export default function VoiceAssistantPage() {
         </div>
 
         {/* Scrollable Messages Area */}
-        <div className="flex-1 overflow-y-auto pt-16 pb-32 px-3 md:px-6 w-full max-w-6xl mx-auto scroll-smooth">
+        <div className="flex-1 overflow-y-auto pt-16 pb-32 px-2 md:px-4 w-full mx-auto scroll-smooth">
           
           {/* Empty State / Welcome Screen */}
           {activeSession.messages.length <= 1 && (
