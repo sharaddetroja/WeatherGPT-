@@ -26,7 +26,6 @@ import { DailyForecastGlass } from '../components/weather/DailyForecastGlass';
 import { WeatherDetailsGrid } from '../components/weather/WeatherDetailsGrid';
 import { AirQualityGlass } from '../components/weather/AirQualityGlass';
 import { WeatherAlertsGlass } from '../components/weather/WeatherAlertsGlass';
-import { WeatherGPTAssistantGlass } from '../components/weather/WeatherGPTAssistantGlass';
 
 function DashboardSkeleton() {
   return (

@@ -692,6 +692,8 @@ export default function VoiceAssistantPage() {
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const activeAudioUrlRef = useRef<string | null>(null);
 
   const transcriptRef = useRef<string>('');
   const isLiveVoiceModeRef = useRef<boolean>(isLiveVoiceMode);
@@ -725,17 +727,49 @@ export default function VoiceAssistantPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages, isTyping, liveTranscript]);
 
+  // Stop any active audio and speech immediately
+  const stopAllAudio = () => {
+    // 1. Pause and reset HTMLAudioElement instance if present
+    if (activeAudioRef.current) {
+      try {
+        activeAudioRef.current.pause();
+        activeAudioRef.current.currentTime = 0;
+      } catch (e) {
+        console.warn('Error pausing active audio:', e);
+      }
+      activeAudioRef.current = null;
+    }
+
+    // 2. Revoke any active Object URL to free memory
+    if (activeAudioUrlRef.current) {
+      try {
+        URL.revokeObjectURL(activeAudioUrlRef.current);
+      } catch (e) {
+        console.warn('Error revoking audio ObjectURL:', e);
+      }
+      activeAudioUrlRef.current = null;
+    }
+
+    // 3. Cancel Web Speech Synthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {
+        console.warn('Error cancelling speech synthesis:', e);
+      }
+    }
+    activeUtteranceRef.current = null;
+    setVoiceState('idle');
+  };
+
   // Initialize Speech Synthesis + cleanup on unmount
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       synthRef.current = window.speechSynthesis;
     }
     return () => {
-      // Stop any AI voice immediately when component unmounts or user navigates away
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-      activeUtteranceRef.current = null;
+      // Stop all AI voice and audio immediately when component unmounts or user navigates away
+      stopAllAudio();
       // Also stop speech recognition
       if (recognitionRef.current) {
         try { recognitionRef.current.stop(); } catch {}
@@ -744,11 +778,7 @@ export default function VoiceAssistantPage() {
   }, []);
 
   const stopSpeaking = () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    activeUtteranceRef.current = null;
-    setVoiceState('idle');
+    stopAllAudio();
   };
 
   // Text-to-Speech function with smart voice matching by language code
@@ -1367,14 +1397,9 @@ export default function VoiceAssistantPage() {
 
   // Exit Live Voice Mode
   const handleExitLiveVoiceMode = () => {
-    // Immediately stop AI voice
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    activeUtteranceRef.current = null;
-    // Stop speech recognition
+    // Immediately stop all AI voice, audio elements, and recognition
+    stopAllAudio();
     stopSpeechRecognition();
-    setVoiceState('idle');
     setIsLiveVoiceMode(false);
   };
 
