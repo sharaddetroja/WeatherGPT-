@@ -93,6 +93,7 @@ export interface AskWeatherGPTParams {
   };
   conversationId?: string;
   persona?: 'farmer' | 'student' | 'traveler' | 'elderly' | 'outdoor_worker' | 'general';
+  language?: string;
 }
 
 /**
@@ -117,6 +118,10 @@ export async function askWeatherGPT(params: AskWeatherGPTParams | string): Promi
     const payload: any = {
       question: requestParams.question.trim(),
     };
+
+    if (requestParams.language && requestParams.language !== 'auto') {
+      payload.language = requestParams.language;
+    }
     
     if (requestParams.location) {
       payload.location = requestParams.location;
@@ -329,24 +334,86 @@ export async function fetchVoiceSpeakAudio(text: string, language: string = 'en-
 }
 
 /**
- * 8. Voice Transcribe - Direct client-side audio transcription fetch from Render backend
+ * 8. Voice Transcribe - Send raw audio blob directly to backend (NO FormData)
+ *    Returns { transcription: string, language: string }
  */
-export async function transcribeAudio(audioBlob: Blob, language: string = 'en-IN'): Promise<string | null> {
+export async function transcribeAudio(audioBlob: Blob): Promise<{ transcription: string; language: string } | null> {
   try {
-    const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.webm');
-    formData.append('language', language);
-
     const response = await fetch(`${API_BASE_URL}/voice/transcribe`, {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': audioBlob.type || 'audio/webm' },
+      body: audioBlob,
     });
 
     if (!response.ok) return null;
     const data = await response.json();
-    return data.transcript || data.text || null;
+    const transcription = data.transcription || data.transcript || data.text || '';
+    const language = data.language || 'en';
+    return transcription ? { transcription, language } : null;
   } catch (err) {
     console.warn('Backend /voice/transcribe direct fetch failed:', err);
+    return null;
+  }
+}
+
+/**
+ * 9. Ask LLM - Send transcribed text + language to /api/ask
+ *    Returns { answer: string }
+ */
+export async function askLLM(question: string, language: string = 'auto'): Promise<{ answer: string } | null> {
+  try {
+    const payload: any = { question };
+    if (language && language !== 'auto') {
+      payload.language = language;
+    }
+    const response = await fetch(`${API_BASE_URL}/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return { answer: data.answer || '' };
+  } catch (err) {
+    console.warn('Backend /api/ask fetch failed:', err);
+    return null;
+  }
+}
+
+/**
+ * 10. Voice Speak - POST text + language to /api/voice/speak and get audio blob back
+ *     Returns audio Blob for playback via URL.createObjectURL()
+ */
+export async function fetchVoiceSpeakAudioV2(text: string, language: string = 'en'): Promise<Blob | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/voice/speak`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, language }),
+    });
+
+    if (!response.ok) return null;
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const json = await response.json();
+      if (json.audioBase64) {
+        const byteCharacters = atob(json.audioBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: json.mimeType || 'audio/mp3' });
+      }
+      return null;
+    }
+
+    const blob = await response.blob();
+    return blob && blob.size > 0 ? blob : null;
+  } catch (err) {
+    console.warn('Backend TTS /voice/speak V2 fetch failed:', err);
     return null;
   }
 }
