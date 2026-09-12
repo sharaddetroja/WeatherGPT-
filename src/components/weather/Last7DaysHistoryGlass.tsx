@@ -140,53 +140,54 @@ export const Last7DaysHistoryGlass: React.FC<Last7DaysHistoryGlassProps> = ({
             <div
               key={idx}
               onClick={() => setSelectedDay(isSelected ? null : item)}
-              className={`flex flex-col sm:flex-row sm:items-center justify-between py-2.5 px-3.5 rounded-2xl transition-all cursor-pointer border ${
+              className={`flex items-center gap-4 py-2.5 px-3.5 rounded-2xl transition-all cursor-pointer border ${
                 isSelected 
                   ? 'bg-white/15 border-sky-400/40 shadow-sm' 
                   : 'hover:bg-white/8 border-transparent bg-white/[0.03]'
               }`}
             >
-              {/* Day & Date & Condition */}
-              <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-56">
-                <div className="flex items-center gap-2 w-24">
-                  <span className="text-xs text-white/50 font-mono">{dateLabel}</span>
-                  <span className="text-xs sm:text-sm font-bold text-white">{item.day}</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {getConditionIcon(item.condition)}
-                  <span className="text-xs font-medium text-white/85 truncate">
-                    {item.condition}
-                  </span>
-                </div>
+              {/* Day & Date */}
+              <div className="flex items-center gap-2 w-[90px] min-w-[90px] shrink-0">
+                <span className="text-xs text-white/50 font-mono w-[38px] min-w-[38px]">{dateLabel}</span>
+                <span className="text-xs sm:text-sm font-bold text-white truncate">{item.day}</span>
               </div>
 
-              {/* Rain & Humidity telemetry badges */}
-              <div className="flex items-center gap-3 my-1.5 sm:my-0 text-[11px] text-white/70">
-                {item.rainfall_mm > 0 ? (
-                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/25 font-semibold flex items-center gap-1">
-                    <CloudRain className="w-3 h-3" /> {item.rainfall_mm} mm
-                  </span>
-                ) : (
-                  <span className="text-white/40 text-[10px]">No Rain</span>
-                )}
+              {/* Condition Icon & Text */}
+              <div className="flex items-center gap-2 w-[120px] min-w-[120px] shrink-0">
+                {getConditionIcon(item.condition)}
+                <span className="text-xs font-medium text-white/85 truncate">
+                  {item.condition}
+                </span>
+              </div>
 
-                <span className="flex items-center gap-1 text-white/60 hidden md:inline-flex">
-                  <Droplets className="w-3 h-3 text-sky-300" /> {item.humidity}%
+              {/* Rain & Humidity & Wind telemetry badges */}
+              <div className="flex items-center gap-3 w-[180px] min-w-[100px] shrink-0 text-[11px] text-white/70">
+                <span className="w-[70px] min-w-[70px] shrink-0 flex items-center">
+                  {item.rainfall_mm > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/25 font-semibold flex items-center gap-1 whitespace-nowrap">
+                      <CloudRain className="w-3 h-3" /> {item.rainfall_mm} mm
+                    </span>
+                  ) : (
+                    <span className="text-white/40 text-[10px] whitespace-nowrap">No Rain</span>
+                  )}
                 </span>
 
-                <span className="flex items-center gap-1 text-white/60 hidden lg:inline-flex">
-                  <Wind className="w-3 h-3 text-cyan-300" /> {item.wind_kph} km/h
+                <span className="flex items-center gap-1 text-white/60 whitespace-nowrap hidden md:inline-flex">
+                  <Droplets className="w-3 h-3 text-sky-300 shrink-0" /> {item.humidity}%
+                </span>
+
+                <span className="flex items-center gap-1 text-white/60 whitespace-nowrap hidden lg:inline-flex">
+                  <Wind className="w-3 h-3 text-cyan-300 shrink-0" /> {item.wind_kph} km/h
                 </span>
               </div>
 
               {/* Temperature Bar & Min/Max */}
-              <div className="flex items-center justify-end gap-3 flex-1 max-w-full sm:max-w-[200px]">
-                <span className="text-xs font-medium text-white/70 w-7 text-right">
+              <div className="flex items-center gap-3 flex-1 min-w-[120px] max-w-[220px] ml-auto">
+                <span className="text-xs font-medium text-white/70 w-[28px] min-w-[28px] text-right shrink-0">
                   {min}°
                 </span>
 
-                <div className="flex-1 h-2 bg-black/20 rounded-full relative overflow-hidden min-w-[60px]">
+                <div className="flex-1 h-2 bg-black/20 rounded-full relative overflow-hidden min-w-[50px]">
                   <div
                     className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 via-amber-300 to-rose-400 opacity-90"
                     style={{
@@ -196,7 +197,7 @@ export const Last7DaysHistoryGlass: React.FC<Last7DaysHistoryGlassProps> = ({
                   />
                 </div>
 
-                <span className="text-xs font-bold text-white w-7 text-left">
+                <span className="text-xs font-bold text-white w-[28px] min-w-[28px] text-left shrink-0">
                   {max}°
                 </span>
               </div>
