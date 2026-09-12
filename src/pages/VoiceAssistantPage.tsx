@@ -557,95 +557,8 @@ export interface ChatSession {
   updatedAt: number;
 }
 
-const INITIAL_SESSIONS: ChatSession[] = [
-  {
-    id: 'session-1',
-    title: 'Rajkot Rain & Monsoon Alert',
-    dateCategory: 'Today',
-    languageCode: 'en',
-    updatedAt: Date.now(),
-    messages: [
-      {
-        id: 'm-1',
-        role: 'assistant',
-        content: "Hello! I'm WeatherGPT Voice Assistant. There is currently an 80% chance of precipitation expected in Rajkot this evening between 5:00 PM and 8:00 PM. How can I assist your plans today?",
-        timestamp: '10:15 AM',
-        language: 'en'
-      }
-    ]
-  },
-  {
-    id: 'session-2',
-    title: 'Weekend Travel Weather Advisory',
-    dateCategory: 'Yesterday',
-    languageCode: 'en',
-    updatedAt: Date.now() - 86400000,
-    messages: [
-      {
-        id: 'm-2',
-        role: 'user',
-        content: 'Is it safe to drive to Ahmedabad this weekend?',
-        timestamp: 'Yesterday 3:40 PM',
-        language: 'en'
-      },
-      {
-        id: 'm-3',
-        role: 'assistant',
-        content: 'Heavy rain warnings are active along the NH47 corridor toward Ahmedabad. Winds will peak at 45 km/h. If traveling, Saturday morning offers the best window with lighter rainfall.',
-        timestamp: 'Yesterday 3:41 PM',
-        language: 'en'
-      }
-    ]
-  },
-  {
-    id: 'session-3',
-    title: 'ખેતી માટે વરસાદનું પૂર્વાનુમાન (Gujarat Crop Weather)',
-    dateCategory: 'Previous 7 Days',
-    languageCode: 'gu',
-    updatedAt: Date.now() - 3 * 86400000,
-    messages: [
-      {
-        id: 'm-4',
-        role: 'assistant',
-        content: 'નમસ્તે! આ અઠવાડિયે સૌરાષ્ટ્ર અને રાજકોટ જિલ્લામાં ભેજ 68% થી 85% રહેવાની ધારણા છે, જે ખરીફ પાક જેવા કે મગફળી અને કપાસ માટે ખૂબ અનુકૂળ છે.',
-        timestamp: 'Sep 4, 11:20 AM',
-        language: 'gu'
-      }
-    ]
-  }
-];
-
-// Helper to load chat sessions strictly scoped to the logged-in user's email
-const loadSessionsForUser = (userEmail: string, userName?: string): ChatSession[] => {
-  const normalizedKey = userEmail ? userEmail.toLowerCase().trim() : 'guest';
-  const key = `weathergpt_sessions_${normalizedKey}`;
-  const saved = localStorage.getItem(key);
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    } catch (e) {
-      console.warn('Failed to parse saved sessions for user:', e);
-    }
-  }
-
-  // If this is guest mode, check for legacy migration
-  if (normalizedKey === 'guest') {
-    const legacy = localStorage.getItem('weathergpt_sessions');
-    if (legacy) {
-      try {
-        const parsed = JSON.parse(legacy);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      } catch {}
-    }
-    return INITIAL_SESSIONS;
-  }
-
-  // Brand-new logged-in Google / email user: give them a fresh clean chat session
+// Helper to generate a brand new clean session
+const createFreshSession = (userName?: string): ChatSession[] => {
   const name = userName ? userName.split(' ')[0] : 'there';
   return [
     {
@@ -658,13 +571,41 @@ const loadSessionsForUser = (userEmail: string, userName?: string): ChatSession[
         {
           id: `msg-${Date.now()}`,
           role: 'assistant',
-          content: `👋 Hello ${name}! I am WeatherGPT, your real-time AI weather assistant. Ask me anything about current weather, rain alerts, forecasts, agricultural advice, or travel routes!`,
+          content: `👋 Hello ${name}! I am WeatherGPT, your AI meteorologist. Ask me anything about current weather, rain alerts, forecasts, farming advice, or travel routes in any language!`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           language: 'en'
         }
       ]
     }
   ];
+};
+
+// Helper to load chat sessions strictly scoped to the logged-in user's email
+const loadSessionsForUser = (userEmail: string, userName?: string): ChatSession[] => {
+  const normalizedKey = userEmail ? userEmail.toLowerCase().trim() : 'guest';
+  const key = `weathergpt_sessions_v3_${normalizedKey}`;
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      const parsed: ChatSession[] = JSON.parse(saved);
+      // Filter out any old mock dummy sessions
+      const clean = parsed.filter(s => s.id !== 'session-1' && s.id !== 'session-2' && s.id !== 'session-3');
+      if (clean.length > 0) {
+        return clean;
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved sessions for user:', e);
+    }
+  }
+
+  // Clear legacy mock sessions if present
+  try {
+    localStorage.removeItem('weathergpt_sessions');
+    localStorage.removeItem('weathergpt_sessions_guest');
+  } catch {}
+
+  // Brand new fresh session
+  return createFreshSession(userName);
 };
 
 export default function VoiceAssistantPage() {
@@ -699,7 +640,7 @@ export default function VoiceAssistantPage() {
   // Save sessions to the user-specific localStorage key
   useEffect(() => {
     if (sessions && sessions.length > 0) {
-      const key = `weathergpt_sessions_${currentUserEmail}`;
+      const key = `weathergpt_sessions_v3_${currentUserEmail}`;
       localStorage.setItem(key, JSON.stringify(sessions));
     }
   }, [sessions, currentUserEmail]);
