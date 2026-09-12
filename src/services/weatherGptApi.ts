@@ -339,10 +339,12 @@ export async function fetchVoiceSpeakAudio(text: string, language: string = 'en-
  */
 export async function transcribeAudio(audioBlob: Blob): Promise<{ transcription: string; language: string } | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/voice/transcribe`, {
+    const response = await fetch('https://weathergpt-backend-46or.onrender.com/api/voice/transcribe', {
       method: 'POST',
-      headers: { 'Content-Type': audioBlob.type || 'audio/webm' },
-      body: audioBlob,
+      headers: {
+        'Content-Type': audioBlob.type || 'audio/webm'
+      },
+      body: audioBlob // Send the raw blob directly!
     });
 
     if (!response.ok) return null;
@@ -351,7 +353,7 @@ export async function transcribeAudio(audioBlob: Blob): Promise<{ transcription:
     const language = data.language || 'en';
     return transcription ? { transcription, language } : null;
   } catch (err) {
-    console.warn('Backend /voice/transcribe direct fetch failed:', err);
+    console.warn('Backend /api/voice/transcribe direct fetch failed:', err);
     return null;
   }
 }
