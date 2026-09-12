@@ -725,17 +725,30 @@ export default function VoiceAssistantPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages, isTyping, liveTranscript]);
 
-  // Initialize Speech Synthesis
+  // Initialize Speech Synthesis + cleanup on unmount
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       synthRef.current = window.speechSynthesis;
     }
+    return () => {
+      // Stop any AI voice immediately when component unmounts or user navigates away
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      activeUtteranceRef.current = null;
+      // Also stop speech recognition
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+    };
   }, []);
 
   const stopSpeaking = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
+    activeUtteranceRef.current = null;
+    setVoiceState('idle');
   };
 
   // Text-to-Speech function with smart voice matching by language code
@@ -1354,10 +1367,13 @@ export default function VoiceAssistantPage() {
 
   // Exit Live Voice Mode
   const handleExitLiveVoiceMode = () => {
-    stopSpeechRecognition();
-    if (synthRef.current) {
-      synthRef.current.cancel();
+    // Immediately stop AI voice
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
+    activeUtteranceRef.current = null;
+    // Stop speech recognition
+    stopSpeechRecognition();
     setVoiceState('idle');
     setIsLiveVoiceMode(false);
   };
