@@ -2,7 +2,6 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import NotificationToast from '../components/NotificationToast';
-import BottomNav from '../components/BottomNav';
 import { CommunityReportModal } from '../components/CommunityReportModal';
 import { cn } from '../utils/cn';
 
@@ -36,7 +35,6 @@ export default function MainLayout() {
           <Outlet />
         </main>
       </div>
-      {!isAssistantPage && <BottomNav />}
       <CommunityReportModal 
         isOpen={isReportModalOpen} 
         onClose={() => setIsReportModalOpen(false)} 
