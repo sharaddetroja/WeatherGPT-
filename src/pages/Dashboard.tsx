@@ -336,6 +336,45 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* ===================================================================== */}
+      {/* FEATURE PROMO BANNER: SOURCE -> DESTINATION WEATHER FEATURE           */}
+      {/* ===================================================================== */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-panel p-4 sm:p-5 rounded-3xl border border-sky-400/30 bg-gradient-to-r from-sky-900/40 via-blue-900/30 to-indigo-900/40 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-white shadow-xl cursor-pointer hover:border-sky-400/50 transition-all"
+        onClick={() => navigate('/travel')}
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shrink-0 shadow-xs">
+            <Compass className="w-6 h-6 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-400/25 text-sky-200 border border-sky-400/30 uppercase tracking-wider">
+                New Feature
+              </span>
+              <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
+                Source ➔ Destination Weather
+              </h3>
+            </div>
+            <p className="text-xs text-white/80 mt-0.5">
+              Plan your travel corridor with live arrival-time weather forecasts along Morbi ➔ Surat, Mumbai ➔ Pune, & all Indian routes.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate('/travel');
+          }}
+          className="px-4 py-2 bg-white text-slate-900 font-extrabold rounded-2xl text-xs hover:bg-white/90 transition-all cursor-pointer shrink-0 shadow-md flex items-center gap-1.5"
+        >
+          <span>View Route Weather</span>
+          <span className="text-sm">→</span>
+        </button>
+      </motion.div>
+
+      {/* ===================================================================== */}
       {/* ROW 1: CURRENT WEATHER HERO & HOURLY FORECAST + TEMPERATURE CHART     */}
       {/* ===================================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">

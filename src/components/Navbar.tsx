@@ -10,7 +10,8 @@ import {
   X, 
   Sparkles, 
   CheckCheck, 
-  BellRing
+  BellRing,
+  Navigation
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
@@ -32,6 +33,7 @@ export default function Navbar() {
 
   const mainNavItems = [
     { icon: LayoutDashboard, label: t('nav_dashboard', 'Dashboard'), path: '/' },
+    { icon: Navigation, label: t('nav_trip_planner', 'Route Weather'), path: '/travel' },
     { icon: CloudRain, label: t('nav_alerts', 'Alerts'), path: '/alerts' },
     { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
     { icon: BarChart2, label: t('nav_climate', 'Climate'), path: '/climate' },
