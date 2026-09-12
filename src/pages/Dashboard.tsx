@@ -18,7 +18,6 @@ import { WeatherGlobe3D } from '../components/3d/WeatherGlobe3D';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { useMagnetic } from '../utils/gsapEffects';
 import { motion, AnimatePresence } from 'motion/react';
-import { HourlyCurveChart } from '../components/HourlyCurveChart';
 
 // New Glass Weather Components
 import { WeatherHero } from '../components/weather/WeatherHero';
@@ -316,10 +315,7 @@ export default function Dashboard() {
         <WeatherAlertsGlass alerts={alerts} className="h-full" />
       </div>
 
-      {/* Hourly Curve Chart */}
-      <div>
-        <HourlyCurveChart hourly={data.hourly} className="w-full shadow-lg" />
-      </div>
+
 
       {/* ===================================================================== */}
       {/* ROW 4: WEATHERGPT AI ASSISTANT SECTION                                */}

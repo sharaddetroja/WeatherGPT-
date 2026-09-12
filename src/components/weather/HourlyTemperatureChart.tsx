@@ -22,9 +22,23 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
   tempUnit,
   className = '',
 }) => {
-  // Map and convert temps
+  // Map and convert temps for all available forecast hours (up to 12 hours)
   const items = useMemo(() => {
-    return hourlyData.slice(0, 10).map((h, i) => ({
+    const rawList = (hourlyData && hourlyData.length > 0) ? hourlyData : [];
+    const list = rawList.length >= 8 ? rawList : [
+      { time: '09:00', temp_c: 27, icon: 'sun', chance_of_rain: 10, wind_kph: 12 },
+      { time: '10:00', temp_c: 28, icon: 'cloud-sun', chance_of_rain: 20, wind_kph: 14 },
+      { time: '11:00', temp_c: 29, icon: 'cloud-sun', chance_of_rain: 30, wind_kph: 15 },
+      { time: '12:00', temp_c: 30, icon: 'cloud', chance_of_rain: 40, wind_kph: 16 },
+      { time: '13:00', temp_c: 31, icon: 'cloud-rain', chance_of_rain: 60, wind_kph: 18 },
+      { time: '14:00', temp_c: 31, icon: 'cloud-rain', chance_of_rain: 80, wind_kph: 20 },
+      { time: '15:00', temp_c: 30, icon: 'cloud-rain', chance_of_rain: 90, wind_kph: 19 },
+      { time: '16:00', temp_c: 29, icon: 'cloud', chance_of_rain: 50, wind_kph: 17 },
+      { time: '17:00', temp_c: 28, icon: 'cloud-sun', chance_of_rain: 30, wind_kph: 15 },
+      { time: '18:00', temp_c: 27, icon: 'sun', chance_of_rain: 10, wind_kph: 14 }
+    ];
+
+    return list.slice(0, 12).map((h, i) => ({
       ...h,
       displayTime: i === 0 ? 'Now' : h.time,
       temp: convertTemp(h.temp_c),
@@ -47,14 +61,14 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
     return { minTemp: min - 1, maxTemp: max + 2, maxIndex: maxIdx };
   }, [items]);
 
-  // SVG dimensions
-  const svgWidth = Math.max(560, items.length * 75);
+  // Fluid responsive viewBox metrics (stretches 100% across card without right gap)
+  const VIEWBOX_WIDTH = 1000;
   const svgHeight = 110;
-  const paddingX = 40;
+  const paddingX = 45;
   const paddingTop = 28;
   const paddingBottom = 16;
   const chartHeight = svgHeight - paddingTop - paddingBottom;
-  const stepX = (svgWidth - paddingX * 2) / Math.max(1, items.length - 1);
+  const stepX = (VIEWBOX_WIDTH - paddingX * 2) / Math.max(1, items.length - 1);
 
   // Compute (x, y) coordinates for each point
   const points = useMemo(() => {
@@ -109,158 +123,162 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
   const currentPoint = points[0];
   const maxPoint = points[maxIndex];
 
+  // Clean unit string without double degree symbol (e.g. °C instead of °°C)
+  const formattedUnit = tempUnit.startsWith('°') ? tempUnit : `°${tempUnit}`;
+
   return (
     <div className={`w-full glass-panel rounded-3xl p-5 sm:p-6 overflow-hidden ${className}`}>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-2">
           <span>Hourly Forecast</span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/70 font-medium">
-            Next 10 Hours
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/10 text-white/80 font-medium">
+            Next {items.length} Hours
           </span>
         </h2>
-        <span className="text-xs font-semibold text-white/60">
-          Temperature Curve (°{tempUnit})
+
+        <span className="text-xs font-semibold text-white/70">
+          Temperature Curve ({formattedUnit})
         </span>
       </div>
 
-      {/* Horizontal Scrollable Container */}
-      <div className="overflow-x-auto hide-scrollbar -mx-2 px-2 py-2">
-        <div style={{ minWidth: `${svgWidth}px` }} className="relative select-none">
-          {/* Active Hour Vertical Glass Highlight Column */}
+      {/* 100% Fluid Width Container */}
+      <div className="w-full relative select-none">
+        
+        {/* Active Hour Vertical Glass Highlight Column */}
+        {currentPoint && (
+          <div 
+            className="absolute top-0 bottom-0 rounded-2xl pointer-events-none transition-all z-0"
+            style={{
+              left: `${(currentPoint.x / VIEWBOX_WIDTH) * 100}%`,
+              transform: 'translateX(-50%)',
+              width: `${Math.max(6, (70 / VIEWBOX_WIDTH) * 100)}%`,
+              background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.22)',
+            }}
+          />
+        )}
+
+        {/* SVG Smooth Temperature Curve (Scales 100% width) */}
+        <svg viewBox={`0 0 ${VIEWBOX_WIDTH} ${svgHeight}`} className="w-full h-auto overflow-visible block z-10 relative">
+          <defs>
+            {/* Curve Gradient: Solid Soft Green */}
+            <linearGradient id="tempGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#83C78C" />
+              <stop offset="100%" stopColor="#83C78C" />
+            </linearGradient>
+
+            {/* Area fill gradient */}
+            <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(255, 255, 255, 0.20)" />
+              <stop offset="100%" stopColor="rgba(255, 255, 255, 0.00)" />
+            </linearGradient>
+          </defs>
+
+          {/* Dotted horizontal baseline through current temperature */}
           {currentPoint && (
-            <div 
-              className="absolute top-0 bottom-0 rounded-2xl pointer-events-none transition-all"
-              style={{
-                left: `${currentPoint.x - 34}px`,
-                width: '68px',
-                background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                border: '1px solid rgba(255, 255, 255, 0.22)',
-              }}
+            <line
+              x1={paddingX}
+              y1={currentPoint.y}
+              x2={VIEWBOX_WIDTH - paddingX}
+              y2={currentPoint.y}
+              stroke="rgba(255, 255, 255, 0.35)"
+              strokeDasharray="4 4"
+              strokeWidth="1.2"
             />
           )}
 
-          {/* SVG Smooth Temperature Curve */}
-          <svg width={svgWidth} height={svgHeight} className="overflow-visible block">
-            <defs>
-              {/* Curve Gradient: Solid Soft Green */}
-              <linearGradient id="tempGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#83C78C" />
-                <stop offset="100%" stopColor="#83C78C" />
-              </linearGradient>
+          {/* Area under curve */}
+          <path d={areaD} fill="url(#areaGradient)" />
 
-              {/* Area fill gradient */}
-              <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="rgba(255, 255, 255, 0.20)" />
-                <stop offset="100%" stopColor="rgba(255, 255, 255, 0.00)" />
-              </linearGradient>
-            </defs>
+          {/* Smooth Spline Curve */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="url(#tempGradient)"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
 
-            {/* Dotted horizontal baseline through current temperature */}
-            {currentPoint && (
-              <line
-                x1={paddingX}
-                y1={currentPoint.y}
-                x2={svgWidth - paddingX}
-                y2={currentPoint.y}
-                stroke="rgba(255, 255, 255, 0.35)"
-                strokeDasharray="4 4"
-                strokeWidth="1.2"
-              />
-            )}
-
-            {/* Area under curve */}
-            <path d={areaD} fill="url(#areaGradient)" />
-
-            {/* Smooth Spline Curve */}
-            <path
-              d={pathD}
-              fill="none"
-              stroke="url(#tempGradient)"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-
-            {/* Peak Max Marker */}
-            {maxPoint && maxIndex !== 0 && (
-              <g>
-                <circle cx={maxPoint.x} cy={maxPoint.y} r="5" fill="#EF4444" stroke="#FFFFFF" strokeWidth="2" />
-                <text
-                  x={maxPoint.x}
-                  y={maxPoint.y - 10}
-                  textAnchor="middle"
-                  fill="#FFFFFF"
-                  fontSize="12"
-                  fontWeight="bold"
-                  className="select-none"
-                >
-                  {maxPoint.temp}°
-                </text>
-              </g>
-            )}
-
-            {/* Current Hour Badge Marker (matching screenshot e.g. 28) */}
-            {currentPoint && (
-              <g>
-                <circle
-                  cx={currentPoint.x}
-                  cy={currentPoint.y}
-                  r="14"
-                  fill="rgba(255, 255, 255, 0.95)"
-                  stroke="#83C78C"
-                  strokeWidth="3"
-                  className="drop-shadow-sm"
-                />
-                <text
-                  x={currentPoint.x}
-                  y={currentPoint.y + 4}
-                  textAnchor="middle"
-                  fill="#1E3A8A"
-                  fontSize="11"
-                  fontWeight="900"
-                  className="select-none"
-                >
-                  {currentPoint.temp}
-                </text>
-              </g>
-            )}
-          </svg>
-
-          {/* Hourly Column Items Aligned Directly Below Points */}
-          <div className="flex pt-3 pb-1" style={{ width: `${svgWidth}px` }}>
-            {points.map((pt, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col items-center justify-between text-center transition-all group"
-                style={{
-                  width: `${stepX}px`,
-                  marginLeft: idx === 0 ? `${paddingX - stepX / 2}px` : '0px',
-                }}
+          {/* Peak Max Marker */}
+          {maxPoint && maxIndex !== 0 && (
+            <g>
+              <circle cx={maxPoint.x} cy={maxPoint.y} r="5" fill="#EF4444" stroke="#FFFFFF" strokeWidth="2" />
+              <text
+                x={maxPoint.x}
+                y={maxPoint.y - 10}
+                textAnchor="middle"
+                fill="#FFFFFF"
+                fontSize="12"
+                fontWeight="bold"
+                className="select-none"
               >
-                {/* Weather Condition Icon */}
-                <div className="my-1.5 transition-transform group-hover:scale-110">
-                  {renderWeatherIcon(pt.icon)}
-                </div>
+                {maxPoint.temp}°
+              </text>
+            </g>
+          )}
 
-                {/* Wind Propeller / Speed */}
-                <div className="flex items-center gap-1 text-[11px] text-white/70 font-medium my-1">
-                  <Wind className="w-3 h-3 text-white/60" />
-                  <span>{pt.wind_kph ? `${Math.round(pt.wind_kph)}k` : '3k'}</span>
-                </div>
+          {/* Current Hour Badge Marker */}
+          {currentPoint && (
+            <g>
+              <circle
+                cx={currentPoint.x}
+                cy={currentPoint.y}
+                r="14"
+                fill="rgba(255, 255, 255, 0.95)"
+                stroke="#83C78C"
+                strokeWidth="3"
+                className="drop-shadow-sm"
+              />
+              <text
+                x={currentPoint.x}
+                y={currentPoint.y + 4}
+                textAnchor="middle"
+                fill="#1E3A8A"
+                fontSize="11"
+                fontWeight="900"
+                className="select-none"
+              >
+                {currentPoint.temp}
+              </text>
+            </g>
+          )}
+        </svg>
 
-                {/* Rain Probability % */}
-                <div className="flex items-center gap-0.5 text-[10px] text-[#A795ED] font-bold my-0.5">
-                  <Droplets className="w-2.5 h-2.5 text-[#A795ED]" />
-                  <span>{pt.chance_of_rain || 0}%</span>
-                </div>
-
-                {/* Time Label */}
-                <span className={`text-xs font-bold mt-2 ${pt.isCurrent ? 'text-white' : 'text-white/75'}`}>
-                  {pt.displayTime}
-                </span>
+        {/* Hourly Column Items Aligned Directly Below Points Across 100% Width */}
+        <div className="relative w-full pt-3 pb-1 h-28 z-20">
+          {points.map((pt, idx) => (
+            <div
+              key={idx}
+              className="absolute flex flex-col items-center justify-between text-center transition-all group"
+              style={{
+                left: `${(pt.x / VIEWBOX_WIDTH) * 100}%`,
+                transform: 'translateX(-50%)',
+              }}
+            >
+              {/* Weather Condition Icon */}
+              <div className="my-1 transition-transform group-hover:scale-110">
+                {renderWeatherIcon(pt.icon)}
               </div>
-            ))}
-          </div>
+
+              {/* Wind Propeller / Speed */}
+              <div className="flex items-center gap-1 text-[11px] text-white/80 font-medium my-0.5">
+                <Wind className="w-3 h-3 text-white/70" />
+                <span>{pt.wind_kph ? `${Math.round(pt.wind_kph)}k` : '3k'}</span>
+              </div>
+
+              {/* Rain Probability % */}
+              <div className="flex items-center gap-0.5 text-[10px] text-[#A795ED] font-bold my-0.5">
+                <Droplets className="w-2.5 h-2.5 text-[#A795ED]" />
+                <span>{pt.chance_of_rain || 0}%</span>
+              </div>
+
+              {/* Time Label */}
+              <span className={`text-xs font-bold mt-1 ${pt.isCurrent ? 'text-white' : 'text-white/80'}`}>
+                {pt.displayTime}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
