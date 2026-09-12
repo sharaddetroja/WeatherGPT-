@@ -791,8 +791,8 @@ export default function VoiceAssistantPage() {
   const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [voiceLang, setVoiceLang] = useState<'gu-IN' | 'hi-IN' | 'en-IN'>('gu-IN');
-  const voiceLangRef = useRef<'gu-IN' | 'hi-IN' | 'en-IN'>('gu-IN');
+  const [voiceLang, setVoiceLang] = useState<'auto' | 'gu-IN' | 'hi-IN' | 'en-IN'>('auto');
+  const voiceLangRef = useRef<'auto' | 'gu-IN' | 'hi-IN' | 'en-IN'>('auto');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -1292,7 +1292,8 @@ export default function VoiceAssistantPage() {
 
         // ── STEP 2: Ask LLM ──
         let aiResponseText = '';
-        const langToSend = selectedLangRef.current.code === 'auto' ? detectedLang : selectedLangRef.current.code;
+        const isAuto = selectedLangRef.current.code === 'auto' || voiceLangRef.current === 'auto';
+        const langToSend = isAuto ? 'auto' : (selectedLangRef.current.code || 'en');
 
         try {
           const askResult = await askLLM(userText, langToSend);
@@ -1329,7 +1330,7 @@ export default function VoiceAssistantPage() {
           setSpeakingCharIndex(0);
 
           const cleanTtsText = aiResponseText.replace(/[*#`_-]/g, ' ');
-          const speakLang = langToSend || 'en';
+          const speakLang = (langToSend === 'auto' ? detectedLang : langToSend) || 'en';
 
           try {
             const audioBlob = await fetchVoiceSpeakAudioV2(cleanTtsText, speakLang);
@@ -2372,12 +2373,33 @@ export default function VoiceAssistantPage() {
             </div>
           </div>
           {/* Language Switcher Pills */}
-          <div className="flex items-center justify-center gap-2 my-3">
-            {[{ lang: 'gu-IN', label: '🇮🇳 ગુજરાતી' }, { lang: 'hi-IN', label: '🇮🇳 हिंदी' }, { lang: 'en-IN', label: '🌐 English' }].map(({ lang, label }) => (
+          <div className="flex items-center justify-center gap-2 my-3 flex-wrap">
+            {[
+              { lang: 'auto', label: '🌐 Auto' },
+              { lang: 'gu-IN', label: '🇮🇳 ગુજરાતી' },
+              { lang: 'hi-IN', label: '🇮🇳 हिंदी' },
+              { lang: 'en-IN', label: '🌐 English' }
+            ].map(({ lang, label }) => (
               <button
                 key={lang}
-                onClick={() => { setVoiceLang(lang as any); restartListening(); }}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${voiceLang === lang ? 'bg-primary text-primary-foreground scale-105' : 'bg-muted text-muted-foreground'}`}
+                onClick={() => {
+                  setVoiceLang(lang as any);
+                  if (lang === 'auto') {
+                    setSelectedLang(SUPPORTED_LANGUAGES[0]);
+                  } else if (lang === 'gu-IN') {
+                    setSelectedLang(SUPPORTED_LANGUAGES.find(l => l.code === 'gu') || SUPPORTED_LANGUAGES[1]);
+                  } else if (lang === 'hi-IN') {
+                    setSelectedLang(SUPPORTED_LANGUAGES.find(l => l.code === 'hi') || SUPPORTED_LANGUAGES[2]);
+                  } else if (lang === 'en-IN') {
+                    setSelectedLang(SUPPORTED_LANGUAGES.find(l => l.code === 'en') || SUPPORTED_LANGUAGES[10]);
+                  }
+                  restartListening();
+                }}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  voiceLang === lang
+                    ? 'bg-primary text-primary-foreground scale-105 shadow-md ring-2 ring-primary/40'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                }`}
               >
                 {label}
               </button>
