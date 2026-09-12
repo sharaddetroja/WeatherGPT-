@@ -4,51 +4,61 @@
 
 @layer base {
   :root {
-    --background: #112142;
-    --secondary-bg: #0f1c38;
-    --foreground: #FFFFFF;
-    --secondary-text: #E2E8F0;
-    --card: rgba(18, 29, 54, 0.65);
+    --background: #102A52; /* backgroundColor */
+    --secondary-bg: #0C1E3D;
+    --foreground: #FFFFFF; /* primaryText */
+    --secondary-text: #B8C2D1; /* secondaryText */
+    --card: #17345F; /* cardColor */
     --card-foreground: #FFFFFF;
-    --primary: #38bdf8;
-    --primary-foreground: #FFFFFF;
-    --muted: rgba(255, 255, 255, 0.1);
-    --muted-foreground: #CBD5E1;
-    --border: rgba(255, 255, 255, 0.12);
-    --accent: #4ade80;
+    --primary: #FFA45B; /* accentOrange */
+    --primary-foreground: #102A52;
+    --muted: #526887; /* selectedTab */
+    --muted-foreground: #B8C2D1;
+    --border: #2B4B78; /* borderColor */
+    --accent: #43E58C; /* successGreen */
     --accent-foreground: #FFFFFF;
 
-    --main-green: #4ade80;
-    --deep-green: #166534;
-    --soft-green: rgba(74, 222, 128, 0.2);
-    --card-green: rgba(20, 37, 28, 0.6);
-    --rain-accent: #60a5fa;
-    --sunny-accent: #facc15;
-    --warning-accent: #fb923c;
+    --accent-orange: #FFA45B;
+    --selected-tab: #526887;
+    --success-green: #43E58C;
+    --purple-accent: #B978F2;
+
+    --main-green: #43E58C;
+    --deep-green: #17345F;
+    --soft-green: rgba(67, 229, 140, 0.2);
+    --card-green: #17345F;
+    --rain-accent: #38bdf8;
+    --sunny-accent: #FFA45B;
+    --warning-accent: #FFA45B;
   }
 
   .dark {
-    --background: #0b1736; /* Midnight Navy */
-    --secondary-bg: #0b1528;
-    --foreground: #f8fafc; /* slate-50 */
-    --secondary-text: #CBD5E1;
-    --card: #122247; /* Dark Navy Card */
-    --card-foreground: #f8fafc;
-    --primary: #3b82f6; /* blue-500 */
-    --primary-foreground: #ffffff;
-    --muted: #1e2f5b; /* Navy Muted */
-    --muted-foreground: #94a3b8; /* slate-400 */
-    --border: #23386f; /* Deep Navy Border */
-    --accent: #1e3a8a; /* blue-900 */
-    --accent-foreground: #dbeafe; /* blue-100 */
+    --background: #102A52; /* backgroundColor */
+    --secondary-bg: #0C1E3D;
+    --foreground: #FFFFFF; /* primaryText */
+    --secondary-text: #B8C2D1; /* secondaryText */
+    --card: #17345F; /* cardColor */
+    --card-foreground: #FFFFFF;
+    --primary: #FFA45B; /* accentOrange */
+    --primary-foreground: #102A52;
+    --muted: #526887; /* selectedTab */
+    --muted-foreground: #B8C2D1;
+    --border: #2B4B78; /* borderColor */
+    --accent: #43E58C; /* successGreen */
+    --accent-foreground: #FFFFFF;
 
-    --main-green: #4ade80;
-    --deep-green: #14532d;
-    --soft-green: rgba(74, 222, 128, 0.15);
-    --card-green: rgba(20, 37, 28, 0.8);
-    --rain-accent: #3b82f6;
-    --sunny-accent: #eab308;
-    --warning-accent: #f97316;
+    --accent-orange: #FFA45B;
+    --selected-tab: #526887;
+    --success-green: #43E58C;
+    --purple-accent: #B978F2;
+
+    --main-green: #43E58C;
+    --deep-green: #17345F;
+    --soft-green: rgba(67, 229, 140, 0.2);
+    --card-green: #17345F;
+    --rain-accent: #38bdf8;
+    --sunny-accent: #FFA45B;
+    --warning-accent: #FFA45B;
   }
 }
 
@@ -186,36 +196,36 @@
    ========================================================================= */
 
 .sky-gradient-default {
-  background: linear-gradient(180deg, #4A8DCC 0%, #72A9D6 48%, #285A96 100%);
+  background: linear-gradient(180deg, #102A52 0%, #17345F 50%, #0C1E3D 100%);
 }
 
 .sky-gradient-sunny {
-  background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 45%, #1D4ED8 100%);
+  background: linear-gradient(180deg, #102A52 0%, #17345F 50%, #102A52 100%);
 }
 
 .sky-gradient-cloudy {
-  background: linear-gradient(180deg, #4A6572 0%, #6B8290 48%, #34495E 100%);
+  background: linear-gradient(180deg, #102A52 0%, #17345F 50%, #0C1E3D 100%);
 }
 
 .sky-gradient-rain {
-  background: linear-gradient(180deg, #243B55 0%, #3E6088 50%, #141E30 100%);
+  background: linear-gradient(180deg, #102A52 0%, #17345F 50%, #0C1E3D 100%);
 }
 
 .sky-gradient-thunderstorm {
-  background: linear-gradient(180deg, #161F30 0%, #233148 50%, #0D131D 100%);
+  background: linear-gradient(180deg, #0C1E3D 0%, #102A52 50%, #081429 100%);
 }
 
 .sky-gradient-night {
-  background: linear-gradient(180deg, #0B132B 0%, #1C2541 50%, #050814 100%);
+  background: linear-gradient(180deg, #0C1E3D 0%, #102A52 50%, #081429 100%);
 }
 
 /* Glass Surfaces */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.09);
+  background: #17345F;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.10);
+  border: 1px solid #2B4B78;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.20);
 }
 
 .glass-panel-hover {
