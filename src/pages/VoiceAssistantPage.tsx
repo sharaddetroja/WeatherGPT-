@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { askWeatherGPT, getUserLocation, analyzeWeatherLens, fetchVoiceSpeakAudio, transcribeAudio, askLLM, fetchVoiceSpeakAudioV2 } from '../services/weatherGptApi';
+import { askWeatherGPT, getUserLocation, analyzeWeatherLens, fetchVoiceSpeakAudio } from '../services/weatherGptApi';
 import { 
   Send, 
   Mic, 
@@ -430,12 +430,6 @@ export default function VoiceAssistantPage() {
   const [speakingCharIndex, setSpeakingCharIndex] = useState<number | null>(null);
   const speechTickerRef = useRef<any>(null);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const silenceTimerRef = useRef<any>(null);
-  const hasSpokenRef = useRef<boolean>(false);
   const isLiveVoiceModeRef = useRef<boolean>(isLiveVoiceMode);
   const voiceStateRef = useRef<'idle' | 'listening' | 'thinking' | 'speaking'>(voiceState);
   const isAudioMutedRef = useRef<boolean>(isAudioMuted);
@@ -709,323 +703,124 @@ export default function VoiceAssistantPage() {
     fallbackWebSpeechTTS(text, langCode, messageId);
   };
 
-  // ============================================================================
-  // 3-STEP VOICE PIPELINE: MediaRecorder → Transcribe → Ask LLM → Speak
+
+  // NATIVE SPEECH RECOGNITION (Web Speech API)
+  // Fast, client-side, zero backend latency, no quota limits
   // ============================================================================
 
-  // Stop the MediaRecorder (if running) and release the microphone stream & audio context
-  const stopMediaRecorder = () => {
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-    if (audioContextRef.current) {
-      try { audioContextRef.current.close(); } catch {}
-      audioContextRef.current = null;
-    }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try { mediaRecorderRef.current.stop(); } catch {}
-    }
-    mediaRecorderRef.current = null;
-    // Release the microphone stream
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(t => t.stop());
-      mediaStreamRef.current = null;
-    }
-  };
+  const startSpeechRecognition = () => {
+    // 1. Stop any playing speech/audio first
+    stopSpeaking();
 
-  // STEP 1: Start recording audio from the microphone using MediaRecorder
-  const startSpeechRecognition = async () => {
-    // Stop any previous recording first
-    stopMediaRecorder();
-    audioChunksRef.current = [];
-    hasSpokenRef.current = false;
+    // 2. Check for browser Web Speech Recognition support
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech Recognition is not supported by your browser. Please use Google Chrome, Microsoft Edge, or Safari.');
+      setIsSpeechRecognitionActive(false);
+      setVoiceState('idle');
+      return;
+    }
+
+    // 3. Clean up any existing recognition instance
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.abort();
+      } catch (e) {
+        console.warn('Error aborting previous speech recognition:', e);
+      }
+      recognitionRef.current = null;
+    }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
 
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/webm')
-          ? 'audio/webm'
-          : 'audio/mp4';
+      recognition.continuous = false; // Capture complete sentence then stop
+      recognition.interimResults = true; // Real-time feedback as user speaks
+      recognition.maxAlternatives = 1;
 
-      const recorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = recorder;
-
-      // Set up real-time audio analysis for silence detection (VAD)
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        if (AudioCtx) {
-          const audioCtx = new AudioCtx();
-          audioContextRef.current = audioCtx;
-          const source = audioCtx.createMediaStreamSource(stream);
-          const analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 512;
-          analyser.smoothingTimeConstant = 0.2;
-          source.connect(analyser);
-
-          const dataArray = new Uint8Array(analyser.frequencyBinCount);
-          let checkAudioInterval: any = null;
-
-          const detectSound = () => {
-            if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') {
-              if (checkAudioInterval) clearInterval(checkAudioInterval);
-              return;
-            }
-
-            analyser.getByteFrequencyData(dataArray);
-            let sum = 0;
-            for (let i = 0; i < dataArray.length; i++) {
-              sum += dataArray[i];
-            }
-            const average = sum / dataArray.length;
-
-            // Volume threshold for human speech
-            if (average > 14) {
-              hasSpokenRef.current = true;
-              if (silenceTimerRef.current) {
-                clearTimeout(silenceTimerRef.current);
-                silenceTimerRef.current = null;
-              }
-            } else if (hasSpokenRef.current) {
-              // User has spoken and is now silent: trigger stop after 1.5 seconds of silence
-              if (!silenceTimerRef.current) {
-                silenceTimerRef.current = setTimeout(() => {
-                  if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-                    mediaRecorderRef.current.stop();
-                  }
-                }, 1500);
-              }
-            }
-          };
-
-          checkAudioInterval = setInterval(detectSound, 100);
-        }
-      } catch (vadErr) {
-        console.warn('VAD setup failed, manual tap to stop available:', vadErr);
+      // Determine speech recognition language
+      const currLang = selectedLangRef.current;
+      let speechLang = 'en-IN';
+      if (currLang.code === 'gu') {
+        speechLang = 'gu-IN';
+      } else if (currLang.code === 'hi') {
+        speechLang = 'hi-IN';
+      } else if (currLang.code === 'auto') {
+        // Auto: default to Indian English / Hindi context
+        speechLang = 'en-IN';
+      } else if (currLang.speechLang) {
+        speechLang = currLang.speechLang;
       }
+      recognition.lang = speechLang;
 
-      recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
-        }
-      };
+      let capturedFinalText = '';
 
-      recorder.onstart = () => {
+      recognition.onstart = () => {
         setIsSpeechRecognitionActive(true);
         setVoiceState('listening');
         setLiveTranscript('');
       };
 
-      // When recording stops, run the 3-step pipeline
-      recorder.onstop = async () => {
-        setIsSpeechRecognitionActive(false);
-
-        if (silenceTimerRef.current) {
-          clearTimeout(silenceTimerRef.current);
-          silenceTimerRef.current = null;
-        }
-        if (audioContextRef.current) {
-          try { audioContextRef.current.close(); } catch {}
-          audioContextRef.current = null;
-        }
-
-        // Release mic stream immediately
-        if (mediaStreamRef.current) {
-          mediaStreamRef.current.getTracks().forEach(t => t.stop());
-          mediaStreamRef.current = null;
-        }
-
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        audioChunksRef.current = [];
-
-        if (audioBlob.size < 100) {
-          // Too small — likely silence, restart listening
-          if (voiceStateRef.current !== 'speaking') {
-            setVoiceState('idle');
-          }
-          if (isLiveVoiceModeRef.current) {
-            setTimeout(() => {
-              if (isLiveVoiceModeRef.current && voiceStateRef.current === 'idle') {
-                startSpeechRecognition();
-              }
-            }, 600);
-          }
-          return;
-        }
-
-        // ── STEP 1: Transcribe ──
-        setVoiceState('thinking');
-        setLiveTranscript('Transcribing...');
-
-        const transcribeResult = await transcribeAudio(audioBlob);
-
-        if (!transcribeResult || !transcribeResult.transcription.trim()) {
-          setLiveTranscript('');
-          if (voiceStateRef.current !== 'speaking') setVoiceState('idle');
-          if (isLiveVoiceModeRef.current) {
-            setTimeout(() => {
-              if (isLiveVoiceModeRef.current && voiceStateRef.current === 'idle') {
-                startSpeechRecognition();
-              }
-            }, 600);
-          }
-          return;
-        }
-
-        const userText = transcribeResult.transcription.trim();
-        const detectedLang = transcribeResult.language || 'en';
-
-        setLiveTranscript(userText);
-        setInput(userText);
-
-        // Determine effective language for display
-        const effectiveLangCode = selectedLangRef.current.code === 'auto' ? detectedLang : selectedLangRef.current.code;
-        const effectiveLangObj = SUPPORTED_LANGUAGES.find(l => l.code === effectiveLangCode) || SUPPORTED_LANGUAGES[0];
-
-        // Add user message to chat
-        const userMessage: ChatMessage = {
-          id: `msg-${Date.now()}`,
-          role: 'user',
-          content: userText,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          language: effectiveLangCode,
-        };
-
-        const currentActiveSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
-        const updatedMessages = [...currentActiveSession.messages, userMessage];
-        const isFirstQuery = currentActiveSession.messages.filter(m => m.role === 'user').length === 0;
-        const newTitle = isFirstQuery && userText
-          ? userText.slice(0, 32) + (userText.length > 32 ? '...' : '')
-          : currentActiveSession.title;
-
-        setSessions(prev => prev.map(s => {
-          if (s.id === currentActiveSession.id) {
-            return { ...s, title: newTitle, messages: updatedMessages, languageCode: effectiveLangCode, updatedAt: Date.now() };
-          }
-          return s;
-        }));
-
-        setInput('');
-        setLiveTranscript('');
-        setIsTyping(true);
-
-        // ── STEP 2: Ask LLM ──
-        let aiResponseText = '';
-        const isAuto = selectedLangRef.current.code === 'auto';
-        const langToSend = isAuto ? 'auto' : (selectedLangRef.current.code || 'en');
-
-        try {
-          const askResult = await askLLM(userText, langToSend);
-          if (askResult && askResult.answer) {
-            aiResponseText = askResult.answer;
+      recognition.onresult = (event: any) => {
+        let interimText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcriptChunk = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            capturedFinalText += transcriptChunk;
           } else {
-            aiResponseText = generateWeatherResponse(userText, effectiveLangCode);
+            interimText += transcriptChunk;
           }
-        } catch {
-          aiResponseText = generateWeatherResponse(userText, effectiveLangCode);
         }
 
-        const aiMessage: ChatMessage = {
-          id: `msg-${Date.now() + 1}`,
-          role: 'assistant',
-          content: aiResponseText,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          language: effectiveLangCode,
-        };
+        const displayText = capturedFinalText || interimText;
+        if (displayText) {
+          setLiveTranscript(displayText);
+          setInput(displayText);
+        }
+      };
 
-        setSessions(prev => prev.map(s => {
-          if (s.id === currentActiveSession.id) {
-            return { ...s, messages: [...updatedMessages, aiMessage], updatedAt: Date.now() };
-          }
-          return s;
-        }));
-
-        setIsTyping(false);
-
-        // ── STEP 3: Speak the AI response ──
-        if (!isAudioMutedRef.current) {
-          setVoiceState('speaking');
-          setSpeakingMessageId(aiMessage.id);
-          setSpeakingCharIndex(0);
-
-          const cleanTtsText = aiResponseText.replace(/[*#`_-]/g, ' ');
-          const speakLang = (langToSend === 'auto' ? detectedLang : langToSend) || 'en';
-
-          try {
-            const audioBlob = await fetchVoiceSpeakAudioV2(cleanTtsText, speakLang);
-
-            if (audioBlob && audioBlob.size > 0) {
-              const audioUrl = URL.createObjectURL(audioBlob);
-              activeAudioUrlRef.current = audioUrl;
-              const audio = new Audio(audioUrl);
-              activeAudioRef.current = audio;
-
-              audio.onplay = () => setVoiceState('speaking');
-
-              audio.ontimeupdate = () => {
-                if (audio.duration > 0) {
-                  const ratio = audio.currentTime / audio.duration;
-                  setSpeakingCharIndex(Math.floor(ratio * cleanTtsText.length));
-                }
-              };
-
-              audio.onended = () => {
-                setVoiceState('idle');
-                setSpeakingMessageId(null);
-                setSpeakingCharIndex(null);
-                if (activeAudioUrlRef.current) {
-                  URL.revokeObjectURL(activeAudioUrlRef.current);
-                  activeAudioUrlRef.current = null;
-                }
-                activeAudioRef.current = null;
-
-                // Auto-restart STEP 1 (listening) after audio ends
-                if (isLiveVoiceModeRef.current) {
-                  setTimeout(() => {
-                    if (isLiveVoiceModeRef.current) startSpeechRecognition();
-                  }, 400);
-                }
-              };
-
-              audio.onerror = () => {
-                // Fallback to Web Speech TTS
-                if (activeAudioUrlRef.current) {
-                  URL.revokeObjectURL(activeAudioUrlRef.current);
-                  activeAudioUrlRef.current = null;
-                }
-                activeAudioRef.current = null;
-                fallbackWebSpeechTTS(cleanTtsText, effectiveLangObj.speechLang, aiMessage.id);
-              };
-
-              await audio.play();
-            } else {
-              // No audio blob returned, use fallback
-              fallbackWebSpeechTTS(cleanTtsText, effectiveLangObj.speechLang, aiMessage.id);
-            }
-          } catch {
-            fallbackWebSpeechTTS(cleanTtsText, effectiveLangObj.speechLang, aiMessage.id);
-          }
-        } else {
+      recognition.onerror = (event: any) => {
+        console.warn('SpeechRecognition error:', event.error);
+        setIsSpeechRecognitionActive(false);
+        if (voiceStateRef.current === 'listening') {
           setVoiceState('idle');
         }
-      };
 
-      recorder.onerror = (e: any) => {
-        console.warn('MediaRecorder error:', e);
-        setIsSpeechRecognitionActive(false);
-        setVoiceState('idle');
-        if (mediaStreamRef.current) {
-          mediaStreamRef.current.getTracks().forEach(t => t.stop());
-          mediaStreamRef.current = null;
+        if (event.error === 'not-allowed') {
+          alert('Microphone access was denied. Please allow microphone permissions in your browser settings.');
+        } else if (event.error === 'network') {
+          console.warn('Network issue during speech recognition.');
         }
       };
 
-      recorder.start();
+      recognition.onend = () => {
+        setIsSpeechRecognitionActive(false);
+        const queryText = (capturedFinalText || liveTranscript || input).trim();
+
+        if (queryText) {
+          setLiveTranscript(queryText);
+          // Automatically submit the recognized text as voice input!
+          handleSendMessage(queryText, true);
+        } else {
+          setVoiceState('idle');
+          if (isLiveVoiceModeRef.current) {
+            // In Live Voice Call mode, restart listening after pause if nothing said
+            setTimeout(() => {
+              if (isLiveVoiceModeRef.current && voiceStateRef.current === 'idle') {
+                startSpeechRecognition();
+              }
+            }, 1200);
+          }
+        }
+      };
+
+      recognition.start();
     } catch (err: any) {
-      console.error('Failed to start audio recording:', err);
+      console.error('Failed to start speech recognition:', err);
       setIsSpeechRecognitionActive(false);
       setVoiceState('idle');
       if (err.name === 'NotAllowedError') {
@@ -1034,16 +829,17 @@ export default function VoiceAssistantPage() {
     }
   };
 
-  // Stop recording — this triggers recorder.onstop which runs the 3-step pipeline
   const stopSpeechRecognition = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-    } else {
-      stopMediaRecorder();
-      setIsSpeechRecognitionActive(false);
-      if (voiceState === 'listening') {
-        setVoiceState('idle');
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.warn('Error stopping speech recognition:', e);
       }
+    }
+    setIsSpeechRecognitionActive(false);
+    if (voiceState === 'listening') {
+      setVoiceState('idle');
     }
   };
 
@@ -1850,7 +1646,17 @@ export default function VoiceAssistantPage() {
         {/* Floating Input Area (Positioned at bottom center) */}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/90 to-transparent pt-8 pointer-events-none">
           <div className="max-w-3xl mx-auto flex flex-col items-center gap-2 pointer-events-auto">
-            
+            {/* Live Speech Recognition Feedback Banner */}
+            {isSpeechRecognitionActive && (
+              <div className="flex items-center gap-2.5 px-4 py-2 bg-background/90 border border-primary/40 rounded-full shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+                <span className="text-xs font-semibold text-primary">Listening:</span>
+                <span className="text-xs text-foreground font-medium max-w-xs sm:max-w-md truncate">
+                  {liveTranscript || 'Speak now... (say "what is the weather today?")'}
+                </span>
+              </div>
+            )}
+
             {/* Input Bar with integrated Live Voice Call button */}
             <div className="w-full glass-panel text-white border border-white/20 shadow-2xl rounded-[2rem] p-2 flex items-center gap-2 transition-all focus-within:ring-2 focus-within:ring-primary/20">
               
