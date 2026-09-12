@@ -19,61 +19,7 @@ import { WeatherGlobe3D } from '../components/3d/WeatherGlobe3D';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { useMagnetic } from '../utils/gsapEffects';
 import { motion, AnimatePresence } from 'motion/react';
-
-// Popular cities and districts for instant search suggestions
-const POPULAR_CITIES = [
-  // Gujarat Cities & Districts
-  { name: 'Rajkot', region: 'Gujarat', country: 'India' },
-  { name: 'Ahmedabad', region: 'Gujarat', country: 'India' },
-  { name: 'Surat', region: 'Gujarat', country: 'India' },
-  { name: 'Vadodara', region: 'Gujarat', country: 'India' },
-  { name: 'Morbi', region: 'Gujarat', country: 'India' },
-  { name: 'Jamnagar', region: 'Gujarat', country: 'India' },
-  { name: 'Bhavnagar', region: 'Gujarat', country: 'India' },
-  { name: 'Junagadh', region: 'Gujarat', country: 'India' },
-  { name: 'Gandhinagar', region: 'Gujarat', country: 'India' },
-  { name: 'Anand', region: 'Gujarat', country: 'India' },
-  { name: 'Bharuch', region: 'Gujarat', country: 'India' },
-  { name: 'Porbandar', region: 'Gujarat', country: 'India' },
-  { name: 'Mehsana', region: 'Gujarat', country: 'India' },
-  { name: 'Bhuj', region: 'Gujarat', country: 'India' },
-  { name: 'Navsari', region: 'Gujarat', country: 'India' },
-  { name: 'Valsad', region: 'Gujarat', country: 'India' },
-  { name: 'Patan', region: 'Gujarat', country: 'India' },
-  { name: 'Amreli', region: 'Gujarat', country: 'India' },
-  { name: 'Surendranagar', region: 'Gujarat', country: 'India' },
-  { name: 'Somnath', region: 'Gujarat', country: 'India' },
-  { name: 'Dwarka', region: 'Gujarat', country: 'India' },
-
-  // Major Indian Metros & Hubs
-  { name: 'Mumbai', region: 'Maharashtra', country: 'India' },
-  { name: 'Delhi', region: 'Delhi', country: 'India' },
-  { name: 'Bengaluru', region: 'Karnataka', country: 'India' },
-  { name: 'Hyderabad', region: 'Telangana', country: 'India' },
-  { name: 'Chennai', region: 'Tamil Nadu', country: 'India' },
-  { name: 'Kolkata', region: 'West Bengal', country: 'India' },
-  { name: 'Pune', region: 'Maharashtra', country: 'India' },
-  { name: 'Jaipur', region: 'Rajasthan', country: 'India' },
-  { name: 'Udaipur', region: 'Rajasthan', country: 'India' },
-  { name: 'Indore', region: 'Madhya Pradesh', country: 'India' },
-  { name: 'Bhopal', region: 'Madhya Pradesh', country: 'India' },
-  { name: 'Lucknow', region: 'Uttar Pradesh', country: 'India' },
-  { name: 'Chandigarh', region: 'Punjab', country: 'India' },
-  { name: 'Goa', region: 'Goa', country: 'India' },
-  { name: 'Kochi', region: 'Kerala', country: 'India' },
-  { name: 'Shimla', region: 'Himachal Pradesh', country: 'India' },
-  { name: 'Srinagar', region: 'Jammu & Kashmir', country: 'India' },
-
-  // Key International Cities
-  { name: 'Dubai', region: 'Dubai', country: 'UAE' },
-  { name: 'London', region: 'England', country: 'UK' },
-  { name: 'New York', region: 'New York', country: 'USA' },
-  { name: 'Tokyo', region: 'Tokyo', country: 'Japan' },
-  { name: 'Paris', region: 'Île-de-France', country: 'France' },
-  { name: 'Singapore', region: 'Singapore', country: 'Singapore' },
-  { name: 'Sydney', region: 'NSW', country: 'Australia' },
-  { name: 'Toronto', region: 'Ontario', country: 'Canada' },
-];
+import { INDIAN_CITIES } from '../data/indianCities';
 
 // New Glass Weather Components
 import { WeatherHero } from '../components/weather/WeatherHero';
@@ -148,13 +94,30 @@ export default function Dashboard() {
   const [timelineTab, setTimelineTab] = useState<'forecast' | 'history'>('forecast');
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // Filter suggestions dynamically
+  // Filter suggestions dynamically from the comprehensive Indian cities dataset
   const filteredSuggestions = citySearch.trim()
-    ? POPULAR_CITIES.filter((c) =>
-        c.name.toLowerCase().includes(citySearch.trim().toLowerCase()) ||
-        c.region.toLowerCase().includes(citySearch.trim().toLowerCase()) ||
-        c.country.toLowerCase().includes(citySearch.trim().toLowerCase())
-      ).slice(0, 6)
+    ? (() => {
+        const query = citySearch.trim().toLowerCase();
+        // Exact prefix match on name first, then name contains, then state contains
+        const startsWithName: typeof INDIAN_CITIES = [];
+        const containsInName: typeof INDIAN_CITIES = [];
+        const containsInRegion: typeof INDIAN_CITIES = [];
+
+        for (const city of INDIAN_CITIES) {
+          const nameLower = city.name.toLowerCase();
+          const regionLower = city.region.toLowerCase();
+
+          if (nameLower.startsWith(query)) {
+            startsWithName.push(city);
+          } else if (nameLower.includes(query)) {
+            containsInName.push(city);
+          } else if (regionLower.includes(query)) {
+            containsInRegion.push(city);
+          }
+        }
+
+        return [...startsWithName, ...containsInName, ...containsInRegion].slice(0, 8);
+      })()
     : [];
 
   // Close dropdown on outside click
@@ -276,10 +239,11 @@ export default function Dashboard() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-0 right-0 mt-2 py-1.5 bg-slate-900/90 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 min-w-[200px]"
+                  className="absolute left-0 right-0 mt-2 py-1.5 bg-slate-900/95 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 min-w-[220px] max-h-64 overflow-y-auto"
                 >
-                  <div className="px-3 py-1 text-[10px] font-semibold text-white/40 uppercase tracking-wider">
-                    Suggestions
+                  <div className="px-3 py-1.5 flex items-center justify-between text-[10px] font-semibold text-white/40 uppercase tracking-wider border-b border-white/10">
+                    <span>Indian Cities</span>
+                    <span>{filteredSuggestions.length} found</span>
                   </div>
                   {filteredSuggestions.map((item) => (
                     <button
