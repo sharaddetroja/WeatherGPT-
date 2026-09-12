@@ -17,9 +17,9 @@ export interface UserPreferences {
 
 interface UserProfileContextType {
   isAuthenticated: boolean;
-  login: () => void;
+  login: (userData?: Partial<UserProfile>) => void;
   logout: () => void;
-  signup: () => void;
+  signup: (userData?: Partial<UserProfile>) => void;
   profile: UserProfile;
   preferences: UserPreferences;
   updateProfile: (data: Partial<UserProfile>) => void;
@@ -116,9 +116,18 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [preferences]);
 
-  const login = () => setIsAuthenticated(true);
-  const logout = () => setIsAuthenticated(false);
-  const signup = () => setIsAuthenticated(true);
+  const login = (userData?: Partial<UserProfile>) => {
+    setIsAuthenticated(true);
+    if (userData) {
+      updateProfile(userData);
+    }
+  };
+  const logout = () => {
+    setIsAuthenticated(false);
+    setProfile(DEFAULT_PROFILE);
+    localStorage.removeItem('weathergpt_user_profile');
+  };
+  const signup = (userData?: Partial<UserProfile>) => login(userData);
 
   const updateProfile = (data: Partial<UserProfile>) => {
     setProfile((prev) => {

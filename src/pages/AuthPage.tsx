@@ -26,9 +26,9 @@ const AuthPage = () => {
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
-        await userInfoRes.json();
+        const userInfo = await userInfoRes.json();
         
-        login();
+        login({ name: userInfo.name, email: userInfo.email });
         setIsLoading(false);
         navigate(from);
       } catch (error) {
