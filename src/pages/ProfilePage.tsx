@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Settings, Bell, MapPin, Moon, Sun, Save, Check, X, Edit3, Mail, Sparkles, CheckCircle2 } from 'lucide-react';
+import { User, Settings, Bell, MapPin, Moon, Sun, Save, Check, X, Edit3, Mail, Sparkles, CheckCircle2, LogOut } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { useTheme } from '../hooks/useTheme';
 import { useUserProfile, type TemperatureUnit, type UserProfile, type UserPreferences } from '../hooks/useUserProfile';
@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const [formProfile, setFormProfile] = useState<UserProfile>(profile);
   const [formPreferences, setFormPreferences] = useState<UserPreferences>(preferences);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isSavedRecently, setIsSavedRecently] = useState(false);
 
   // Sync with context if context updates externally
@@ -256,13 +257,10 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between pt-2">
         {isAuthenticated ? (
           <button
-            onClick={() => {
-              logout();
-              alert('Successfully logged out from WeatherGPT AI.');
-              window.location.href = '/';
-            }}
+            onClick={() => setIsLogoutModalOpen(true)}
             className="flex items-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all shadow-md cursor-pointer border border-red-500/50 text-red-500 hover:bg-red-500/10"
           >
+            <LogOut className="w-5 h-5" />
             <span>Logout</span>
           </button>
         ) : (
@@ -371,6 +369,42 @@ export default function ProfilePage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="glass-panel text-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 animate-in zoom-in-95 duration-200 text-center">
+            
+            <div className="mx-auto w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-4">
+              <LogOut className="w-8 h-8" />
+            </div>
+            
+            <h3 className="text-xl font-bold text-foreground">Sign Out</h3>
+            <p className="text-muted-foreground text-sm">
+              Are you sure you want to sign out of your WeatherGPT AI account?
+            </p>
+
+            <div className="flex items-center gap-3 pt-4 mt-2">
+              <button
+                onClick={() => setIsLogoutModalOpen(false)}
+                className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold border border-border hover:bg-muted text-foreground transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setIsLogoutModalOpen(false);
+                  logout();
+                  window.location.href = '/';
+                }}
+                className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition-all shadow-md cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       )}
