@@ -72,7 +72,8 @@ export interface AskApiResponse {
   explainWhy?: any;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://weathergpt-back-end.onrender.com/api';
+// Use relative paths to allow Vite (local) and Vercel (production) proxies to bypass CORS
+const API_BASE_URL = '/api';
 const API_ENDPOINT = `${API_BASE_URL}/ask`;
 export const WEATHER_ENDPOINT = `${API_BASE_URL}/weather`;
 export const WEATHER_CURRENT_ENDPOINT = `${API_BASE_URL}/weather/current`;
