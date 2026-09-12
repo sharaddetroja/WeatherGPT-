@@ -69,17 +69,14 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-      <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8 w-full mx-auto">
-        <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
-          <motion.div 
-            whileHover={{ rotate: 15, scale: 1.15 }}
-            transition={{ type: 'spring', stiffness: 400 }}
-          >
-            <CloudRain className="h-6 w-6 text-primary" />
-          </motion.div>
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
-            WeatherGPT
+    <nav className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/85 backdrop-blur-lg">
+      <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8 w-full max-w-[1240px] mx-auto">
+        <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
+            <CloudRain className="h-4 h-4" />
+          </div>
+          <span className="text-lg font-black tracking-tight text-foreground">
+            Weather<span className="text-emerald-700 dark:text-emerald-400">GPT</span>
           </span>
         </Link>
         

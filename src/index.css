@@ -4,31 +4,51 @@
 
 @layer base {
   :root {
-    --background: #f8fafc; /* slate-50 */
-    --foreground: #0f172a; /* slate-900 */
-    --card: #ffffff;
-    --card-foreground: #0f172a;
-    --primary: #3b82f6; /* blue-500 */
-    --primary-foreground: #ffffff;
-    --muted: #f1f5f9; /* slate-100 */
-    --muted-foreground: #64748b; /* slate-500 */
-    --border: #e2e8f0; /* slate-200 */
-    --accent: #dbeafe; /* blue-100 */
-    --accent-foreground: #1e3a8a; /* blue-900 */
+    --background: #F7F8F3;
+    --secondary-bg: #EEF2EA;
+    --foreground: #101226;
+    --secondary-text: #66706A;
+    --card: #FFFFFF;
+    --card-foreground: #101226;
+    --primary: #123F2B;
+    --primary-foreground: #FFFFFF;
+    --muted: #EEF2EA;
+    --muted-foreground: #66706A;
+    --border: #E2E8DE;
+    --accent: #DDE9DF;
+    --accent-foreground: #0B2F20;
+
+    --main-green: #123F2B;
+    --deep-green: #0B2F20;
+    --soft-green: #DDE9DF;
+    --card-green: #1E4D37;
+    --rain-accent: #6FA8C9;
+    --sunny-accent: #E7B85C;
+    --warning-accent: #D89A4A;
   }
 
   .dark {
-    --background: #0f172a; /* slate-900 */
-    --foreground: #f8fafc; /* slate-50 */
-    --card: #1e293b; /* slate-800 */
-    --card-foreground: #f8fafc;
-    --primary: #3b82f6; /* blue-500 */
-    --primary-foreground: #ffffff;
-    --muted: #334155; /* slate-700 */
-    --muted-foreground: #94a3b8; /* slate-400 */
-    --border: #334155; /* slate-700 */
-    --accent: #1e3a8a; /* blue-900 */
-    --accent-foreground: #dbeafe; /* blue-100 */
+    --background: #0C1511;
+    --secondary-bg: #14251C;
+    --foreground: #F5F7F3;
+    --secondary-text: #90A096;
+    --card: #14251C;
+    --card-foreground: #F5F7F3;
+    --primary: #1E4D37;
+    --primary-foreground: #FFFFFF;
+    --muted: #182E22;
+    --muted-foreground: #90A096;
+    --border: #1E3326;
+    --accent: #1E382A;
+    --accent-foreground: #DDE9DF;
+
+    --main-green: #1E4D37;
+    --deep-green: #0C1511;
+    --soft-green: #1E382A;
+    --card-green: #183324;
+    --rain-accent: #6FA8C9;
+    --sunny-accent: #E7B85C;
+    --warning-accent: #D89A4A;
   }
 }
 
