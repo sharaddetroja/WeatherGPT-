@@ -83,7 +83,7 @@ export default function AlertsPage() {
             ) : (
               <button
                 onClick={triggerHeavyRainTestAlert}
-                className="px-4 py-2 bg-card hover:bg-muted border border-border text-foreground font-semibold rounded-xl text-xs transition-colors cursor-pointer shadow-2xs"
+                className="px-4 py-2 glass-pill border border-white/20 text-white hover:bg-white/10 font-semibold rounded-xl text-xs transition-colors cursor-pointer shadow-2xs"
               >
                 Send Test Alert
               </button>
@@ -119,7 +119,7 @@ export default function AlertsPage() {
                       {/* Send notification test for this specific card */}
                       <button
                         onClick={() => sendAlertNotification(alert)}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-muted hover:bg-primary/10 hover:text-primary rounded-lg text-xs font-semibold text-muted-foreground transition-all cursor-pointer"
+                        className="flex items-center gap-1.5 px-3 py-1 glass-pill hover:bg-white/20 rounded-lg text-xs font-semibold text-white transition-all cursor-pointer"
                         title="Play audio chime and send notification for this alert"
                       >
                         <Volume2 className="w-3.5 h-3.5" />

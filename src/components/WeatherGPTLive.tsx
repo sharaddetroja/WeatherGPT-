@@ -98,7 +98,7 @@ export function WeatherGPTLive({ className, defaultQuestion = '' }: WeatherGPTLi
   };
 
   return (
-    <div className={cn("bg-[#1E4D37] dark:bg-[#14251C] text-white border border-[#2A6147] dark:border-[#1E3A2B] rounded-4xl p-6 md:p-8 shadow-xl relative overflow-hidden", className)}>
+ <div className={cn("glass-panel dark: text-white border border-[#2A6147] dark:border-[#1E3A2B] rounded-4xl p-6 md:p-8 shadow-xl relative overflow-hidden", className)}> 
       {/* Subtle atmospheric ambient glow inside dark green card */}
       <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
       

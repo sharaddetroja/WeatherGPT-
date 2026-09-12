@@ -142,13 +142,10 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
           {/* SVG Smooth Temperature Curve */}
           <svg width={svgWidth} height={svgHeight} className="overflow-visible block">
             <defs>
-              {/* Curve Gradient: Green to Orange to Red */}
+              {/* Curve Gradient: Solid Soft Green */}
               <linearGradient id="tempGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#4ADE80" />
-                <stop offset="30%" stopColor="#FACC15" />
-                <stop offset="65%" stopColor="#FB923C" />
-                <stop offset="85%" stopColor="#F87171" />
-                <stop offset="100%" stopColor="#FB923C" />
+                <stop offset="0%" stopColor="#83C78C" />
+                <stop offset="100%" stopColor="#83C78C" />
               </linearGradient>
 
               {/* Area fill gradient */}
@@ -210,7 +207,7 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
                   cy={currentPoint.y}
                   r="14"
                   fill="rgba(255, 255, 255, 0.95)"
-                  stroke="#4ADE80"
+                  stroke="#83C78C"
                   strokeWidth="3"
                   className="drop-shadow-sm"
                 />
@@ -252,8 +249,8 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
                 </div>
 
                 {/* Rain Probability % */}
-                <div className="flex items-center gap-0.5 text-[10px] text-sky-200 font-bold my-0.5">
-                  <Droplets className="w-2.5 h-2.5 text-sky-300" />
+                <div className="flex items-center gap-0.5 text-[10px] text-[#A795ED] font-bold my-0.5">
+                  <Droplets className="w-2.5 h-2.5 text-[#A795ED]" />
                   <span>{pt.chance_of_rain || 0}%</span>
                 </div>
 

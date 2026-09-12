@@ -297,21 +297,26 @@ export default function Dashboard() {
             rainProbability={data.forecast[0].chance_of_rain}
           />
 
-          {/* Air Quality Glass Card */}
-          <AirQualityGlass
-            score={50}
-            pm25={9.4}
-            pm10={18.1}
-            statusText="Satisfactory"
-          />
-
-          {/* Weather Alerts Glass Card */}
-          <WeatherAlertsGlass alerts={alerts} />
         </div>
       </div>
 
       {/* ===================================================================== */}
-      {/* ROW 3: WEATHERGPT AI ASSISTANT SECTION                                */}
+      {/* ROW 3: AIR QUALITY & WEATHER ALERTS                                   */}
+      {/* ===================================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <AirQualityGlass
+          score={50}
+          pm25={9.4}
+          pm10={18.1}
+          statusText="Satisfactory"
+          className="h-full"
+        />
+
+        <WeatherAlertsGlass alerts={alerts} className="h-full" />
+      </div>
+
+      {/* ===================================================================== */}
+      {/* ROW 4: WEATHERGPT AI ASSISTANT SECTION                                */}
       {/* ===================================================================== */}
       <div>
         <WeatherGPTAssistantGlass

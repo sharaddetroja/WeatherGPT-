@@ -51,8 +51,8 @@ export default function LanguageSelectionPage() {
                 onClick={() => setLanguage(lang)}
                 className={`p-5 rounded-2xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group ${
                   isSelected
-                    ? 'bg-primary/10 border-primary shadow-lg ring-2 ring-primary/30 scale-[1.02]'
-                    : 'bg-card hover:bg-muted/70 border-border hover:border-primary/40'
+                    ? 'glass-pill-active text-white scale-[1.02]'
+                    : 'glass-panel text-white hover:bg-white/10 hover:border-white/40'
                 }`}
               >
                 {isSelected && (
@@ -82,7 +82,7 @@ export default function LanguageSelectionPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="p-6 bg-card border border-border rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+      <div className="p-6 glass-panel border border-white/20 text-white rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-emerald-500/10 text-emerald-600 rounded-2xl">
             <Sparkles className="w-6 h-6 animate-pulse" />

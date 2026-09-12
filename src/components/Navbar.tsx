@@ -133,7 +133,7 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute top-full right-0 mt-2 w-56 bg-slate-900/90 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 p-1.5 space-y-0.5 text-white"
+ className="glass-panel absolute top-full right-0 mt-2 w-56 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 p-1.5 space-y-0.5 text-white" 
                 >
                   <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/60 border-b border-white/15 flex items-center justify-between">
                     <span>Select Language</span>
@@ -208,7 +208,7 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900/90 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 text-white"
+ className="glass-panel absolute right-0 mt-2 w-80 sm:w-96 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 text-white" 
                 >
                   {/* Header */}
                   <div className="p-3.5 border-b border-white/15 bg-white/5 flex items-center justify-between">
@@ -349,7 +349,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-white/15 p-4 bg-slate-900/95 backdrop-blur-2xl text-white overflow-hidden space-y-1"
+ className="glass-panel md:hidden border-t border-white/15 p-4 backdrop-blur-2xl text-white overflow-hidden space-y-1" 
           >
             <div className="flex flex-col space-y-1">
               {mainNavItems.map((item) => (

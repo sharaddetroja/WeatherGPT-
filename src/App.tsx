@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import WeatherMapPage from './pages/WeatherMapPage';
@@ -18,8 +18,9 @@ import { LanguageProvider } from './hooks/useLanguage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useUserProfile();
+  const location = useLocation();
   if (!isAuthenticated) {
-    return <AuthPage />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
   return <>{children}</>;
 }
@@ -37,6 +38,7 @@ function AppRoutes() {
         <Route path="marine" element={<MarineSafetyPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="language" element={<LanguageSelectionPage />} />
+        <Route path="login" element={<AuthPage />} />
         <Route path="assistant" element={<ProtectedRoute><VoiceAssistantPage /></ProtectedRoute>} />
         <Route path="chat" element={<ProtectedRoute><VoiceAssistantPage /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />

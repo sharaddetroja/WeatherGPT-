@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Cloud, Lock, Mail, User, Loader2, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import emailjs from '@emailjs/browser';
@@ -10,6 +10,8 @@ const AuthPage = () => {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const { login, signup } = useUserProfile();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,11 +30,12 @@ const AuthPage = () => {
     setTimeout(() => {
       login();
       setIsLoading(false);
+      navigate(from);
     }, 800);
   };
 
   const handleGuest = () => {
-    navigate('/');
+    navigate(from);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,6 +45,7 @@ const AuthPage = () => {
     try {
       if (isLogin) {
         login();
+        navigate(from);
       } else {
         if (name && email && password) {
           const serviceID = 'YOUR_SERVICE_ID';
@@ -66,6 +70,7 @@ const AuthPage = () => {
           }
 
           signup();
+          navigate(from);
         }
       }
     } finally {
@@ -74,7 +79,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="h-full w-full min-h-[100dvh] flex items-center justify-center p-4 relative overflow-hidden bg-background text-foreground">
+    <div className="h-full w-full min-h-[100dvh] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Mock Google OAuth Modal */}
       <AnimatePresence>
         {showGoogleMock && (
@@ -146,7 +151,7 @@ const AuthPage = () => {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="max-w-sm w-full z-10"
       >
-        <div className="bg-card/70 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-border/50 p-8">
+        <div className="glass-panel rounded-3xl shadow-2xl overflow-hidden p-8 text-white">
           <div className="flex flex-col items-center justify-center mb-8">
             <motion.div 
               initial={{ scale: 0.8 }}
@@ -174,7 +179,7 @@ const AuthPage = () => {
                 <button
                   onClick={handleMockOauth}
                   disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border bg-background hover:bg-muted rounded-xl text-sm font-semibold transition-all"
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 glass-pill rounded-xl text-sm font-semibold transition-all hover:bg-white/10 text-white"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -188,7 +193,7 @@ const AuthPage = () => {
 
                 <button
                   onClick={() => setShowEmailForm(true)}
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-border bg-background hover:bg-muted rounded-xl text-sm font-semibold transition-all"
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 glass-pill rounded-xl text-sm font-semibold transition-all hover:bg-white/10 text-white"
                 >
                   <Mail className="w-5 h-5 text-foreground" />
                   Continue with Email
@@ -235,7 +240,7 @@ const AuthPage = () => {
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all sm:text-sm"
+                          className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm"
                           placeholder="Full Name"
                           required={!isLogin}
                         />
@@ -252,7 +257,7 @@ const AuthPage = () => {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all sm:text-sm"
+                        className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm"
                         placeholder="Email Address"
                         required
                       />
@@ -268,7 +273,7 @@ const AuthPage = () => {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="block w-full pl-9 pr-3 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all sm:text-sm"
+                        className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm"
                         placeholder="Password"
                         required
                       />
