@@ -154,7 +154,9 @@ export default function ProfilePage() {
                 value={formPreferences.tempUnit}
                 onChange={(e) => {
                   const newUnit = e.target.value as TemperatureUnit;
-                  setFormPreferences(prev => ({ ...prev, tempUnit: newUnit }));
+                  const updated = { ...formPreferences, tempUnit: newUnit };
+                  setFormPreferences(updated);
+                  saveChanges(formProfile, updated);
                 }}
                 className="glass-input rounded-xl px-3.5 py-2 font-medium cursor-pointer"
               >
@@ -178,7 +180,8 @@ export default function ProfilePage() {
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Sun className="w-3.5 h-3.5 text-amber-500" /> Light
+                  <Sun className="w-4 h-4" />
+                  Light
                 </button>
                 <button 
                   onClick={() => setTheme('dark')}
@@ -188,10 +191,12 @@ export default function ProfilePage() {
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Moon className="w-3.5 h-3.5 text-blue-400" /> Dark
+                  <Moon className="w-4 h-4" />
+                  Dark
                 </button>
               </div>
             </div>
+
           </CardContent>
         </Card>
 
@@ -214,7 +219,11 @@ export default function ProfilePage() {
                   type="checkbox" 
                   className="sr-only peer" 
                   checked={formPreferences.weatherAlertsNotification}
-                  onChange={(e) => setFormPreferences(prev => ({ ...prev, weatherAlertsNotification: e.target.checked }))}
+                  onChange={(e) => {
+                    const updated = { ...formPreferences, weatherAlertsNotification: e.target.checked };
+                    setFormPreferences(updated);
+                    saveChanges(formProfile, updated);
+                  }}
                 />
                 <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
@@ -230,7 +239,11 @@ export default function ProfilePage() {
                   type="checkbox" 
                   className="sr-only peer" 
                   checked={formPreferences.dailyForecastNotification}
-                  onChange={(e) => setFormPreferences(prev => ({ ...prev, dailyForecastNotification: e.target.checked }))}
+                  onChange={(e) => {
+                    const updated = { ...formPreferences, dailyForecastNotification: e.target.checked };
+                    setFormPreferences(updated);
+                    saveChanges(formProfile, updated);
+                  }}
                 />
                 <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
