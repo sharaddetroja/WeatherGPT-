@@ -76,11 +76,12 @@ export default function AgriculturePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getWeatherData().then(res => {
+    const city = profile.location || 'Rajkot';
+    getWeatherData(city).then(res => {
       setLiveWeatherData(res);
       setLoading(false);
     });
-  }, []);
+  }, [profile.location]);
 
   const handleExportPDF = () => {
     exportWeatherPDF({

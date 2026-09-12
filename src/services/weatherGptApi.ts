@@ -72,14 +72,14 @@ export interface AskApiResponse {
   explainWhy?: any;
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://weathergpt-backend-46or.onrender.com';
-const API_ENDPOINT = `${BASE_URL}/api/ask`;
-export const WEATHER_ENDPOINT = `${BASE_URL}/api/weather`;
-export const WEATHER_CURRENT_ENDPOINT = `${BASE_URL}/api/weather/current`;
-export const WEATHER_HOURLY_ENDPOINT = `${BASE_URL}/api/weather/hourly`;
-export const WEATHER_DAILY_ENDPOINT = `${BASE_URL}/api/weather/daily`;
-export const WEATHER_ALERTS_ENDPOINT = `${BASE_URL}/api/weather/alerts`;
-export const HEALTH_ENDPOINT = `${BASE_URL}/api/health`;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://weathergpt-back-end.onrender.com/api';
+const API_ENDPOINT = `${API_BASE_URL}/ask`;
+export const WEATHER_ENDPOINT = `${API_BASE_URL}/weather`;
+export const WEATHER_CURRENT_ENDPOINT = `${API_BASE_URL}/weather/current`;
+export const WEATHER_HOURLY_ENDPOINT = `${API_BASE_URL}/weather/hourly`;
+export const WEATHER_DAILY_ENDPOINT = `${API_BASE_URL}/weather/daily`;
+export const WEATHER_ALERTS_ENDPOINT = `${API_BASE_URL}/weather/alerts`;
+export const HEALTH_ENDPOINT = `${API_BASE_URL}/health`;
 
 export interface AskWeatherGPTParams {
   question: string;
@@ -193,7 +193,7 @@ export interface ReverseGeocodeResponse {
  * 2. Mobile GPS Reverse Geocoding
  */
 export async function reverseGeocodeLocation(lat: number, lon: number): Promise<ReverseGeocodeResponse> {
-  const response = await fetch(`${BASE_URL}/api/location/reverse-geocode`, {
+  const response = await fetch(`${API_BASE_URL}/location/reverse-geocode`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ latitude: lat, longitude: lon }),
@@ -206,7 +206,7 @@ export async function reverseGeocodeLocation(lat: number, lon: number): Promise<
  * 3. Disaster Intelligence - Alerts
  */
 export async function getDisasterAlerts(location: string): Promise<any> {
-  const response = await fetch(`${BASE_URL}/api/disaster/alerts?location=${encodeURIComponent(location)}`);
+  const response = await fetch(`${API_BASE_URL}/disaster/alerts?location=${encodeURIComponent(location)}`);
   if (!response.ok) throw new Error('Failed to fetch disaster alerts');
   return response.json();
 }
@@ -216,7 +216,7 @@ export async function getDisasterAlerts(location: string): Promise<any> {
  */
 export async function getEmergencyGuide(disasterType: string, language: string = 'en'): Promise<any> {
   const response = await fetch(
-    `${BASE_URL}/api/disaster/emergency-guide?disasterType=${encodeURIComponent(disasterType)}&language=${encodeURIComponent(language)}`
+    `${API_BASE_URL}/disaster/emergency-guide?disasterType=${encodeURIComponent(disasterType)}&language=${encodeURIComponent(language)}`
   );
   if (!response.ok) throw new Error('Failed to fetch emergency guide');
   return response.json();
@@ -227,7 +227,7 @@ export async function getEmergencyGuide(disasterType: string, language: string =
  */
 export async function getMapWeatherOverlay(layer: string, lat: number, lon: number): Promise<{tileUrlTemplate: string, legend?: any}> {
   const response = await fetch(
-    `${BASE_URL}/api/maps/weather?layer=${encodeURIComponent(layer)}&lat=${lat}&lon=${lon}`
+    `${API_BASE_URL}/maps/weather?layer=${encodeURIComponent(layer)}&lat=${lat}&lon=${lon}`
   );
   if (!response.ok) throw new Error('Failed to fetch map overlay data');
   return response.json();
@@ -237,7 +237,7 @@ export async function getMapWeatherOverlay(layer: string, lat: number, lon: numb
  * 5. Multi-City Comparison
  */
 export async function compareCitiesWeather(locations: string[]): Promise<any> {
-  const response = await fetch(`${BASE_URL}/api/weather/compare`, {
+  const response = await fetch(`${API_BASE_URL}/weather/compare`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ locations }),
@@ -272,7 +272,7 @@ export async function analyzeWeatherLens(
     }
   }
 
-  const response = await fetch(`${BASE_URL}/api/weather/lens`, {
+  const response = await fetch(`${API_BASE_URL}/weather/lens`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -95,7 +95,8 @@ export default function Dashboard() {
   const fetchWeather = () => {
     setLoading(true);
     setError(false);
-    getWeatherData()
+    const city = profile.location || 'Rajkot';
+    getWeatherData(city)
       .then((res) => {
         if (!res || !res.current) {
           setError(true);
@@ -113,7 +114,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchWeather();
-  }, []);
+  }, [profile.location]);
 
   const handleCitySearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
