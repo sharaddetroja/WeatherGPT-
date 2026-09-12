@@ -514,7 +514,7 @@ export const detectLanguage = (text: string): string => {
     return 'hi';
   }
   
-  const lower = text.toLowerCase();
+  const lower = (text || '').toLowerCase();
 
   // Romanized / Transliterated Language Detection
   if (/\b(varsad|varsat|chhatri|chatri|aaje|aaj|kem|su|tamare|hovanu|nathi|khabar|pavan|garmi|tapman)\b/i.test(lower)) {
@@ -747,7 +747,7 @@ export default function VoiceAssistantPage() {
 
       const voices = window.speechSynthesis.getVoices();
       // Normalise: accept both 'gu' and 'gu-IN' formats
-      const prefix = langCode.slice(0, 2).toLowerCase();
+      const prefix = (langCode || '').slice(0, 2).toLowerCase();
 
       let textToSpeak = text;
       let targetLang = langCode;
@@ -756,11 +756,11 @@ export default function VoiceAssistantPage() {
       if (prefix === 'gu') {
         targetLang = 'gu-IN';
         // Prefer Gujarati voice; fall back to Hindi/Indian if unavailable
-        matchVoice = voices.find(v => v.lang.startsWith('gu'))
-          || voices.find(v => v.lang.startsWith('hi'))
-          || voices.find(v => v.lang.toLowerCase().includes('in'));
+        matchVoice = voices.find(v => v.lang && v.lang.startsWith('gu'))
+          || voices.find(v => v.lang && v.lang.startsWith('hi'))
+          || voices.find(v => v.lang && v.lang.toLowerCase().includes('in'));
         // If no native Gujarati TTS, transliterate to Devanagari for Hindi voice
-        if (!voices.find(v => v.lang.startsWith('gu'))) {
+        if (!voices.find(v => v.lang && v.lang.startsWith('gu'))) {
           textToSpeak = gujaratiToDevanagari(text);
           targetLang = 'hi-IN';
         }
@@ -908,7 +908,7 @@ export default function VoiceAssistantPage() {
   const generateWeatherResponse = (query: string, langCode: string): string => {
     // If auto-detect, determine language from query text
     const activeLang = langCode === 'auto' ? detectLanguage(query) : langCode;
-    const q = query.toLowerCase();
+    const q = (query || '').toLowerCase();
 
     // Dynamic temperature strings matching user unit (°C or °F)
     const curTemp = formatTemp(28);
@@ -917,8 +917,8 @@ export default function VoiceAssistantPage() {
     const minTemp = formatTemp(24);
 
     // Check if user mentioned a specific location
-    const locationMatch = query.match(/\b(rajkot|ahmedabad|surat|vadodara|mumbai|delhi|bengaluru|chennai|kolkata|pune|hyderabad|london|paris|dubai|tokyo|new york)\b/i);
-    const locName = locationMatch ? locationMatch[0].charAt(0).toUpperCase() + locationMatch[0].slice(1).toLowerCase() : (profile.location ? profile.location.split(',')[0].trim() : "Rajkot");
+    const locationMatch = (query || '').match(/\b(rajkot|ahmedabad|surat|vadodara|mumbai|delhi|bengaluru|chennai|kolkata|pune|hyderabad|london|paris|dubai|tokyo|new york)\b/i);
+    const locName = locationMatch ? locationMatch[0].charAt(0).toUpperCase() + (locationMatch[0].slice(1) || '').toLowerCase() : (profile.location ? profile.location.split(',')[0].trim() : "Rajkot");
 
     // 1. GUJARATI (ગુજરાતી)
     if (activeLang === 'gu') {
