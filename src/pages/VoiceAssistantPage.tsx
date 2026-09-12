@@ -748,7 +748,7 @@ export default function VoiceAssistantPage() {
     }
   }, [sessions, currentUserEmail]);
 
-  const { currentLang, setLanguage: setGlobalLanguage } = useLanguage();
+  const { setLanguage: setGlobalLanguage } = useLanguage();
 
   // Selected Language: Default to 'auto' (Auto Detect) on initial load per requirements
   const [selectedLang, setSelectedLang] = useState<LanguageOption>(() => {
@@ -791,8 +791,6 @@ export default function VoiceAssistantPage() {
   const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [voiceLang, setVoiceLang] = useState<'auto' | 'gu-IN' | 'hi-IN' | 'en-IN'>('auto');
-  const voiceLangRef = useRef<'auto' | 'gu-IN' | 'hi-IN' | 'en-IN'>('auto');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -806,7 +804,6 @@ export default function VoiceAssistantPage() {
   const [speakingCharIndex, setSpeakingCharIndex] = useState<number | null>(null);
   const speechTickerRef = useRef<any>(null);
 
-  const transcriptRef = useRef<string>('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -822,7 +819,6 @@ export default function VoiceAssistantPage() {
   useEffect(() => { voiceStateRef.current = voiceState; }, [voiceState]);
   useEffect(() => { isAudioMutedRef.current = isAudioMuted; }, [isAudioMuted]);
   useEffect(() => { selectedLangRef.current = selectedLang; }, [selectedLang]);
-  useEffect(() => { voiceLangRef.current = voiceLang; }, [voiceLang]);
 
   const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
 
@@ -1292,7 +1288,7 @@ export default function VoiceAssistantPage() {
 
         // ── STEP 2: Ask LLM ──
         let aiResponseText = '';
-        const isAuto = selectedLangRef.current.code === 'auto' || voiceLangRef.current === 'auto';
+        const isAuto = selectedLangRef.current.code === 'auto';
         const langToSend = isAuto ? 'auto' : (selectedLangRef.current.code || 'en');
 
         try {
@@ -1423,17 +1419,6 @@ export default function VoiceAssistantPage() {
         setVoiceState('idle');
       }
     }
-  };
-
-  const restartListening = () => {
-    stopSpeaking();
-    stopMediaRecorder();
-    setIsSpeechRecognitionActive(false);
-    setTimeout(() => {
-      if (isLiveVoiceModeRef.current) {
-        startSpeechRecognition();
-      }
-    }, 150);
   };
 
   // Generate Multilingual Realistic AI Weather Response for ALL languages

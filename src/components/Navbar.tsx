@@ -23,7 +23,7 @@ import { useMagnetic } from '../utils/gsapEffects';
 export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { profile, updateProfile, isAuthenticated } = useUserProfile();
+  const { profile, isAuthenticated } = useUserProfile();
   const { t } = useLanguage();
   const [notifOpen, setNotifOpen] = useState(false);
 
