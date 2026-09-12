@@ -81,6 +81,9 @@ export const WEATHER_HOURLY_ENDPOINT = `${API_BASE_URL}/weather/hourly`;
 export const WEATHER_DAILY_ENDPOINT = `${API_BASE_URL}/weather/daily`;
 export const WEATHER_ALERTS_ENDPOINT = `${API_BASE_URL}/weather/alerts`;
 export const HEALTH_ENDPOINT = `${API_BASE_URL}/health`;
+export const VOICE_SPEAK_ENDPOINT = `${API_BASE_URL}/voice/speak`;
+export const VOICE_TRANSCRIBE_ENDPOINT = `${API_BASE_URL}/voice/transcribe`;
+export const VOICE_ASK_ENDPOINT = `${API_BASE_URL}/voice/ask`;
 
 export interface AskWeatherGPTParams {
   question: string;
@@ -286,3 +289,65 @@ export async function analyzeWeatherLens(
   if (!response.ok) throw new Error('Failed to analyze weather lens image');
   return response.json();
 }
+
+/**
+ * 7. Voice Speak - Direct client-side TTS fetch from Render backend
+ */
+export async function fetchVoiceSpeakAudio(text: string, language: string = 'en-IN'): Promise<Blob | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/voice/speak`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, language }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const json = await response.json();
+      if (json.audioBase64) {
+        const byteCharacters = atob(json.audioBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: json.mimeType || 'audio/mp3' });
+      }
+      return null;
+    }
+
+    const blob = await response.blob();
+    return blob && blob.size > 0 ? blob : null;
+  } catch (err) {
+    console.warn('Backend TTS /voice/speak direct fetch failed:', err);
+    return null;
+  }
+}
+
+/**
+ * 8. Voice Transcribe - Direct client-side audio transcription fetch from Render backend
+ */
+export async function transcribeAudio(audioBlob: Blob, language: string = 'en-IN'): Promise<string | null> {
+  try {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.webm');
+    formData.append('language', language);
+
+    const response = await fetch(`${API_BASE_URL}/voice/transcribe`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.transcript || data.text || null;
+  } catch (err) {
+    console.warn('Backend /voice/transcribe direct fetch failed:', err);
+    return null;
+  }
+}
+

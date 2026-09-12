@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { askWeatherGPT, getUserLocation, analyzeWeatherLens } from '../services/weatherGptApi';
+import { askWeatherGPT, getUserLocation, analyzeWeatherLens, fetchVoiceSpeakAudio } from '../services/weatherGptApi';
 import { 
   Send, 
   Mic, 
@@ -781,9 +781,12 @@ export default function VoiceAssistantPage() {
     stopAllAudio();
   };
 
-  // Text-to-Speech function with smart voice matching by language code
-  const speakText = (text: string, langCode: string = selectedLangRef.current.speechLang) => {
-    if (isAudioMutedRef.current || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  // Fallback Text-to-Speech using browser Web SpeechSynthesis
+  const fallbackWebSpeechTTS = (text: string, langCode: string = selectedLangRef.current.speechLang) => {
+    if (isAudioMutedRef.current || typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      setVoiceState('idle');
+      return;
+    }
 
     try {
       window.speechSynthesis.cancel();
@@ -843,6 +846,63 @@ export default function VoiceAssistantPage() {
       console.warn('Speech synthesis error:', e);
       setVoiceState('idle');
     }
+  };
+
+  // Primary Text-to-Speech: Direct backend fetch to /api/voice/speak with HTML5 Audio, fallback to Web Speech
+  const speakText = async (text: string, langCode: string = selectedLangRef.current.speechLang) => {
+    if (isAudioMutedRef.current) return;
+
+    // 1. Stop any existing playing audio immediately
+    stopAllAudio();
+
+    try {
+      // 2. Fetch audio blob directly from Render backend (/api/voice/speak)
+      const audioBlob = await fetchVoiceSpeakAudio(text, langCode);
+
+      if (audioBlob && audioBlob.size > 0) {
+        const audioUrl = URL.createObjectURL(audioBlob);
+        activeAudioUrlRef.current = audioUrl;
+
+        const audio = new Audio(audioUrl);
+        activeAudioRef.current = audio;
+
+        audio.onplay = () => {
+          setVoiceState('speaking');
+        };
+
+        audio.onended = () => {
+          setVoiceState('idle');
+          if (activeAudioUrlRef.current) {
+            URL.revokeObjectURL(activeAudioUrlRef.current);
+            activeAudioUrlRef.current = null;
+          }
+          activeAudioRef.current = null;
+          if (isLiveVoiceModeRef.current) {
+            setTimeout(() => {
+              if (isLiveVoiceModeRef.current) startSpeechRecognition();
+            }, 400);
+          }
+        };
+
+        audio.onerror = (e) => {
+          console.warn('Backend HTML5 Audio playback failed, using Web Speech fallback:', e);
+          if (activeAudioUrlRef.current) {
+            URL.revokeObjectURL(activeAudioUrlRef.current);
+            activeAudioUrlRef.current = null;
+          }
+          activeAudioRef.current = null;
+          fallbackWebSpeechTTS(text, langCode);
+        };
+
+        await audio.play();
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend TTS error, falling back to Web Speech:', err);
+    }
+
+    // 3. Fallback to Web SpeechSynthesis if backend audio is not returned
+    fallbackWebSpeechTTS(text, langCode);
   };
 
   // Speech Recognition (Live Voice Dictation)
