@@ -72,8 +72,14 @@ export interface AskApiResponse {
   explainWhy?: any;
 }
 
-const BASE_URL = 'https://weathergpt-backend-46or.onrender.com';
+const BASE_URL = 'https://weathergpt-back-end.onrender.com';
 const API_ENDPOINT = `${BASE_URL}/api/ask`;
+export const WEATHER_ENDPOINT = `${BASE_URL}/api/weather`;
+export const WEATHER_CURRENT_ENDPOINT = `${BASE_URL}/api/weather/current`;
+export const WEATHER_HOURLY_ENDPOINT = `${BASE_URL}/api/weather/hourly`;
+export const WEATHER_DAILY_ENDPOINT = `${BASE_URL}/api/weather/daily`;
+export const WEATHER_ALERTS_ENDPOINT = `${BASE_URL}/api/weather/alerts`;
+export const HEALTH_ENDPOINT = `${BASE_URL}/api/health`;
 
 export interface AskWeatherGPTParams {
   question: string;

@@ -34,6 +34,7 @@ import { useMagnetic } from '../utils/gsapEffects';
 import { motion, AnimatePresence } from 'motion/react';
 import { KisanAdvisoryCard } from '../components/KisanAdvisoryCard';
 import { CircularGauge } from '../components/ui/CircularGauge';
+import { HourlyCurveChart } from '../components/HourlyCurveChart';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -382,44 +383,9 @@ export default function Dashboard() {
         <LightningTracker />
       </div>
 
-      {/* AI Insights & Hourly Grid */}
+      {/* AI Insights & Hourly Curve Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 shadow-lg">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>{t('hourly_forecast', 'Hourly Forecast')}</CardTitle>
-              <span className="text-xs font-bold text-muted-foreground">Unit: {tempUnitSymbol}</span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex overflow-x-auto pb-4 gap-4 hide-scrollbar snap-x">
-              {data.hourly.map((hour: any, idx: number) => (
-                <motion.div 
-                  key={idx} 
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  whileHover={{ y: -5, scale: 1.05 }}
-                  className="flex flex-col items-center justify-center p-4 bg-muted/60 hover:bg-muted rounded-2xl min-w-[105px] snap-center border border-border/40 transition-all shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-semibold text-muted-foreground">{hour.time}</span>
-                  <div className="my-3">
-                    {hour.icon.includes('rain') ? (
-                      <CloudRain className="w-8 h-8 text-blue-500 animate-pulse" />
-                    ) : (
-                      <Sun className="w-8 h-8 text-amber-500 animate-spin" style={{ animationDuration: '10s' }} />
-                    )}
-                  </div>
-                  <span className="text-xl font-extrabold text-foreground">{convertTemp(hour.temp_c)}°</span>
-                  <div className="flex items-center gap-1 mt-1 text-xs text-blue-500 font-bold">
-                    <Droplets className="w-3 h-3" />
-                    <span>{hour.chance_of_rain}%</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <HourlyCurveChart hourly={data.hourly} className="lg:col-span-2 shadow-lg" />
 
         <Card className="shadow-lg">
           <CardHeader>

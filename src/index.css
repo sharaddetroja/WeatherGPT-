@@ -18,15 +18,15 @@
   }
 
   .dark {
-    --background: #0f172a; /* slate-900 */
+    --background: #0b1736; /* Midnight Navy */
     --foreground: #f8fafc; /* slate-50 */
-    --card: #1e293b; /* slate-800 */
+    --card: #122247; /* Dark Navy Card */
     --card-foreground: #f8fafc;
     --primary: #3b82f6; /* blue-500 */
     --primary-foreground: #ffffff;
-    --muted: #334155; /* slate-700 */
+    --muted: #1e2f5b; /* Navy Muted */
     --muted-foreground: #94a3b8; /* slate-400 */
-    --border: #334155; /* slate-700 */
+    --border: #23386f; /* Deep Navy Border */
     --accent: #1e3a8a; /* blue-900 */
     --accent-foreground: #dbeafe; /* blue-100 */
   }
