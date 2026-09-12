@@ -248,11 +248,12 @@ export const Weather3DCanvas: React.FC<Weather3DCanvasProps> = ({
 
     // --- Animation Loop ---
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    let timer = new THREE.Timer();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
+      timer.update();
+      const elapsedTime = timer.getElapsed();
 
       // Smooth mouse parallax damping
       mouse.x += (mouse.targetX - mouse.x) * 0.05;

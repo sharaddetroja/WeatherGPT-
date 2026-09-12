@@ -172,11 +172,12 @@ export const WeatherGlobe3D: React.FC<{ className?: string }> = ({ className = '
 
     // --- Animation Loop ---
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    let timer = new THREE.Timer();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
+      timer.update();
+      const elapsed = timer.getElapsed();
 
       // Auto rotation when not dragging
       if (!isDragging && isRotating) {

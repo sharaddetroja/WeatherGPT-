@@ -83,11 +83,12 @@ export const AIVoiceOrb3D: React.FC<AIVoiceOrb3DProps> = ({
 
     // Animation Loop
     let frameId: number;
-    let clock = new THREE.Clock();
+    let timer = new THREE.Timer();
 
     const animate = () => {
       frameId = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
+      timer.update();
+      const elapsed = timer.getElapsed();
 
       // Dynamic oscillation based on voice state
       let speedMultiplier = 1.0;

@@ -124,11 +124,12 @@ export const WeatherOrb3D: React.FC<WeatherOrb3DProps> = ({
 
     // Animation loop
     let frameId: number;
-    let clock = new THREE.Clock();
+    let timer = new THREE.Timer();
 
     const animate = () => {
       frameId = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
+      timer.update();
+      const elapsed = timer.getElapsed();
 
       orbGroup.rotation.y += 0.012 + mouseX * 0.02;
       orbGroup.rotation.x = mouseY * 0.4 + Math.sin(elapsed) * 0.1;
