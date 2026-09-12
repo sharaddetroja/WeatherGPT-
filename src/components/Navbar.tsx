@@ -12,15 +12,13 @@ import {
   Moon, 
   Sparkles, 
   CheckCheck, 
-  BellRing,
-  Languages,
-  ChevronDown
+  BellRing
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useTheme } from '../hooks/useTheme';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
 import { useUserProfile } from '../hooks/useUserProfile';
-import { useLanguage, SITE_LANGUAGES } from '../hooks/useLanguage';
+import { useLanguage } from '../hooks/useLanguage';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useMagnetic } from '../utils/gsapEffects';
@@ -28,14 +26,12 @@ import { useMagnetic } from '../utils/gsapEffects';
 export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { profile, isAuthenticated } = useUserProfile();
-  const { currentLang, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const [notifOpen, setNotifOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
-  const langRef = useRef<HTMLDivElement>(null);
   const askAIBtnRef = useMagnetic<HTMLAnchorElement>(0.3);
 
   const mainNavItems = [
@@ -59,9 +55,6 @@ export default function Navbar() {
     function handleClickOutside(event: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setNotifOpen(false);
-      }
-      if (langRef.current && !langRef.current.contains(event.target as Node)) {
-        setLangOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -114,59 +107,7 @@ export default function Navbar() {
             <span>{profile.location || 'Rajkot, Gujarat'}</span>
           </div>
 
-          {/* Language Switcher Dropdown */}
-          <div className="relative" ref={langRef}>
-            <button
-              onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/12 hover:bg-white/20 rounded-full text-xs font-extrabold transition-all border border-white/20 cursor-pointer text-white backdrop-blur-md"
-              title="Change Site Language"
-            >
-              <span>{currentLang.flag}</span>
-              <span className="hidden sm:inline text-white">{currentLang.nativeName}</span>
-              <ChevronDown className={cn("w-3.5 h-3.5 text-white/70 transition-transform", langOpen && "rotate-180")} />
-            </button>
 
-            <AnimatePresence>
-              {langOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
- className="glass-panel absolute top-full right-0 mt-2 w-56 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 p-1.5 space-y-0.5 text-white" 
-                >
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/60 border-b border-white/15 flex items-center justify-between">
-                    <span>Select Language</span>
-                    <Link to="/language" onClick={() => setLangOpen(false)} className="text-sky-300 hover:underline font-extrabold">
-                      View All →
-                    </Link>
-                  </div>
-
-                  <div className="max-h-60 overflow-y-auto">
-                    {SITE_LANGUAGES.map((l) => (
-                      <button
-                        key={l.code}
-                        onClick={() => {
-                          setLanguage(l);
-                          setLangOpen(false);
-                        }}
-                        className={cn(
-                          "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-left",
-                          currentLang.code === l.code ? "bg-white/20 text-white" : "hover:bg-white/10 text-white/90"
-                        )}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span>{l.flag}</span>
-                          <span>{l.nativeName}</span>
-                        </div>
-                        {currentLang.code === l.code && <span className="text-[10px] bg-sky-400 text-slate-950 font-bold px-1.5 py-0.5 rounded-md">Active</span>}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
 
           <motion.button
             whileHover={{ scale: 1.15, rotate: 18 }}
@@ -368,19 +309,6 @@ export default function Navbar() {
               ))}
 
               <div className="pt-2 space-y-1 border-t border-white/10">
-                <Link
-                  to="/language"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-white/90 hover:bg-white/10"
-                >
-                  <div className="flex items-center">
-                    <Languages className="w-5 h-5 mr-3 text-sky-300" />
-                    <span>{t('nav_language', 'Language')}</span>
-                  </div>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-white/15 text-white font-bold border border-white/20">
-                    {currentLang.flag} {currentLang.nativeName}
-                  </span>
-                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
