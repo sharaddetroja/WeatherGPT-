@@ -319,15 +319,6 @@ export default function Dashboard() {
 
 
 
-      {/* ===================================================================== */}
-      {/* ROW 4: WEATHERGPT AI ASSISTANT SECTION                                */}
-      {/* ===================================================================== */}
-      <div>
-        <WeatherGPTAssistantGlass
-          currentLocationName={currentLocationName}
-        />
-      </div>
-
     </div>
   );
 }
