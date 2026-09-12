@@ -1002,7 +1002,7 @@ export default function WeatherMapPage() {
                 >
                   <div className="flex items-center gap-2">
                     <Gauge className="w-4 h-4" />
-                    <span>Temperature</span>
+                    <span>{t('map_temperature', 'Temperature')}</span>
                   </div>
                   {layer === 'temp' && <span className="w-2 h-2 rounded-full bg-primary-foreground"></span>}
                 </button>
@@ -1071,7 +1071,7 @@ export default function WeatherMapPage() {
               {/* Specific Area Quick Jumps */}
               <div className="space-y-1.5">
                 <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Select Specific Area
+                  {t('map_select_area', 'Select Specific Area')}
                 </div>
                 <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                   {WEATHER_EFFECT_ZONES.map((zone) => {
@@ -1124,7 +1124,7 @@ export default function WeatherMapPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <CloudRain className="w-4 h-4 text-blue-500" />
-                      <span className="text-xs font-bold text-foreground">Rainfall Measurement</span>
+                      <span className="text-xs font-bold text-foreground">{t('map_rainfall_measurement', 'Rainfall Measurement')}</span>
                     </div>
 
                     {/* Inches / mm toggle */}
@@ -1166,7 +1166,7 @@ export default function WeatherMapPage() {
                   {/* Primary 3-Metric Breakdown Box */}
                   <div className="grid grid-cols-3 gap-1.5 p-2 bg-background/90 rounded-xl border border-border/80">
                     <div className="text-center p-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                      <div className="text-[9px] font-bold text-muted-foreground uppercase">Current Rate</div>
+                      <div className="text-[9px] font-bold text-muted-foreground uppercase">{t('map_current_rate', 'Current Rate')}</div>
                       <div className="text-sm font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
                         {unitMode === 'inches' 
                           ? `${clickedRainfall.rainRateInches.toFixed(2)} in/h`
@@ -1175,7 +1175,7 @@ export default function WeatherMapPage() {
                     </div>
 
                     <div className="text-center p-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                      <div className="text-[9px] font-bold text-muted-foreground uppercase">24h Total</div>
+                      <div className="text-[9px] font-bold text-muted-foreground uppercase">{t('map_24h_total', '24h Total')}</div>
                       <div className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400 mt-0.5">
                         {unitMode === 'inches'
                           ? `${clickedRainfall.rainTotal24hInches.toFixed(2)} in`
@@ -1184,7 +1184,7 @@ export default function WeatherMapPage() {
                     </div>
 
                     <div className="text-center p-1 rounded-lg bg-sky-500/10 border border-sky-500/20">
-                      <div className="text-[9px] font-bold text-muted-foreground uppercase">Next 3h</div>
+                      <div className="text-[9px] font-bold text-muted-foreground uppercase">{t('map_next_3h', 'Next 3h')}</div>
                       <div className="text-sm font-extrabold text-sky-600 dark:text-sky-400 mt-0.5">
                         {unitMode === 'inches'
                           ? `${clickedRainfall.rain3hInches.toFixed(2)} in`
@@ -1196,7 +1196,7 @@ export default function WeatherMapPage() {
                   {/* Rainfall Intensity Progress Meter */}
                   <div className="space-y-1">
                     <div className="flex justify-between text-[10px] font-semibold text-muted-foreground">
-                      <span>Intensity Level</span>
+                      <span>{t('map_intensity', 'Intensity Level')}</span>
                       <span className="font-bold text-foreground">
                         {clickedRainfall.rainRateInches >= 1.0 ? 'Cloudburst (>1.0 in/h)' :
                          clickedRainfall.rainRateInches >= 0.3 ? 'Heavy (0.3-1.0 in/h)' :
@@ -1222,7 +1222,7 @@ export default function WeatherMapPage() {
                   <div className="flex items-center justify-between text-[11px] p-2 bg-muted/60 rounded-xl border border-border/60">
                     <div className="flex items-center gap-1.5 font-bold text-foreground">
                       <Droplets className="w-3.5 h-3.5 text-blue-500" />
-                      <span>Chance of Rain:</span>
+                      <span>{t('map_chance_rain', 'Chance of Rain:')}</span>
                     </div>
                     <span className="font-extrabold text-blue-600 dark:text-blue-400">
                       {clickedRainfall.probability}%
@@ -1244,7 +1244,7 @@ export default function WeatherMapPage() {
                     className="w-full flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Ask AI About This Rainfall</span>
+                    <span>{t('map_ask_ai_rainfall', 'Ask AI About This Rainfall')}</span>
                   </button>
                 </div>
               )}

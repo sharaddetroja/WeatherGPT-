@@ -45,7 +45,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`relative flex flex-col justify-between text-white select-none ${className}`}
+      className={`relative flex flex-col justify-between text-white select-none pl-4 sm:pl-8 lg:pl-10 ${className}`}
     >
       {/* Top Location & Air Quality Badge */}
       <div className="flex items-center justify-between gap-4">
@@ -79,9 +79,9 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
 
         {/* Temperature Range & Feels Like */}
         <div className="flex items-center gap-3 text-sm sm:text-base font-medium text-white/85">
-          <span>{minTemp}° ~ {maxTemp}°{tempUnit}</span>
+          <span>{minTemp}° ~ {maxTemp}{tempUnit}</span>
           <span className="w-1 h-1 rounded-full bg-white/50" />
-          <span>Feels like {feelsLike}°{tempUnit}</span>
+          <span>Feels like {feelsLike}{tempUnit}</span>
         </div>
 
         {/* Huge Visually Dominant Temperature */}
@@ -90,7 +90,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
             {temp}
           </span>
           <span className="text-3xl sm:text-4xl md:text-5xl font-light text-white/80 -mt-1 ml-1">
-            °{tempUnit}
+            {tempUnit}
           </span>
         </div>
       </div>
