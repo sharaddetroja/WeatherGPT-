@@ -23,8 +23,8 @@ export const DailyForecastGlass: React.FC<DailyForecastGlassProps> = ({
   tempUnit,
   className = '',
 }) => {
-  const getConditionIcon = (cond: string) => {
-    const c = cond.toLowerCase();
+  const getConditionIcon = (cond?: string) => {
+    const c = (cond || '').toLowerCase();
     if (c.includes('rain') || c.includes('drizzle')) return <CloudRain className="w-5 h-5 text-blue-200" />;
     if (c.includes('storm') || c.includes('thunder')) return <CloudLightning className="w-5 h-5 text-amber-300" />;
     if (c.includes('snow')) return <Snowflake className="w-5 h-5 text-cyan-200" />;

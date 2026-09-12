@@ -27,8 +27,8 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
   pm25 = 13,
   className = '',
 }) => {
-  const getConditionIcon = (cond: string) => {
-    const c = cond.toLowerCase();
+  const getConditionIcon = (cond?: string) => {
+    const c = (cond || '').toLowerCase();
     if (c.includes('rain') || c.includes('drizzle')) return CloudRain;
     if (c.includes('storm') || c.includes('thunder')) return CloudLightning;
     if (c.includes('snow')) return Snowflake;

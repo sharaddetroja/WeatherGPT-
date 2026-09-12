@@ -91,8 +91,8 @@ export function HourlyCurveChart({ hourly, className }: HourlyCurveChartProps) {
     return { label: 'None', color: 'bg-slate-700/30 text-slate-400 border-slate-700/30' };
   };
 
-  const getWeatherIcon = (cond: string) => {
-    const lower = cond.toLowerCase();
+  const getWeatherIcon = (cond?: string) => {
+    const lower = (cond || '').toLowerCase();
     if (lower.includes('rain') || lower.includes('drizzle')) return <CloudRain className="w-5 h-5 text-blue-400 animate-pulse" />;
     if (lower.includes('cloud')) return <Cloud className="w-5 h-5 text-slate-300" />;
     return <Sun className="w-5 h-5 text-amber-400" />;

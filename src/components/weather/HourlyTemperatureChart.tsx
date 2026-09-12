@@ -98,8 +98,8 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
   }, [pathD, points, svgHeight]);
 
   // Weather icon helper
-  const renderWeatherIcon = (icon: string) => {
-    const i = icon.toLowerCase();
+  const renderWeatherIcon = (icon?: string) => {
+    const i = (icon || '').toLowerCase();
     if (i.includes('rain')) return <CloudRain className="w-5 h-5 text-blue-200" />;
     if (i.includes('sun') && i.includes('cloud')) return <CloudSun className="w-5 h-5 text-amber-200" />;
     if (i.includes('sun') || i.includes('clear')) return <Sun className="w-5 h-5 text-amber-300" />;

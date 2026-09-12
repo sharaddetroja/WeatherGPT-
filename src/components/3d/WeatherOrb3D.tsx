@@ -42,7 +42,8 @@ export const WeatherOrb3D: React.FC<WeatherOrb3DProps> = ({
     const orbGroup = new THREE.Group();
     scene.add(orbGroup);
 
-    const isRain = condition.toLowerCase().includes('rain') || condition.toLowerCase().includes('storm');
+    const condStr = (condition || '').toLowerCase();
+    const isRain = condStr.includes('rain') || condStr.includes('storm');
 
     let sunCore: THREE.Mesh | null = null;
     let sunRays: THREE.Mesh | null = null;

@@ -15,7 +15,7 @@ export const WeatherBackground: React.FC<WeatherBackgroundProps> = ({
 }) => {
   const getGradientClass = () => {
     if (isNight) return 'sky-gradient-night';
-    const c = condition.toLowerCase();
+    const c = (condition || '').toLowerCase();
     if (c.includes('thunder') || c.includes('storm')) return 'sky-gradient-thunderstorm';
     if (c.includes('rain') || c.includes('drizzle')) return 'sky-gradient-rain';
     if (c.includes('cloud')) return 'sky-gradient-cloudy';
