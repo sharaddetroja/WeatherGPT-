@@ -26,6 +26,7 @@ import { DailyForecastGlass } from '../components/weather/DailyForecastGlass';
 import { WeatherDetailsGrid } from '../components/weather/WeatherDetailsGrid';
 import { AirQualityGlass } from '../components/weather/AirQualityGlass';
 import { WeatherAlertsGlass } from '../components/weather/WeatherAlertsGlass';
+import { YesterdayWeatherGlass } from '../components/weather/YesterdayWeatherGlass';
 
 function DashboardSkeleton() {
   return (
@@ -302,7 +303,22 @@ export default function Dashboard() {
       </div>
 
       {/* ===================================================================== */}
-      {/* ROW 3: AIR QUALITY & WEATHER ALERTS                                   */}
+      {/* ROW 3: YESTERDAY'S WEATHER & HISTORICAL COMPARISON TELEMETRY          */}
+      {/* ===================================================================== */}
+      {data.yesterday && (
+        <YesterdayWeatherGlass
+          yesterdayData={data.yesterday}
+          todayTempC={data.current.temp_c}
+          todayHumidity={data.current.humidity}
+          todayPrecipMm={data.current.precip_mm || 0.0}
+          todayWindKph={data.current.wind_kph}
+          convertTemp={convertTemp}
+          tempUnit={tempUnitSymbol}
+        />
+      )}
+
+      {/* ===================================================================== */}
+      {/* ROW 4: AIR QUALITY & WEATHER ALERTS                                   */}
       {/* ===================================================================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <AirQualityGlass

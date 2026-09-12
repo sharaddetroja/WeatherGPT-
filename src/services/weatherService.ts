@@ -1,6 +1,56 @@
 import { WEATHER_ENDPOINT } from './weatherGptApi';
 
+export interface YesterdayWeatherData {
+  date: string;
+  day: string;
+  temp_c: number;
+  max_temp: number;
+  min_temp: number;
+  feelslike_c: number;
+  condition: {
+    text: string;
+    icon: string;
+  };
+  humidity: number;
+  wind_kph: number;
+  wind_dir: string;
+  precip_mm: number;
+  pressure_mb: number;
+  uv: number;
+  visibility_km: number;
+  aqi?: number;
+  summary: string;
+}
+
 export const getWeatherData = async (city: string = 'Rajkot') => {
+  const getYesterdayDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const defaultYesterday: YesterdayWeatherData = {
+    date: getYesterdayDate(),
+    day: "Yesterday",
+    temp_c: 26,
+    max_temp: 31,
+    min_temp: 23,
+    feelslike_c: 28,
+    condition: {
+      text: "Scattered Rain",
+      icon: "cloud-rain"
+    },
+    humidity: 76,
+    wind_kph: 17.5,
+    wind_dir: "SW",
+    precip_mm: 8.4,
+    pressure_mb: 1010,
+    uv: 5,
+    visibility_km: 8.5,
+    aqi: 45,
+    summary: "Yesterday experienced scattered rainfall (8.4 mm) with highs of 31°C and humid southwest winds."
+  };
+
   try {
     const url = `${WEATHER_ENDPOINT}?city=${encodeURIComponent(city)}`;
     const response = await fetch(url);
@@ -8,6 +58,9 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
       throw new Error('Failed to fetch weather data');
     }
     const data = await response.json();
+    if (!data.yesterday) {
+      data.yesterday = defaultYesterday;
+    }
     return data;
   } catch (err) {
     console.warn('Falling back to mock weather data:', err);
@@ -36,6 +89,7 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
         pressure_mb: 1012,
         precip_mm: 0.0
       },
+      yesterday: defaultYesterday,
       hourly: [
         { time: "09:00", temp_c: 27, icon: "sun", chance_of_rain: 10 },
         { time: "10:00", temp_c: 28, icon: "cloud-sun", chance_of_rain: 20 },
