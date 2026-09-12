@@ -72,7 +72,7 @@ export interface AskApiResponse {
   explainWhy?: any;
 }
 
-const BASE_URL = 'https://weathergpt-back-end.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://weathergpt-backend-46or.onrender.com';
 const API_ENDPOINT = `${BASE_URL}/api/ask`;
 export const WEATHER_ENDPOINT = `${BASE_URL}/api/weather`;
 export const WEATHER_CURRENT_ENDPOINT = `${BASE_URL}/api/weather/current`;
