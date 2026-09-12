@@ -34,27 +34,7 @@ export interface SupportedLang {
 export const SITE_LANGUAGES: SupportedLang[] = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
   { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', flag: '🇮🇳' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
-  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', flag: '🇮🇳' },
-  { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', flag: '🇮🇳' },
-  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇮🇳' },
-  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', flag: '🇮🇳' },
-  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', flag: '🇮🇳' },
-  { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ', flag: '🇮🇳' },
-  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', flag: '🇮🇳' },
-  { code: 'ur', name: 'Urdu', nativeName: 'اردو', flag: '🇮🇳' },
-  { code: 'or', name: 'Odia', nativeName: 'ଓଡ଼ିଆ', flag: '🇮🇳' },
-  { code: 'as', name: 'Assamese', nativeName: 'অসমীয়া', flag: '🇮🇳' },
-  { code: 'sa', name: 'Sanskrit', nativeName: 'संस्कृतम्', flag: '🇮🇳' },
-  { code: 'kok', name: 'Konkani', nativeName: 'कोंकणी', flag: '🇮🇳' },
-  { code: 'mai', name: 'Maithili', nativeName: 'मैथिली', flag: '🇮🇳' },
-  { code: 'sd', name: 'Sindhi', nativeName: 'سنڌي / सिन्धी', flag: '🇮🇳' },
-  { code: 'ks', name: 'Kashmiri', nativeName: 'کٲشُر / कश्मीरी', flag: '🇮🇳' },
-  { code: 'mni', name: 'Manipuri', nativeName: 'ꯃꯤꯇꯩ ꯂꯣꯟ', flag: '🇮🇳' },
-  { code: 'brx', name: 'Bodo', nativeName: 'बड़ो', flag: '🇮🇳' },
-  { code: 'doi', name: 'Dogri', nativeName: 'डोगरी', flag: '🇮🇳' },
-  { code: 'sat', name: 'Santhali', nativeName: 'ᱥᱟᱱᱛᱟᱲᱤ', flag: '🇮🇳' },
-  { code: 'ne', name: 'Nepali', nativeName: 'नेपाली', flag: '🇮🇳' }
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' }
 ];
 
 export const TRANSLATIONS: Record<string, Record<string, string>> = {
