@@ -121,7 +121,6 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
   };
 
   const currentPoint = points[0];
-  const maxPoint = points[maxIndex];
 
   // Clean unit string without double degree symbol (e.g. °C instead of °°C)
   const formattedUnit = tempUnit.startsWith('°') ? tempUnit : `°${tempUnit}`;
@@ -200,49 +199,61 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
             strokeLinejoin="round"
           />
 
-          {/* Peak Max Marker */}
-          {maxPoint && maxIndex !== 0 && (
-            <g>
-              <circle cx={maxPoint.x} cy={maxPoint.y} r="5" fill="#EF4444" stroke="#FFFFFF" strokeWidth="2" />
-              <text
-                x={maxPoint.x}
-                y={maxPoint.y - 10}
-                textAnchor="middle"
-                fill="#FFFFFF"
-                fontSize="12"
-                fontWeight="bold"
-                className="select-none"
-              >
-                {maxPoint.temp}°
-              </text>
-            </g>
-          )}
+          {/* Render Data Point Markers & Temperature Labels for EVERY Point */}
+          {points.map((pt, idx) => {
+            if (idx === 0) {
+              return (
+                <g key={idx}>
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r="14"
+                    fill="rgba(255, 255, 255, 0.95)"
+                    stroke="#83C78C"
+                    strokeWidth="3"
+                    className="drop-shadow-sm"
+                  />
+                  <text
+                    x={pt.x}
+                    y={pt.y + 4}
+                    textAnchor="middle"
+                    fill="#1E3A8A"
+                    fontSize="11"
+                    fontWeight="900"
+                    className="select-none"
+                  >
+                    {pt.temp}
+                  </text>
+                </g>
+              );
+            }
 
-          {/* Current Hour Badge Marker */}
-          {currentPoint && (
-            <g>
-              <circle
-                cx={currentPoint.x}
-                cy={currentPoint.y}
-                r="14"
-                fill="rgba(255, 255, 255, 0.95)"
-                stroke="#83C78C"
-                strokeWidth="3"
-                className="drop-shadow-sm"
-              />
-              <text
-                x={currentPoint.x}
-                y={currentPoint.y + 4}
-                textAnchor="middle"
-                fill="#1E3A8A"
-                fontSize="11"
-                fontWeight="900"
-                className="select-none"
-              >
-                {currentPoint.temp}
-              </text>
-            </g>
-          )}
+            const isMax = idx === maxIndex;
+
+            return (
+              <g key={idx}>
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r={isMax ? "5" : "4"}
+                  fill={isMax ? "#EF4444" : "#83C78C"}
+                  stroke="#FFFFFF"
+                  strokeWidth="2"
+                />
+                <text
+                  x={pt.x}
+                  y={pt.y - 10}
+                  textAnchor="middle"
+                  fill="#FFFFFF"
+                  fontSize="12"
+                  fontWeight="bold"
+                  className="select-none"
+                >
+                  {pt.temp}°
+                </text>
+              </g>
+            );
+          })}
         </svg>
 
         {/* Hourly Column Items Aligned Directly Below Points Across 100% Width */}
