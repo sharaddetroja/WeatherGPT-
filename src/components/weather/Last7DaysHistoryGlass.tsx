@@ -11,7 +11,8 @@ import {
   Snowflake, 
   TrendingUp, 
   TrendingDown, 
-  Gauge 
+  Gauge,
+  CloudOff
 } from 'lucide-react';
 import type { HistoricalWeatherDay } from '../../services/weatherService';
 
@@ -184,11 +185,16 @@ export const Last7DaysHistoryGlass: React.FC<Last7DaysHistoryGlassProps> = ({
                 </div>
 
                 {/* Condition Icon & Text */}
-                <div className="flex items-center gap-2 w-[125px] min-w-[125px] shrink-0">
+                <div className="flex items-center gap-1.5 w-[140px] min-w-[140px] shrink-0">
                   {getConditionIcon(item.condition)}
                   <span className="text-xs font-medium text-white/85 truncate">
                     {item.condition}
                   </span>
+                  {item.is_stale && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-500/25 text-amber-200 border border-amber-500/40 text-[9px] font-extrabold flex items-center gap-0.5 shrink-0" title="Cached Weather">
+                      <CloudOff className="w-2.5 h-2.5 text-amber-300" /> Cached
+                    </span>
+                  )}
                 </div>
 
                 {/* Rain Badge */}

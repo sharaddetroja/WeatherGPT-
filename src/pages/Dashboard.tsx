@@ -5,17 +5,17 @@ import {
   Clock, 
   Search, 
   Compass, 
-  Globe2, 
   Download, 
   RefreshCw, 
   AlertTriangle,
-  MapPin
+  MapPin,
+  Loader2
 } from 'lucide-react';
 import { getWeatherData } from '../services/weatherService';
+import { getUserLocation, reverseGeocodeLocation } from '../services/weatherGptApi';
 import { format } from 'date-fns';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
-import { WeatherGlobe3D } from '../components/3d/WeatherGlobe3D';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { useMagnetic } from '../utils/gsapEffects';
 import { motion, AnimatePresence } from 'motion/react';
@@ -26,7 +26,6 @@ import { WeatherHero } from '../components/weather/WeatherHero';
 import { HourlyTemperatureChart } from '../components/weather/HourlyTemperatureChart';
 import { DailyForecastGlass } from '../components/weather/DailyForecastGlass';
 import { WeatherDetailsGrid } from '../components/weather/WeatherDetailsGrid';
-import { AirQualityGlass } from '../components/weather/AirQualityGlass';
 import { WeatherAlertsGlass } from '../components/weather/WeatherAlertsGlass';
 import { Last7DaysHistoryGlass } from '../components/weather/Last7DaysHistoryGlass';
 
@@ -83,16 +82,64 @@ function DashboardErrorState({ onRetry }: { onRetry: () => void }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { convertTemp, tempUnitSymbol, profile, updateProfile } = useUserProfile();
-  const { alerts } = useWeatherAlerts();
+  const { alerts, apiMessage, activeLocation, updateAlertsForLocation } = useWeatherAlerts();
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [show3DGlobe, setShow3DGlobe] = useState(false);
   const [citySearch, setCitySearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [timelineTab, setTimelineTab] = useState<'forecast' | 'history'>('forecast');
+  const [isLocating, setIsLocating] = useState(false);
+  const [locateError, setLocateError] = useState('');
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleDetectLocation = async () => {
+    setIsLocating(true);
+    setLocateError('');
+
+    try {
+      const coords = await getUserLocation();
+      if (!coords) {
+        setLocateError('Unable to access GPS location. Please check location permissions.');
+        setIsLocating(false);
+        return;
+      }
+
+      let detectedCity = '';
+      try {
+        const geoRes = await reverseGeocodeLocation(coords.latitude, coords.longitude);
+        if (geoRes && geoRes.city) {
+          detectedCity = geoRes.city;
+        }
+      } catch (e) {
+        console.warn('Backend reverse geocode failed, using Nominatim fallback:', e);
+      }
+
+      if (!detectedCity) {
+        try {
+          const osmRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.latitude}&lon=${coords.longitude}`);
+          if (osmRes.ok) {
+            const data = await osmRes.json();
+            detectedCity = data.address?.city || data.address?.town || data.address?.village || data.address?.county || data.address?.state_district || '';
+          }
+        } catch (e) {
+          console.warn('Nominatim reverse geocode failed:', e);
+        }
+      }
+
+      if (detectedCity) {
+        updateProfile({ location: detectedCity });
+      } else {
+        const coordStr = `${coords.latitude.toFixed(4)},${coords.longitude.toFixed(4)}`;
+        updateProfile({ location: coordStr });
+      }
+    } catch (err: any) {
+      setLocateError(err.message || 'Geolocation detection failed.');
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
   // Filter suggestions dynamically from the comprehensive Indian cities dataset
   const filteredSuggestions = citySearch.trim()
@@ -150,6 +197,7 @@ export default function Dashboard() {
         }
         setData(res);
         setLoading(false);
+        updateAlertsForLocation(city, res);
       })
       .catch(() => {
         setError(true);
@@ -192,6 +240,17 @@ export default function Dashboard() {
 
   return (
     <div className="relative space-y-6 sm:space-y-8 pb-12 animate-in fade-in duration-500">
+      {locateError && (
+        <div className="p-3 bg-rose-500/20 border border-rose-400/30 rounded-2xl text-xs text-rose-200 flex items-center justify-between gap-2 backdrop-blur-md">
+          <span>{locateError}</span>
+          <button 
+            onClick={() => setLocateError('')}
+            className="text-rose-300 hover:text-white font-bold cursor-pointer px-1.5 py-0.5 rounded-md hover:bg-rose-500/30"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       
       {/* Top Header & Search Bar Row */}
       <motion.div
@@ -269,25 +328,17 @@ export default function Dashboard() {
           {/* Detect Current Location Button */}
           <button
             ref={locationBtnRef}
-            onClick={() => navigate('/map?locate=true')}
-            className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all glass-pill hover:bg-white/20 text-white flex items-center gap-1.5 cursor-pointer shadow-xs"
+            onClick={handleDetectLocation}
+            disabled={isLocating}
+            className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all glass-pill hover:bg-white/20 text-white flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
             title="Detect current location"
           >
-            <Compass className="w-3.5 h-3.5 text-sky-200" />
-            <span className="hidden sm:inline">My Location</span>
-          </button>
-
-          {/* Toggle 3D Globe Radar */}
-          <button
-            onClick={() => setShow3DGlobe(!show3DGlobe)}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
-              show3DGlobe
-                ? 'bg-white text-[#1D4ED8] shadow-md'
-                : 'glass-pill hover:bg-white/20 text-white'
-            }`}
-          >
-            <Globe2 className="w-3.5 h-3.5" />
-            <span>{show3DGlobe ? 'Hide Globe' : '3D Radar'}</span>
+            {isLocating ? (
+              <Loader2 className="w-3.5 h-3.5 text-sky-200 animate-spin" />
+            ) : (
+              <Compass className="w-3.5 h-3.5 text-sky-200" />
+            )}
+            <span className="hidden sm:inline">{isLocating ? 'Detecting...' : 'My Location'}</span>
           </button>
 
           {/* Export PDF Weather Report */}
@@ -319,21 +370,6 @@ export default function Dashboard() {
           </button>
         </div>
       </motion.div>
-
-      {/* 3D Global Weather Globe Visualizer Modal / Drawer */}
-      <AnimatePresence>
-        {show3DGlobe && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, scale: 0.95 }}
-            animate={{ opacity: 1, height: 'auto', scale: 1 }}
-            exit={{ opacity: 0, height: 0, scale: 0.95 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <WeatherGlobe3D className="mb-4" />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ===================================================================== */}
       {/* FEATURE PROMO BANNER: SOURCE -> DESTINATION WEATHER FEATURE           */}
@@ -392,6 +428,7 @@ export default function Dashboard() {
             maxTemp={convertTemp(data.forecast[0].max_temp)}
             feelsLike={convertTemp(data.current.feelslike_c)}
             pm25={13}
+            isStale={Boolean(data.current?.is_stale)}
           />
         </div>
 
@@ -471,18 +508,15 @@ export default function Dashboard() {
       </div>
 
       {/* ===================================================================== */}
-      {/* ROW 3: AIR QUALITY & WEATHER ALERTS                                   */}
+      {/* ROW 3: WEATHER ALERTS                                                 */}
       {/* ===================================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AirQualityGlass
-          score={50}
-          pm25={9.4}
-          pm10={18.1}
-          statusText="Satisfactory"
-          className="h-full"
+      <div className="w-full">
+        <WeatherAlertsGlass 
+          alerts={alerts} 
+          apiMessage={apiMessage} 
+          activeLocation={activeLocation || profile.location} 
+          className="w-full" 
         />
-
-        <WeatherAlertsGlass alerts={alerts} className="h-full" />
       </div>
 
 

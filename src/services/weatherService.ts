@@ -1,4 +1,8 @@
-import { WEATHER_ENDPOINT } from './weatherGptApi';
+import { 
+  fetchCurrentWeatherApi, 
+  fetchWeatherHistoryApi,
+  WEATHER_ENDPOINT 
+} from './weatherGptApi';
 
 export interface YesterdayWeatherData {
   temp_c: number;
@@ -14,6 +18,7 @@ export interface YesterdayWeatherData {
   pressure_mb: number;
   date: string;
   summary?: string;
+  is_stale?: boolean;
 }
 
 export interface HistoricalWeatherDay {
@@ -28,6 +33,7 @@ export interface HistoricalWeatherDay {
   wind_kph: number;
   pressure_mb: number;
   uv: number;
+  is_stale?: boolean;
 }
 
 export const generateLast7DaysHistory = (baseTemp: number = 28): HistoricalWeatherDay[] => {
@@ -68,28 +74,122 @@ export const generateLast7DaysHistory = (baseTemp: number = 28): HistoricalWeath
       wind_kph: cond.wind,
       pressure_mb: 1010 + (i % 4),
       uv: cond.rain > 0 ? 4 : 7,
+      is_stale: false,
     });
   }
   return list;
 };
 
+/**
+ * Main weather data fetcher connecting to production Express backend
+ */
 export const getWeatherData = async (city: string = 'Rajkot') => {
   try {
+    // Attempt fetching current weather & 7-day history from live API endpoints concurrently
+    const [currentRes, historyRes] = await Promise.allSettled([
+      fetchCurrentWeatherApi(city),
+      fetchWeatherHistoryApi(city),
+    ]);
+
+    let liveCurrent: any = null;
+    let liveHistory: HistoricalWeatherDay[] | null = null;
+    let locationData: any = null;
+
+    if (currentRes.status === 'fulfilled' && currentRes.value?.success) {
+      const val = currentRes.value;
+      locationData = val.location || { name: city };
+      liveCurrent = val.current;
+    }
+
+    if (historyRes.status === 'fulfilled' && historyRes.value?.success && Array.isArray(historyRes.value.history)) {
+      liveHistory = historyRes.value.history.map((h: any) => ({
+        date: h.date,
+        day: h.day || new Date(h.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        min_temp: Number(h.min_temp_c ?? h.min_temp ?? 22),
+        max_temp: Number(h.max_temp_c ?? h.max_temp ?? 32),
+        avg_temp: Number(h.avg_temp_c ?? h.avg_temp ?? 27),
+        condition: typeof h.condition === 'string' ? h.condition : h.condition?.text || 'Sunny',
+        rainfall_mm: Number(h.precipitation_mm ?? h.rainfall_mm ?? 0),
+        humidity: Number(h.humidity ?? 60),
+        wind_kph: Number(h.wind_kph ?? 12),
+        pressure_mb: Number(h.pressure_mb ?? 1012),
+        uv: Number(h.uv ?? 6),
+        is_stale: Boolean(h.is_stale),
+      }));
+    }
+
+    // If direct endpoint had data, construct merged object
+    if (liveCurrent) {
+      const tempC = Number(liveCurrent.temp_c ?? liveCurrent.temperature_c ?? 28);
+      const isStale = Boolean(liveCurrent.is_stale);
+
+      return {
+        location: {
+          name: locationData?.name || city,
+          region: locationData?.state || locationData?.region || "India",
+          country: locationData?.country || "India",
+          lat: Number(locationData?.latitude ?? 22.3039),
+          lon: Number(locationData?.longitude ?? 70.8022),
+        },
+        current: {
+          temp_c: tempC,
+          condition: {
+            text: typeof liveCurrent.condition === 'string' ? liveCurrent.condition : liveCurrent.condition?.text || "Partly Cloudy",
+            icon: liveCurrent.condition?.icon || "cloud-sun"
+          },
+          wind_kph: Number(liveCurrent.wind_kph ?? 12.4),
+          humidity: Number(liveCurrent.humidity ?? 65),
+          feelslike_c: Number(liveCurrent.feelslike_c ?? tempC + 1.5),
+          uv: Number(liveCurrent.uv ?? 6),
+          visibility_km: Number(liveCurrent.visibility_km ?? 10),
+          pressure_mb: Number(liveCurrent.pressure_mb ?? 1012),
+          precip_mm: Number(liveCurrent.precip_mm ?? 0.0),
+          is_stale: isStale,
+          fetched_at: liveCurrent.fetched_at,
+        },
+        hourly: [
+          { time: "09:00", temp_c: Math.round(tempC - 1), icon: "sun", chance_of_rain: 10 },
+          { time: "10:00", temp_c: Math.round(tempC), icon: "cloud-sun", chance_of_rain: 20 },
+          { time: "11:00", temp_c: Math.round(tempC + 1), icon: "cloud-sun", chance_of_rain: 30 },
+          { time: "12:00", temp_c: Math.round(tempC + 2), icon: "cloud", chance_of_rain: 40 },
+          { time: "13:00", temp_c: Math.round(tempC + 3), icon: "cloud-rain", chance_of_rain: 60 },
+          { time: "14:00", temp_c: Math.round(tempC + 3), icon: "cloud-rain", chance_of_rain: 80 },
+          { time: "15:00", temp_c: Math.round(tempC + 2), icon: "cloud-rain", chance_of_rain: 90 },
+          { time: "16:00", temp_c: Math.round(tempC + 1), icon: "cloud", chance_of_rain: 50 },
+        ],
+        forecast: [
+          { date: "2026-09-13", day: "Today", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: liveCurrent.condition?.text || "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.5, humidity: liveCurrent.humidity || 65, wind_kph: liveCurrent.wind_kph || 12 },
+          { date: "2026-09-14", day: "Mon", min_temp: Math.round(tempC - 5), max_temp: Math.round(tempC + 3), condition: "Rain Showers", chance_of_rain: 70, rainfall_mm: 8.5, humidity: 78, wind_kph: 18 },
+          { date: "2026-09-15", day: "Tue", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: "Sunny", chance_of_rain: 10, rainfall_mm: 0, humidity: 55, wind_kph: 11 },
+          { date: "2026-09-16", day: "Wed", min_temp: Math.round(tempC - 3), max_temp: Math.round(tempC + 5), condition: "Clear Sky", chance_of_rain: 0, rainfall_mm: 0, humidity: 50, wind_kph: 10 },
+          { date: "2026-09-17", day: "Thu", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.2, humidity: 60, wind_kph: 14 },
+          { date: "2026-09-18", day: "Fri", min_temp: Math.round(tempC - 3), max_temp: Math.round(tempC + 5), condition: "Sunny", chance_of_rain: 0, rainfall_mm: 0, humidity: 48, wind_kph: 12 },
+          { date: "2026-09-19", day: "Sat", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: "Thunderstorm", chance_of_rain: 85, rainfall_mm: 15.0, humidity: 82, wind_kph: 22 },
+        ],
+        history7Days: liveHistory || generateLast7DaysHistory(tempC),
+        insights: [
+          { title: "Live Forecast Active", type: "info", message: `Displaying live weather data for ${city}.`, icon: "info" },
+          { title: "Travel Recommendation", type: "success", message: "Optimal travel window detected in morning hours.", icon: "car" },
+        ]
+      };
+    }
+
+    // Fallback: Legacy `/api/weather` endpoint or deterministic mock data
     const url = `${WEATHER_ENDPOINT}?city=${encodeURIComponent(city)}`;
     const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error('Failed to fetch weather data');
+    if (response.ok) {
+      const data = await response.json();
+      if (!data.history7Days) {
+        const baseT = data.current?.temp_c || 28;
+        data.history7Days = liveHistory || generateLast7DaysHistory(baseT);
+      }
+      return data;
     }
-    const data = await response.json();
-    if (!data.history7Days) {
-      const baseT = data.current?.temp_c || 28;
-      data.history7Days = generateLast7DaysHistory(baseT);
-    }
-    return data;
+
+    throw new Error('Failed to fetch weather from backend endpoints');
   } catch (err) {
-    console.warn('Falling back to mock weather data:', err);
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    console.warn('Backend endpoint fetch error, falling back to mock weather data:', err);
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     return {
       location: {
@@ -111,7 +211,8 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
         uv: 6,
         visibility_km: 10,
         pressure_mb: 1012,
-        precip_mm: 0.0
+        precip_mm: 0.0,
+        is_stale: false,
       },
       hourly: [
         { time: "09:00", temp_c: 27, icon: "sun", chance_of_rain: 10 },

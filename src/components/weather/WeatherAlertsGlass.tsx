@@ -1,15 +1,19 @@
 import React from 'react';
-import { AlertTriangle, BellRing, CloudRain, ShieldAlert, ChevronRight } from 'lucide-react';
+import { AlertTriangle, BellRing, CloudRain, ShieldAlert, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { WeatherAlertItem } from '../../hooks/useWeatherAlerts';
 
 interface WeatherAlertsGlassProps {
   alerts: WeatherAlertItem[];
+  apiMessage?: string;
+  activeLocation?: string;
   className?: string;
 }
 
 export const WeatherAlertsGlass: React.FC<WeatherAlertsGlassProps> = ({
   alerts,
+  apiMessage,
+  activeLocation = 'your area',
   className = '',
 }) => {
   const getSeverityStyle = (severity: string) => {
@@ -71,8 +75,14 @@ export const WeatherAlertsGlass: React.FC<WeatherAlertsGlassProps> = ({
       </div>
 
       {displayAlerts.length === 0 ? (
-        <div className="p-4 rounded-2xl glass-panel text-center text-xs text-white/70">
-          No active severe weather warnings for your area.
+        <div className="p-5 rounded-2xl glass-panel text-center text-xs space-y-2 border border-white/10 my-auto">
+          <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center mx-auto border border-emerald-400/30">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+          <div className="font-bold text-sm text-white">No Active Alerts for {activeLocation}</div>
+          <p className="text-xs text-white/70 max-w-xs mx-auto leading-relaxed">
+            {apiMessage || `No active severe weather warnings for ${activeLocation}.`}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -98,8 +108,8 @@ export const WeatherAlertsGlass: React.FC<WeatherAlertsGlassProps> = ({
                   {alert.description}
                 </p>
                 <div className="flex items-center justify-between text-[10px] text-white/60 mt-2 pt-1.5 border-t border-white/10">
-                  <span>{alert.expected}</span>
-                  <span>{alert.timestamp}</span>
+                  <span className="truncate max-w-[75%]">{alert.expected}</span>
+                  <span className="shrink-0">{alert.timestamp}</span>
                 </div>
               </div>
             );

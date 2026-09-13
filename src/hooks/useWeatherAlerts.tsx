@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { fetchWeatherAlertsApi } from '../services/weatherGptApi';
 
 export interface WeatherAlertItem {
   id: number;
@@ -12,50 +13,168 @@ export interface WeatherAlertItem {
   read?: boolean;
 }
 
-export const DEFAULT_ALERTS: WeatherAlertItem[] = [
-  {
-    id: 1,
-    title: "Heavy Rain Warning",
-    severity: "Critical",
-    expected: "4:00 PM – 8:00 PM Today",
-    description: "Heavy rainfall and localized flooding expected in Rajkot and surrounding areas. Avoid low-lying roads and unnecessary outdoor travel.",
-    type: "rain",
-    location: "Rajkot, Gujarat",
-    timestamp: "10 mins ago",
-    read: false
-  },
-  {
-    id: 2,
-    title: "Strong Wind & Thunderstorm Advisory",
-    severity: "High",
-    expected: "Ongoing until 10:00 PM",
-    description: "Severe wind gusts up to 45 km/h with thunderstorm activity. Secure loose rooftop objects and outdoor equipment.",
-    type: "wind",
-    location: "Saurashtra Coastline",
-    timestamp: "45 mins ago",
-    read: false
-  },
-  {
-    id: 3,
-    title: "Extreme Temperature Advisory",
-    severity: "Moderate",
-    expected: "Tomorrow, 12:00 PM - 3:00 PM",
-    description: "Heat index expected to touch 36°C with 75% humidity. Ensure hydration during afternoon outdoor work.",
-    type: "temp",
-    location: "Gujarat Inland",
-    timestamp: "2 hours ago",
-    read: true
+/**
+ * Maps raw backend alert objects from /api/weather/alerts?city=... into WeatherAlertItem
+ */
+export function mapBackendAlertToItem(item: any, city: string, index: number): WeatherAlertItem {
+  const rawSev = (item.severity || item.level || 'Moderate').toString().toLowerCase();
+  let severity: 'Critical' | 'High' | 'Moderate' | 'Low' = 'Moderate';
+  if (rawSev.includes('extreme') || rawSev.includes('critical') || rawSev.includes('severe')) {
+    severity = 'Critical';
+  } else if (rawSev.includes('high') || rawSev.includes('warning')) {
+    severity = 'High';
+  } else if (rawSev.includes('moderate') || rawSev.includes('advisory')) {
+    severity = 'Moderate';
+  } else if (rawSev.includes('minor') || rawSev.includes('low') || rawSev.includes('watch')) {
+    severity = 'Low';
   }
-];
+
+  const rawTitle = item.headline || item.event || item.title || `Weather Warning for ${city}`;
+  const rawDesc = item.description || item.instruction || item.summary || `Weather advisory active for ${city} area.`;
+
+  let expectedTime = item.expires
+    ? `Until ${new Date(item.expires).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : (item.effective || item.expected || 'Ongoing');
+
+  let alertType: 'rain' | 'wind' | 'temp' | 'storm' = 'storm';
+  const titleLower = rawTitle.toLowerCase();
+  if (titleLower.includes('rain') || titleLower.includes('flood')) alertType = 'rain';
+  else if (titleLower.includes('wind') || titleLower.includes('gale')) alertType = 'wind';
+  else if (titleLower.includes('heat') || titleLower.includes('temp') || titleLower.includes('cold')) alertType = 'temp';
+
+  return {
+    id: Date.now() + index,
+    title: rawTitle,
+    severity,
+    expected: expectedTime,
+    description: rawDesc,
+    type: alertType,
+    location: item.area || `${city} Region`,
+    timestamp: "Just now",
+    read: false
+  };
+}
+
+/**
+ * Dynamically generates realistic weather alerts tailored to a specific city and live weather data
+ */
+export function generateDynamicAlerts(locationStr: string = 'Rajkot', weatherData?: any): WeatherAlertItem[] {
+  const city = (locationStr || 'Rajkot').split(',')[0].trim() || 'Rajkot';
+  
+  const current = weatherData?.current || {};
+  const forecast0 = weatherData?.forecast?.[0] || {};
+  
+  const tempC = Number(current.temp_c ?? 28);
+  const feelsLikeC = Number(current.feelslike_c ?? tempC + 1.5);
+  const humidity = Number(current.humidity ?? 65);
+  const windKph = Number(current.wind_kph ?? 15);
+  const precipMm = Number(current.precip_mm ?? 0);
+  const rainChance = Number(forecast0.chance_of_rain ?? (precipMm > 0 ? 80 : 20));
+  const condText = (current.condition?.text || forecast0.condition || 'Partly Cloudy').toLowerCase();
+
+  const isRainy = rainChance >= 40 || precipMm > 0.5 || condText.includes('rain') || condText.includes('thunder') || condText.includes('shower');
+  const isHighWind = windKph >= 18 || condText.includes('thunder') || condText.includes('wind') || condText.includes('squall');
+  const isHot = tempC >= 32 || feelsLikeC >= 35;
+
+  const alerts: WeatherAlertItem[] = [];
+
+  // Alert 1: Rain / Hydrological Warning
+  if (isRainy) {
+    alerts.push({
+      id: 1,
+      title: rainChance > 70 ? "Heavy Rain & Flash Flood Warning" : "Rain Showers Advisory",
+      severity: rainChance > 70 ? "Critical" : "High",
+      expected: `Next 2-4 Hours (${rainChance}% rain expected)`,
+      description: `Severe downpour detected over ${city}. High risk of localized waterlogging on major roads. Stay indoors and carry waterproof gear!`,
+      type: "rain",
+      location: `${city} Urban Area`,
+      timestamp: "Just now",
+      read: false
+    });
+  } else {
+    alerts.push({
+      id: 1,
+      title: "Normal Weather Watch",
+      severity: "Low",
+      expected: "Next 24 Hours",
+      description: `No severe weather hazards currently active for ${city}. Atmospheric conditions remain stable and clear.`,
+      type: "rain",
+      location: `${city}`,
+      timestamp: "Just now",
+      read: true
+    });
+  }
+
+  // Alert 2: Wind & Thunderstorm Advisory
+  if (isHighWind) {
+    alerts.push({
+      id: 2,
+      title: "Strong Wind & Thunderstorm Advisory",
+      severity: windKph > 25 ? "High" : "Moderate",
+      expected: "Ongoing until 10:00 PM",
+      description: `Severe wind gusts up to ${Math.round(windKph * 1.4)} km/h with thunderstorm activity near ${city}. Secure loose rooftop objects and outdoor equipment.`,
+      type: "wind",
+      location: `${city} Surrounding Area`,
+      timestamp: "25 mins ago",
+      read: false
+    });
+  } else {
+    alerts.push({
+      id: 2,
+      title: "Moderate Wind Advisory",
+      severity: "Low",
+      expected: "Throughout Today",
+      description: `Gentle breeze recorded at ${Math.round(windKph)} km/h in ${city}. Wind speeds remain within safe limits.`,
+      type: "wind",
+      location: `${city}`,
+      timestamp: "30 mins ago",
+      read: true
+    });
+  }
+
+  // Alert 3: Temperature & Heat Advisory
+  if (isHot) {
+    alerts.push({
+      id: 3,
+      title: "Extreme Temperature Advisory",
+      severity: tempC >= 36 ? "Critical" : "High",
+      expected: "Peak Hours (12:00 PM – 4:00 PM)",
+      description: `Heat index in ${city} expected to touch ${Math.round(feelsLikeC)}°C with ${humidity}% humidity. Ensure hydration during afternoon outdoor work.`,
+      type: "temp",
+      location: `${city} Region`,
+      timestamp: "1 hour ago",
+      read: false
+    });
+  } else {
+    alerts.push({
+      id: 3,
+      title: "Comfortable Thermal Watch",
+      severity: "Low",
+      expected: "Today",
+      description: `Current temperature in ${city} is ${Math.round(tempC)}°C with ${humidity}% relative humidity. Comfortable thermal conditions overall.`,
+      type: "temp",
+      location: `${city}`,
+      timestamp: "2 hours ago",
+      read: true
+    });
+  }
+
+  return alerts;
+}
+
+export const DEFAULT_ALERTS: WeatherAlertItem[] = generateDynamicAlerts('Rajkot');
 
 interface WeatherAlertsContextType {
   alerts: WeatherAlertItem[];
+  apiMessage: string;
+  activeLocation: string;
   unreadCount: number;
   permissionStatus: NotificationPermission;
   activeToast: WeatherAlertItem | null;
   requestNotificationPermission: () => Promise<boolean>;
   sendAlertNotification: (alert: WeatherAlertItem) => void;
-  triggerHeavyRainTestAlert: () => void;
+  triggerHeavyRainTestAlert: (targetCity?: string) => void;
+  updateAlertsForLocation: (city: string, weatherData?: any) => Promise<void>;
   markAsRead: (id: number) => void;
   markAllAsRead: () => void;
   dismissToast: () => void;
@@ -91,16 +210,31 @@ export const playAlertChime = () => {
 };
 
 export const WeatherAlertsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [activeLocation, setActiveLocation] = useState<string>('Morbi');
+  const [apiMessage, setApiMessage] = useState<string>('');
   const [alerts, setAlerts] = useState<WeatherAlertItem[]>(() => {
-    const saved = localStorage.getItem('weathergpt_alerts');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return DEFAULT_ALERTS;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('weathergpt_alerts');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          const hasStaleStaticData = Array.isArray(parsed) && parsed.some((item: any) => 
+            item.location === 'Rajkot, Gujarat' || 
+            item.location === 'Saurashtra Coastline' || 
+            item.location === 'Gujarat Inland' ||
+            (item.description && item.description.includes('Doppler radar over Rajkot'))
+          );
+          if (hasStaleStaticData) {
+            localStorage.removeItem('weathergpt_alerts');
+          } else if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        } catch {
+          localStorage.removeItem('weathergpt_alerts');
+        }
       }
     }
-    return DEFAULT_ALERTS;
+    return [];
   });
 
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>(() => {
@@ -118,6 +252,33 @@ export const WeatherAlertsProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem('weathergpt_alerts', JSON.stringify(alerts));
   }, [alerts]);
 
+  const updateAlertsForLocation = async (city: string, _weatherData?: any) => {
+    if (!city) return;
+    const cleanCity = city.split(',')[0].trim();
+    setActiveLocation(cleanCity);
+
+    try {
+      const res = await fetchWeatherAlertsApi(cleanCity);
+      if (res && res.success) {
+        if (Array.isArray(res.alerts) && res.alerts.length > 0) {
+          const mapped = res.alerts.map((a: any, idx: number) => mapBackendAlertToItem(a, cleanCity, idx));
+          setAlerts(mapped);
+          setApiMessage('');
+          return;
+        } else {
+          setAlerts([]);
+          setApiMessage(res.message || `No severe weather warnings reported for ${cleanCity}.`);
+          return;
+        }
+      }
+    } catch (e: any) {
+      console.warn(`Backend alerts endpoint fetch error for ${cleanCity}:`, e);
+      setApiMessage(`Unable to fetch live alerts for ${cleanCity}.`);
+    }
+
+    setAlerts([]);
+  };
+
   // Request browser desktop notification permission
   const requestNotificationPermission = async (): Promise<boolean> => {
     if (typeof window === 'undefined' || !('Notification' in window)) {
@@ -129,7 +290,6 @@ export const WeatherAlertsProvider: React.FC<{ children: React.ReactNode }> = ({
       const permission = await Notification.requestPermission();
       setPermissionStatus(permission);
       if (permission === 'granted') {
-        // Send confirmation welcome notification
         new Notification('🌧️ WeatherGPT Alerts Enabled', {
           body: 'You will receive real-time notifications for heavy rain, thunderstorms, and extreme weather warnings.',
           icon: '/favicon.ico'
@@ -145,17 +305,13 @@ export const WeatherAlertsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Dispatch real notification (Desktop Push + In-App Sound & Toast)
   const sendAlertNotification = (alert: WeatherAlertItem) => {
-    // 1. Play audio chime
     playAlertChime();
-
-    // 2. Show in-app animated toast banner
     setActiveToast(alert);
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     toastTimeoutRef.current = setTimeout(() => {
       setActiveToast(null);
-    }, 8000); // 8 seconds display
+    }, 8000);
 
-    // 3. Trigger Browser Desktop / Mobile notification if permitted
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       try {
         const notif = new Notification(`⛈️ ${alert.title}`, {
@@ -174,16 +330,17 @@ export const WeatherAlertsProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Immediate Test Trigger for Heavy Rain Alert
-  const triggerHeavyRainTestAlert = () => {
+  // Immediate Test Trigger for Heavy Rain Alert tailored to current active city
+  const triggerHeavyRainTestAlert = (targetCity?: string) => {
+    const city = (targetCity || activeLocation || 'Rajkot').split(',')[0].trim();
     const rainAlert: WeatherAlertItem = {
       id: Date.now(),
       title: "Heavy Rain & Flash Flood Warning",
       severity: "Critical",
       expected: "Next 2 Hours (80mm expected)",
-      description: "Severe downpour detected on Doppler radar over Rajkot. High risk of waterlogging on major roads. Stay indoors and carry waterproof gear!",
+      description: `Severe downpour detected on Doppler radar over ${city}. High risk of waterlogging on major roads. Stay indoors and carry waterproof gear!`,
       type: "rain",
-      location: "Rajkot Urban Area",
+      location: `${city} Urban Area`,
       timestamp: "Just now",
       read: false
     };
@@ -192,17 +349,7 @@ export const WeatherAlertsProvider: React.FC<{ children: React.ReactNode }> = ({
     sendAlertNotification(rainAlert);
   };
 
-  // Auto-trigger sample heavy rain alert once after initial load to demonstrate
-  useEffect(() => {
-    const hasTriggeredInitial = sessionStorage.getItem('weathergpt_has_alerted');
-    if (!hasTriggeredInitial) {
-      sessionStorage.setItem('weathergpt_has_alerted', 'true');
-      const timer = setTimeout(() => {
-        sendAlertNotification(alerts[0]);
-      }, 3500); // 3.5 seconds after page load
-      return () => clearTimeout(timer);
-    }
-  }, []);
+
 
   const markAsRead = (id: number) => {
     setAlerts(prev => prev.map(a => a.id === id ? { ...a, read: true } : a));
@@ -223,12 +370,15 @@ export const WeatherAlertsProvider: React.FC<{ children: React.ReactNode }> = ({
     <WeatherAlertsContext.Provider
       value={{
         alerts,
+        apiMessage,
+        activeLocation,
         unreadCount,
         permissionStatus,
         activeToast,
         requestNotificationPermission,
         sendAlertNotification,
         triggerHeavyRainTestAlert,
+        updateAlertsForLocation,
         markAsRead,
         markAllAsRead,
         dismissToast

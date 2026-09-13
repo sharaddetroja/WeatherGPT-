@@ -6,19 +6,21 @@ import {
   ArrowLeftRight, 
   MapPin, 
   Loader2, 
-  Sparkles
+  Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 import { INDIAN_CITIES } from '../data/indianCities';
 import { 
   calculateRouteWeather, 
+  getLiveRouteWeatherBackend,
   type RouteCalculationResult 
 } from '../services/routeWeatherService';
 import { RouteWeather } from '../components/route/RouteWeather';
-import { mockRouteWeather, type RouteWeatherData } from '../data/mockRouteWeather';
+import { rawBackendRouteWeatherResponse } from '../data/mockRouteWeather';
 
 const PRESET_ROUTES = [
-  { source: 'Morbi', destination: 'Surat', label: 'Morbi ➔ Surat (Backend Data)', useMock: true },
+  { source: 'Morbi', destination: 'Surat', label: 'Morbi ➔ Surat (Backend Data)' },
   { source: 'Morbi', destination: 'Rajkot', label: 'Morbi ➔ Rajkot (NH27)' },
   { source: 'Rajkot', destination: 'Ahmedabad', label: 'Rajkot ➔ Ahmedabad (NH47)' },
   { source: 'Mumbai', destination: 'Pune', label: 'Mumbai ➔ Pune (Expressway)' },
@@ -38,15 +40,15 @@ export default function TravelPlannerPage() {
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [rawBackendRes, setRawBackendRes] = useState<any>(null);
   const [routeResult, setRouteResult] = useState<RouteCalculationResult | null>(null);
-  const [isUsingMock, setIsUsingMock] = useState(true);
 
   const sourceRef = useRef<HTMLDivElement>(null);
   const destRef = useRef<HTMLDivElement>(null);
 
   // Initialize with default route calculation
   useEffect(() => {
-    handleCalculateRoute('Morbi', 'Surat', true);
+    handleCalculateRoute('Morbi', 'Surat');
   }, []);
 
   // Handle source suggestions
@@ -90,11 +92,10 @@ export default function TravelPlannerPage() {
     setDestInput(temp);
   };
 
-  // Main Route Submit Handler
+  // Main Route Submit Handler calling live Express API
   const handleCalculateRoute = async (
     src = sourceInput,
-    dst = destInput,
-    forceMock = false
+    dst = destInput
   ) => {
     if (!src.trim() || !dst.trim()) {
       setErrorMsg('Please enter both source and destination locations.');
@@ -105,30 +106,30 @@ export default function TravelPlannerPage() {
     setErrorMsg('');
     setShowSourceDropdown(false);
     setShowDestDropdown(false);
-
-    if (forceMock || (src.toLowerCase() === 'morbi' && dst.toLowerCase() === 'surat')) {
-      setIsUsingMock(true);
-      await new Promise(r => setTimeout(r, 200));
-      setLoading(false);
-      return;
-    }
-
-    setIsUsingMock(false);
+    setRawBackendRes(null);
+    setRouteResult(null);
 
     try {
-      await new Promise(r => setTimeout(r, 300));
-      const res = await calculateRouteWeather(src, dst, undefined, 'driving');
-      setRouteResult(res);
+      // 1. First attempt fetching live route weather from Express backend
+      const liveRes = await getLiveRouteWeatherBackend(src, dst);
+      setRawBackendRes(liveRes);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Unable to calculate route weather.');
+      console.warn('Live API fetch failed, using fallback route calculator:', err.message);
+      // 2. Fallback to client route calculation
+      try {
+        const fallbackRes = await calculateRouteWeather(src, dst, undefined, 'driving');
+        setRouteResult(fallbackRes);
+      } catch (fallbackErr: any) {
+        setErrorMsg(fallbackErr.message || 'Unable to calculate route weather.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Construct active RouteWeatherData for the modular component
-  const activeRouteData: RouteWeatherData = isUsingMock 
-    ? mockRouteWeather 
+  // Construct active raw response for RouteWeather component
+  const activeRawResponse = rawBackendRes 
+    ? rawBackendRes 
     : routeResult 
     ? {
         success: true,
@@ -148,14 +149,22 @@ export default function TravelPlannerPage() {
           estimated_arrival: w.estimatedArrivalIso,
           weather: {
             temp_c: w.weather.temperatureC,
-            condition: w.weather.condition,
+            temperature_c: w.weather.temperatureC,
+            condition: {
+              text: w.weather.condition,
+              icon: w.weather.icon
+            },
             humidity: w.weather.humidity,
-            wind_kph: w.weather.windSpeedKph
+            wind_kph: w.weather.windSpeedKph,
+            wind_speed_kph: w.weather.windSpeedKph,
+            rain_probability: w.weather.rainProbability,
+            visibility_km: w.weather.visibilityKm,
+            is_stale: w.weather.isStale
           }
         })),
-        alerts: routeResult.hazardAlert ? [{ severity: 'medium', message: routeResult.hazardAlert.message, location: routeResult.hazardAlert.place }] : []
+        alerts: routeResult.hazardAlert ? [{ type: routeResult.hazardAlert.type, title: 'Route Warning', place: routeResult.hazardAlert.place, severity: 'Warning', description: routeResult.hazardAlert.message }] : []
       }
-    : mockRouteWeather;
+    : rawBackendRouteWeatherResponse;
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
@@ -183,7 +192,7 @@ export default function TravelPlannerPage() {
               onClick={() => {
                 setSourceInput(preset.source);
                 setDestInput(preset.destination);
-                handleCalculateRoute(preset.source, preset.destination, !!preset.useMock);
+                handleCalculateRoute(preset.source, preset.destination);
               }}
               className="px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted border border-border text-xs font-semibold text-foreground transition-all cursor-pointer shadow-2xs"
             >
@@ -312,15 +321,28 @@ export default function TravelPlannerPage() {
 
         {/* Error message banner */}
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 font-semibold flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span>{errorMsg}</span>
+          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 font-semibold flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+            <button 
+              onClick={() => handleCalculateRoute()} 
+              className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-[11px] font-bold text-red-400 flex items-center gap-1 cursor-pointer"
+            >
+              <RefreshCw className="w-3 h-3" /> Retry
+            </button>
           </div>
         )}
       </div>
 
       {/* Main Route Weather Display */}
-      <RouteWeather data={activeRouteData} loading={loading} />
+      <RouteWeather 
+        rawResponse={activeRawResponse} 
+        loading={loading} 
+        error={errorMsg}
+        onRefresh={() => handleCalculateRoute()} 
+      />
     </div>
   );
 }

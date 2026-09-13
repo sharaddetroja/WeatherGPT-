@@ -1,18 +1,30 @@
+import { useEffect } from 'react';
 import { AlertTriangle, Info, ShieldAlert, CloudRain, Wind, ThermometerSun, Bell, Volume2, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '../components/Card';
 import { cn } from '../utils/cn';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
+import { useUserProfile } from '../hooks/useUserProfile';
 import { useLanguage } from '../hooks/useLanguage';
 
 export default function AlertsPage() {
   const { t } = useLanguage();
+  const { profile } = useUserProfile();
   const { 
     alerts, 
+    apiMessage,
+    activeLocation,
     permissionStatus, 
     requestNotificationPermission, 
     triggerHeavyRainTestAlert, 
-    sendAlertNotification 
+    sendAlertNotification,
+    updateAlertsForLocation
   } = useWeatherAlerts();
+
+  useEffect(() => {
+    if (profile.location) {
+      updateAlertsForLocation(profile.location);
+    }
+  }, [profile.location]);
 
   const getSeverityColor = (severity: string) => {
     switch(severity) {
@@ -82,7 +94,7 @@ export default function AlertsPage() {
               </button>
             ) : (
               <button
-                onClick={triggerHeavyRainTestAlert}
+                onClick={() => triggerHeavyRainTestAlert(profile.location)}
                 className="px-4 py-2 glass-pill border border-white/20 text-white hover:bg-white/10 font-semibold rounded-xl text-xs transition-colors cursor-pointer shadow-2xs"
               >
                 Send Test Alert
@@ -93,7 +105,22 @@ export default function AlertsPage() {
       </Card>
       
       {/* Alerts Grid List */}
-      <div className="grid gap-4">
+      {alerts.length === 0 ? (
+        <Card className="border-emerald-500/20 bg-emerald-500/5">
+          <CardContent className="p-8 text-center space-y-3">
+            <div className="w-12 h-12 bg-emerald-500/15 text-emerald-500 rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/20">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground">
+              No Active Weather Warnings for {activeLocation || profile.location || 'your area'}
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+              {apiMessage || `Weather conditions remain clear with no severe weather advisories issued by weather providers.`}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
         {alerts.map((alert) => {
           const Icon = getTypeIcon(alert.type);
           return (
@@ -142,6 +169,7 @@ export default function AlertsPage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

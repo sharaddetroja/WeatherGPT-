@@ -2,7 +2,7 @@ export interface WeatherGPTLocation {
   name: string;
   latitude: number;
   longitude: number;
-  country: string;
+  country?: string;
   state?: string;
 }
 
@@ -49,12 +49,11 @@ export interface AskApiResponse {
     };
   };
   error?: any;
-  intent?: string; // Keeping for backward compatibility
+  intent?: string;
 
-  // New Data Fields from Backend
   airQuality?: {
     score?: number;
-    aqi?: number; // Depending on backend naming
+    aqi?: number;
     pm25?: number;
     pm10?: number;
     healthAdvice?: string;
@@ -72,18 +71,20 @@ export interface AskApiResponse {
   explainWhy?: any;
 }
 
-// Direct client-side fetch to Render backend (no proxy — avoids Vercel 10s timeout)
-const API_BASE_URL = 'https://weathergpt-backend-46or.onrender.com/api';
-const API_ENDPOINT = `${API_BASE_URL}/ask`;
-export const WEATHER_ENDPOINT = `${API_BASE_URL}/weather`;
-export const WEATHER_CURRENT_ENDPOINT = `${API_BASE_URL}/weather/current`;
-export const WEATHER_HOURLY_ENDPOINT = `${API_BASE_URL}/weather/hourly`;
-export const WEATHER_DAILY_ENDPOINT = `${API_BASE_URL}/weather/daily`;
-export const WEATHER_ALERTS_ENDPOINT = `${API_BASE_URL}/weather/alerts`;
-export const HEALTH_ENDPOINT = `${API_BASE_URL}/health`;
-export const VOICE_SPEAK_ENDPOINT = `${API_BASE_URL}/voice/speak`;
-export const VOICE_TRANSCRIBE_ENDPOINT = `${API_BASE_URL}/voice/transcribe`;
-export const VOICE_ASK_ENDPOINT = `${API_BASE_URL}/voice/ask`;
+// Base URL configuration supporting .env and default production Render URL
+const RAW_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://weathergpt-back-end.onrender.com').replace(/\/+$/, '');
+export const BASE_API_URL = RAW_BASE_URL.endsWith('/api') ? RAW_BASE_URL : `${RAW_BASE_URL}/api`;
+
+const API_ENDPOINT = `${BASE_API_URL}/ask`;
+export const WEATHER_ENDPOINT = `${BASE_API_URL}/weather`;
+export const WEATHER_CURRENT_ENDPOINT = `${BASE_API_URL}/weather/current`;
+export const WEATHER_HISTORY_ENDPOINT = `${BASE_API_URL}/weather/history`;
+export const WEATHER_ALERTS_ENDPOINT = `${BASE_API_URL}/weather/alerts`;
+export const ROUTE_WEATHER_ENDPOINT = `${BASE_API_URL}/route-weather`;
+export const HEALTH_ENDPOINT = `${BASE_API_URL}/health`;
+export const VOICE_SPEAK_ENDPOINT = `${BASE_API_URL}/voice/speak`;
+export const VOICE_TRANSCRIBE_ENDPOINT = `${BASE_API_URL}/voice/transcribe`;
+export const VOICE_ASK_ENDPOINT = `${BASE_API_URL}/voice/ask`;
 
 export interface AskWeatherGPTParams {
   question: string;
@@ -94,6 +95,70 @@ export interface AskWeatherGPTParams {
   conversationId?: string;
   persona?: 'farmer' | 'student' | 'traveler' | 'elderly' | 'outdoor_worker' | 'general';
   language?: string;
+}
+
+/**
+ * Health Check API Call
+ */
+export async function getHealthStatus(): Promise<{ status: string; timestamp: string; success?: boolean; message?: string }> {
+  try {
+    const response = await fetch(HEALTH_ENDPOINT);
+    if (!response.ok) {
+      throw new Error(`Health check failed with status ${response.status}`);
+    }
+    return await response.json();
+  } catch (err: any) {
+    return { status: 'DOWN', timestamp: new Date().toISOString(), success: false, message: err.message };
+  }
+}
+
+/**
+ * Live Current Weather Endpoint
+ */
+export async function fetchCurrentWeatherApi(cityOrLocation: string): Promise<any> {
+  const url = `${WEATHER_CURRENT_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch current weather for "${cityOrLocation}"`);
+  }
+  return await response.json();
+}
+
+/**
+ * Live 7-Day Weather History Endpoint
+ */
+export async function fetchWeatherHistoryApi(cityOrLocation: string): Promise<any> {
+  const url = `${WEATHER_HISTORY_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch weather history for "${cityOrLocation}"`);
+  }
+  return await response.json();
+}
+
+/**
+ * Live Weather Alerts Endpoint (/api/weather/alerts?city=...)
+ */
+export async function fetchWeatherAlertsApi(cityOrLocation: string): Promise<any> {
+  const url = `${WEATHER_ALERTS_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch weather alerts for "${cityOrLocation}"`);
+  }
+  return await response.json();
+}
+
+/**
+ * Live Route Weather Discovery Endpoint
+ */
+export async function fetchRouteWeatherApi(source: string, destination: string): Promise<any> {
+  const url = `${ROUTE_WEATHER_ENDPOINT}?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(destination)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    const errBody = await response.json().catch(() => ({}));
+    throw new Error(errBody?.message || errBody?.error || `Failed to calculate route weather from ${source} to ${destination}`);
+  }
+  return await response.json();
 }
 
 /**
@@ -187,10 +252,6 @@ export async function getUserLocation(): Promise<{latitude: number; longitude: n
   });
 }
 
-// ============================================================================
-// NEW API ENDPOINTS
-// ============================================================================
-
 export interface ReverseGeocodeResponse {
   city: string;
   state: string;
@@ -198,11 +259,8 @@ export interface ReverseGeocodeResponse {
   address: string;
 }
 
-/**
- * 2. Mobile GPS Reverse Geocoding
- */
 export async function reverseGeocodeLocation(lat: number, lon: number): Promise<ReverseGeocodeResponse> {
-  const response = await fetch(`${API_BASE_URL}/location/reverse-geocode`, {
+  const response = await fetch(`${BASE_API_URL}/location/reverse-geocode`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ latitude: lat, longitude: lon }),
@@ -211,42 +269,30 @@ export async function reverseGeocodeLocation(lat: number, lon: number): Promise<
   return response.json();
 }
 
-/**
- * 3. Disaster Intelligence - Alerts
- */
 export async function getDisasterAlerts(location: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/disaster/alerts?location=${encodeURIComponent(location)}`);
+  const response = await fetch(`${BASE_API_URL}/disaster/alerts?location=${encodeURIComponent(location)}`);
   if (!response.ok) throw new Error('Failed to fetch disaster alerts');
   return response.json();
 }
 
-/**
- * 3. Disaster Intelligence - Safety Guide
- */
 export async function getEmergencyGuide(disasterType: string, language: string = 'en'): Promise<any> {
   const response = await fetch(
-    `${API_BASE_URL}/disaster/emergency-guide?disasterType=${encodeURIComponent(disasterType)}&language=${encodeURIComponent(language)}`
+    `${BASE_API_URL}/disaster/emergency-guide?disasterType=${encodeURIComponent(disasterType)}&language=${encodeURIComponent(language)}`
   );
   if (!response.ok) throw new Error('Failed to fetch emergency guide');
   return response.json();
 }
 
-/**
- * 4. Interactive Weather Map Overlay
- */
 export async function getMapWeatherOverlay(layer: string, lat: number, lon: number): Promise<{tileUrlTemplate: string, legend?: any}> {
   const response = await fetch(
-    `${API_BASE_URL}/maps/weather?layer=${encodeURIComponent(layer)}&lat=${lat}&lon=${lon}`
+    `${BASE_API_URL}/maps/weather?layer=${encodeURIComponent(layer)}&lat=${lat}&lon=${lon}`
   );
   if (!response.ok) throw new Error('Failed to fetch map overlay data');
   return response.json();
 }
 
-/**
- * 5. Multi-City Comparison
- */
 export async function compareCitiesWeather(locations: string[]): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/weather/compare`, {
+  const response = await fetch(`${BASE_API_URL}/weather/compare`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ locations }),
@@ -255,9 +301,6 @@ export async function compareCitiesWeather(locations: string[]): Promise<any> {
   return response.json();
 }
 
-/**
- * 6. Weather Lens (AI Sky Camera)
- */
 export interface WeatherLensResponse {
   cloudType: string;
   cloudCoverPercent: number;
@@ -272,7 +315,6 @@ export async function analyzeWeatherLens(
   location: string,
   language: string = 'en'
 ): Promise<WeatherLensResponse> {
-  
   let locationObj: any = undefined;
   if (location && location !== 'Unknown') {
     const [lat, lon] = location.split(',');
@@ -281,7 +323,7 @@ export async function analyzeWeatherLens(
     }
   }
 
-  const response = await fetch(`${API_BASE_URL}/weather/lens`, {
+  const response = await fetch(`${BASE_API_URL}/weather/lens`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -295,12 +337,9 @@ export async function analyzeWeatherLens(
   return response.json();
 }
 
-/**
- * 7. Voice Speak - Direct client-side TTS fetch from Render backend
- */
 export async function fetchVoiceSpeakAudio(text: string, language: string = 'en-IN'): Promise<Blob | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/voice/speak`, {
+    const response = await fetch(`${BASE_API_URL}/voice/speak`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, language }),
@@ -333,18 +372,14 @@ export async function fetchVoiceSpeakAudio(text: string, language: string = 'en-
   }
 }
 
-/**
- * 8. Voice Transcribe - Send raw audio blob directly to backend (NO FormData)
- *    Returns { transcription: string, language: string }
- */
 export async function transcribeAudio(audioBlob: Blob): Promise<{ transcription: string; language: string } | null> {
   try {
-    const response = await fetch('https://weathergpt-backend-46or.onrender.com/api/voice/transcribe', {
+    const response = await fetch(`${BASE_API_URL}/voice/transcribe`, {
       method: 'POST',
       headers: {
         'Content-Type': audioBlob.type || 'audio/webm'
       },
-      body: audioBlob // Send the raw blob directly!
+      body: audioBlob
     });
 
     if (!response.ok) return null;
@@ -358,17 +393,13 @@ export async function transcribeAudio(audioBlob: Blob): Promise<{ transcription:
   }
 }
 
-/**
- * 9. Ask LLM - Send transcribed text + language to /api/ask
- *    Returns { answer: string }
- */
 export async function askLLM(question: string, language: string = 'auto'): Promise<{ answer: string } | null> {
   try {
     const payload: any = { question };
     if (language && language !== 'auto') {
       payload.language = language;
     }
-    const response = await fetch(`${API_BASE_URL}/ask`, {
+    const response = await fetch(`${BASE_API_URL}/ask`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -383,13 +414,9 @@ export async function askLLM(question: string, language: string = 'auto'): Promi
   }
 }
 
-/**
- * 10. Voice Speak - POST text + language to /api/voice/speak and get audio blob back
- *     Returns audio Blob for playback via URL.createObjectURL()
- */
 export async function fetchVoiceSpeakAudioV2(text: string, language: string = 'en'): Promise<Blob | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/voice/speak`, {
+    const response = await fetch(`${BASE_API_URL}/voice/speak`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, language }),
@@ -419,4 +446,3 @@ export async function fetchVoiceSpeakAudioV2(text: string, language: string = 'e
     return null;
   }
 }
-

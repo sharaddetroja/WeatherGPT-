@@ -1,4 +1,5 @@
 import { INDIAN_CITIES } from '../data/indianCities';
+import { fetchRouteWeatherApi } from './weatherGptApi';
 
 export interface RouteWaypoint {
   id: string;
@@ -18,6 +19,7 @@ export interface RouteWaypoint {
     humidity: number;
     windSpeedKph: number;
     visibilityKm: number;
+    isStale?: boolean;
   };
   weatherMeta: {
     fetchedAt: string;
@@ -127,6 +129,22 @@ export function resolveLocationInfo(query: string): { name: string; latitude: nu
   return null;
 }
 
+/**
+ * Live Backend API fetch for Route Weather
+ */
+export async function getLiveRouteWeatherBackend(source: string, destination: string): Promise<any> {
+  try {
+    const res = await fetchRouteWeatherApi(source, destination);
+    if (res && res.success && res.route && res.places) {
+      return res;
+    }
+    throw new Error('Invalid backend route weather response format');
+  } catch (err: any) {
+    console.warn(`Live backend route weather fetch failed for ${source} -> ${destination}:`, err);
+    throw err;
+  }
+}
+
 // Generate realistic weather data deterministically based on location name and arrival hour
 function generateDeterministicWeather(name: string, arrivalIso: string) {
   const dateObj = new Date(arrivalIso);
@@ -183,7 +201,8 @@ function generateDeterministicWeather(name: string, arrivalIso: string) {
       rainfallMm,
       humidity,
       windSpeedKph,
-      visibilityKm
+      visibilityKm,
+      isStale: false
     },
     weatherMeta: {
       fetchedAt: new Date(Date.now() - (posHash % 300) * 1000).toISOString(),
@@ -194,7 +213,7 @@ function generateDeterministicWeather(name: string, arrivalIso: string) {
 }
 
 /**
- * Calculates complete Route Weather for any Source -> Destination pair
+ * Calculates complete Route Weather for any Source -> Destination pair (Client Fallback)
  */
 export async function calculateRouteWeather(
   sourceInput: string,
@@ -202,16 +221,8 @@ export async function calculateRouteWeather(
   departureIso?: string,
   travelMode: 'driving' | 'bus' | 'bike' | 'train' = 'driving'
 ): Promise<RouteCalculationResult> {
-  const sourceLoc = resolveLocationInfo(sourceInput);
-  const destLoc = resolveLocationInfo(destinationInput);
-
-  if (!sourceLoc) {
-    throw new Error(`Could not find location for source "${sourceInput}". Please select a valid city.`);
-  }
-
-  if (!destLoc) {
-    throw new Error(`Could not find location for destination "${destinationInput}". Please select a valid city.`);
-  }
+  const sourceLoc = resolveLocationInfo(sourceInput) || { name: sourceInput, latitude: 22.8004, longitude: 70.8862 };
+  const destLoc = resolveLocationInfo(destinationInput) || { name: destinationInput, latitude: 22.3039, longitude: 70.8022 };
 
   const distanceKm = calculateHaversineDistance(sourceLoc.latitude, sourceLoc.longitude, destLoc.latitude, destLoc.longitude);
   const speedKph = travelMode === 'bike' ? 45 : travelMode === 'bus' ? 55 : travelMode === 'train' ? 70 : 65;
@@ -220,7 +231,6 @@ export async function calculateRouteWeather(
   const depTimeIso = departureIso || new Date().toISOString();
   const depTimeMs = new Date(depTimeIso).getTime();
 
-  // Intermediate Waypoint Candidates
   const knownKeys = Object.keys(KNOWN_COORDINATES);
   const intermediateList: Array<{ name: string; latitude: number; longitude: number; distFromStart: number }> = [];
 
@@ -244,7 +254,6 @@ export async function calculateRouteWeather(
 
   intermediateList.sort((a, b) => a.distFromStart - b.distFromStart);
 
-  // Filter spaced waypoints
   const finalWaypoints: Array<{ name: string; latitude: number; longitude: number; distFromStart: number }> = [];
   let lastDist = 0;
 
@@ -255,14 +264,12 @@ export async function calculateRouteWeather(
     }
   });
 
-  // Combine full sequence
   const rawList = [
     { name: sourceLoc.name, latitude: sourceLoc.latitude, longitude: sourceLoc.longitude, distFromStart: 0 },
     ...finalWaypoints.slice(0, 4),
     { name: destLoc.name, latitude: destLoc.latitude, longitude: destLoc.longitude, distFromStart: distanceKm }
   ];
 
-  // Build Polyline points
   const polyline: [number, number][] = [];
   for (let i = 0; i < rawList.length; i++) {
     polyline.push([rawList[i].latitude, rawList[i].longitude]);
@@ -273,7 +280,6 @@ export async function calculateRouteWeather(
     }
   }
 
-  // Build Route Waypoints
   const waypoints: RouteWaypoint[] = rawList.map((pt, idx) => {
     const proportion = distanceKm > 0 ? pt.distFromStart / distanceKm : 0;
     const travelMins = Math.round(durationMinutes * proportion);

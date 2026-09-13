@@ -177,7 +177,7 @@ export default function Navbar() {
                       </button>
                     ) : (
                       <button
-                        onClick={triggerHeavyRainTestAlert}
+                        onClick={() => triggerHeavyRainTestAlert()}
                         className="px-2.5 py-1 bg-white/15 hover:bg-white/25 border border-white/20 text-white text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-2xs"
                       >
                         ⚡ Test Alert
@@ -222,7 +222,7 @@ export default function Navbar() {
                   {/* Footer Link */}
                   <div className="p-2.5 bg-white/5 border-t border-white/15 flex items-center justify-between">
                     <button
-                      onClick={triggerHeavyRainTestAlert}
+                      onClick={() => triggerHeavyRainTestAlert()}
                       className="text-[11px] font-bold text-rose-300 hover:text-rose-200 hover:underline cursor-pointer flex items-center gap-1"
                       title="Simulate a real-time heavy rain warning with sound & notification"
                     >

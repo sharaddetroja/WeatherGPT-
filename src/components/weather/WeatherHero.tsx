@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cloud, Sun, CloudRain, CloudLightning, Wind, Snowflake, CloudSun } from 'lucide-react';
+import { Cloud, Sun, CloudRain, CloudLightning, Wind, Snowflake, CloudSun, CloudOff } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface WeatherHeroProps {
@@ -12,6 +12,7 @@ interface WeatherHeroProps {
   maxTemp: number | string;
   feelsLike: number | string;
   pm25?: number | string;
+  isStale?: boolean;
   className?: string;
 }
 
@@ -25,6 +26,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
   maxTemp,
   feelsLike,
   pm25 = 13,
+  isStale = false,
   className = '',
 }) => {
   const getConditionIcon = (cond?: string) => {
@@ -47,12 +49,19 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
       transition={{ duration: 0.5 }}
       className={`relative flex flex-col justify-between text-white select-none bg-white/10 backdrop-blur-md border border-white/20 shadow-xl rounded-3xl p-6 sm:p-8 lg:p-10 ${className}`}
     >
-      {/* Top Location & Air Quality Badge */}
+      {/* Top Location & Badges */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white drop-shadow-sm">
-            {locationName}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white drop-shadow-sm">
+              {locationName}
+            </h1>
+            {isStale && (
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/25 text-amber-200 border border-amber-500/40 text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1">
+                <CloudOff className="w-3 h-3 text-amber-300" /> Cached Weather
+              </span>
+            )}
+          </div>
           {region && (
             <p className="text-xs sm:text-sm text-white/75 font-medium mt-0.5">
               {region}
