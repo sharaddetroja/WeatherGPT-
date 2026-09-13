@@ -116,36 +116,48 @@ export async function getHealthStatus(): Promise<{ status: string; timestamp: st
  * Live Current Weather Endpoint
  */
 export async function fetchCurrentWeatherApi(cityOrLocation: string): Promise<any> {
-  const url = `${WEATHER_CURRENT_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch current weather for "${cityOrLocation}"`);
+  try {
+    const url = `${WEATHER_CURRENT_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+    return await response.json();
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Network request failed' };
   }
-  return await response.json();
 }
 
 /**
  * Live 7-Day Weather History Endpoint
  */
 export async function fetchWeatherHistoryApi(cityOrLocation: string): Promise<any> {
-  const url = `${WEATHER_HISTORY_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch weather history for "${cityOrLocation}"`);
+  try {
+    const url = `${WEATHER_HISTORY_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+    return await response.json();
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Network request failed' };
   }
-  return await response.json();
 }
 
 /**
  * Live Weather Alerts Endpoint (/api/weather/alerts?city=...)
  */
 export async function fetchWeatherAlertsApi(cityOrLocation: string): Promise<any> {
-  const url = `${WEATHER_ALERTS_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch weather alerts for "${cityOrLocation}"`);
+  try {
+    const url = `${WEATHER_ALERTS_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return { success: false, alerts: [], message: `Weather alerts unavailable (HTTP ${response.status})` };
+    }
+    return await response.json();
+  } catch (err: any) {
+    return { success: false, alerts: [], message: err.message || 'Network request failed' };
   }
-  return await response.json();
 }
 
 /**
