@@ -201,45 +201,22 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
 
           {/* Render Data Point Markers & Temperature Labels for EVERY Point */}
           {points.map((pt, idx) => {
-            if (idx === 0) {
-              return (
-                <g key={idx}>
-                  <circle
-                    cx={pt.x}
-                    cy={pt.y}
-                    r="14"
-                    fill="rgba(255, 255, 255, 0.95)"
-                    stroke="#83C78C"
-                    strokeWidth="3"
-                    className="drop-shadow-sm"
-                  />
-                  <text
-                    x={pt.x}
-                    y={pt.y + 4}
-                    textAnchor="middle"
-                    fill="#1E3A8A"
-                    fontSize="11"
-                    fontWeight="900"
-                    className="select-none"
-                  >
-                    {pt.temp}
-                  </text>
-                </g>
-              );
-            }
-
             const isMax = idx === maxIndex;
+            const isNow = idx === 0;
 
             return (
               <g key={idx}>
+                {/* Node Dot on Spline Curve */}
                 <circle
                   cx={pt.x}
                   cy={pt.y}
-                  r={isMax ? "5" : "4"}
-                  fill={isMax ? "#EF4444" : "#83C78C"}
+                  r={isNow || isMax ? "5.5" : "4.5"}
+                  fill={isNow ? "#22C55E" : isMax ? "#EF4444" : "#83C78C"}
                   stroke="#FFFFFF"
                   strokeWidth="2"
+                  className="drop-shadow-xs"
                 />
+                {/* Temperature Text Label Above Point - EXACTLY like 29° */}
                 <text
                   x={pt.x}
                   y={pt.y - 10}
