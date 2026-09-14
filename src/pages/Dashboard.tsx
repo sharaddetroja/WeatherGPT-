@@ -29,6 +29,8 @@ import { DailyForecastGlass } from '../components/weather/DailyForecastGlass';
 import { WeatherDetailsGrid } from '../components/weather/WeatherDetailsGrid';
 import { WeatherAlertsGlass } from '../components/weather/WeatherAlertsGlass';
 import { Last7DaysHistoryGlass } from '../components/weather/Last7DaysHistoryGlass';
+import { HourlyPrecipitationBarCard } from '../components/weather/HourlyPrecipitationBarCard';
+import { MoonPhaseCard } from '../components/weather/MoonPhaseCard';
 
 function DashboardSkeleton() {
   return (
@@ -522,7 +524,23 @@ export default function Dashboard() {
       </div>
 
       {/* ===================================================================== */}
-      {/* ROW 3: WEATHER ALERTS                                                 */}
+      {/* ROW 3: HOURLY PRECIPITATION VOLUME (MM) & LUNAR MOON PHASE TELEMETRY  */}
+      {/* ===================================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+        {/* Hourly Precipitation Bar Graph with liquid-surface styling */}
+        <HourlyPrecipitationBarCard className="h-full" />
+
+        {/* Photorealistic Moon Phase Sphere, Moonrise & Moonset Telemetry */}
+        <MoonPhaseCard 
+          className="h-full"
+          phaseName="Waxing crescent"
+          moonriseTime="9:20 am"
+          moonsetTime="8:43 pm"
+        />
+      </div>
+
+      {/* ===================================================================== */}
+      {/* ROW 4: WEATHER ALERTS                                                 */}
       {/* ===================================================================== */}
       <div className="w-full">
         <WeatherAlertsGlass 
