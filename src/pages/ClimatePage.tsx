@@ -58,9 +58,15 @@ export default function ClimatePage() {
 
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Filter city suggestions
+  // Comprehensive search suggestions covering all cities across India
   const suggestions = searchInput.trim()
-    ? INDIAN_CITIES.filter(c => c.name.toLowerCase().includes(searchInput.toLowerCase().trim())).slice(0, 6)
+    ? INDIAN_CITIES.filter(c => {
+        const query = searchInput.toLowerCase().trim();
+        return (
+          c.name.toLowerCase().includes(query) ||
+          c.region.toLowerCase().includes(query)
+        );
+      }).slice(0, 10)
     : [];
 
   // Fetch real backend climate data for selected city
@@ -190,26 +196,32 @@ export default function ClimatePage() {
               )}
             </div>
 
-            {/* Suggestions Dropdown */}
+            {/* Suggestions Dropdown for all Indian cities */}
             <AnimatePresence>
               {showSuggestions && suggestions.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 4, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                  className="absolute left-0 right-0 z-50 mt-1 bg-card border border-border rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto"
+                  className="absolute left-0 right-0 z-50 mt-1.5 bg-card/95 backdrop-blur-xl border border-border/90 rounded-2xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto divide-y divide-border/30"
                 >
+                  <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                    <span>Indian Cities & Regions</span>
+                    <span>{suggestions.length} match{suggestions.length > 1 ? 'es' : ''}</span>
+                  </div>
                   {suggestions.map((item, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSelectCity(item.name)}
-                      className="w-full px-3 py-2 text-left text-xs font-semibold hover:bg-muted text-foreground flex items-center justify-between cursor-pointer"
+                      className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-between cursor-pointer transition-colors"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span>{item.name}</span>
+                        <span className="truncate font-bold">{item.name}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground">{item.region}</span>
+                      <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                        {item.region}
+                      </span>
                     </button>
                   ))}
                 </motion.div>

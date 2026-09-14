@@ -62,7 +62,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         console.error("Failed to parse language preference", e);
       }
     }
-    return SITE_LANGUAGES[0]; // Default to English
+    // Strictly default to English across whole website
+    return SITE_LANGUAGES[0]; // English
   });
 
   useEffect(() => {

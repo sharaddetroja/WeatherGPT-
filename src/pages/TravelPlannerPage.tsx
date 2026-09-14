@@ -33,8 +33,8 @@ export default function TravelPlannerPage() {
   const [sourceInput, setSourceInput] = useState('Morbi');
   const [destInput, setDestInput] = useState('Surat');
 
-  const [sourceSuggestions, setSourceSuggestions] = useState<string[]>([]);
-  const [destSuggestions, setDestSuggestions] = useState<string[]>([]);
+  const [sourceSuggestions, setSourceSuggestions] = useState<typeof INDIAN_CITIES>([]);
+  const [destSuggestions, setDestSuggestions] = useState<typeof INDIAN_CITIES>([]);
   const [showSourceDropdown, setShowSourceDropdown] = useState(false);
   const [showDestDropdown, setShowDestDropdown] = useState(false);
 
@@ -51,7 +51,21 @@ export default function TravelPlannerPage() {
     handleCalculateRoute('Morbi', 'Surat');
   }, []);
 
-  // Handle source suggestions
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sourceRef.current && !sourceRef.current.contains(e.target as Node)) {
+        setShowSourceDropdown(false);
+      }
+      if (destRef.current && !destRef.current.contains(e.target as Node)) {
+        setShowDestDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle source suggestions across all Indian cities & regions
   const handleSourceChange = (val: string) => {
     setSourceInput(val);
     if (!val.trim()) {
@@ -61,14 +75,13 @@ export default function TravelPlannerPage() {
     }
     const q = val.toLowerCase().trim();
     const matches = INDIAN_CITIES
-      .filter(c => c.name.toLowerCase().includes(q))
-      .slice(0, 5)
-      .map(c => c.name);
+      .filter(c => c.name.toLowerCase().includes(q) || c.region.toLowerCase().includes(q))
+      .slice(0, 8);
     setSourceSuggestions(matches);
     setShowSourceDropdown(matches.length > 0);
   };
 
-  // Handle destination suggestions
+  // Handle destination suggestions across all Indian cities & regions
   const handleDestChange = (val: string) => {
     setDestInput(val);
     if (!val.trim()) {
@@ -78,9 +91,8 @@ export default function TravelPlannerPage() {
     }
     const q = val.toLowerCase().trim();
     const matches = INDIAN_CITIES
-      .filter(c => c.name.toLowerCase().includes(q))
-      .slice(0, 5)
-      .map(c => c.name);
+      .filter(c => c.name.toLowerCase().includes(q) || c.region.toLowerCase().includes(q))
+      .slice(0, 8);
     setDestSuggestions(matches);
     setShowDestDropdown(matches.length > 0);
   };
@@ -248,18 +260,27 @@ export default function TravelPlannerPage() {
 
             {/* Source Suggestions Dropdown */}
             {showSourceDropdown && (
-              <div className="absolute left-0 right-0 z-50 mt-1 bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in max-h-56 overflow-y-auto">
-                {sourceSuggestions.map((cityName, idx) => (
+              <div className="absolute left-0 right-0 z-50 mt-1 bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in max-h-60 overflow-y-auto divide-y divide-border/30">
+                <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                  <span>Start City Suggestions</span>
+                  <span>{sourceSuggestions.length} found</span>
+                </div>
+                {sourceSuggestions.map((city, idx) => (
                   <button
                     key={idx}
                     onClick={() => {
-                      setSourceInput(cityName);
+                      setSourceInput(city.name);
                       setShowSourceDropdown(false);
                     }}
-                    className="w-full px-3.5 py-2.5 text-left text-xs font-semibold hover:bg-muted/80 text-foreground flex items-center gap-2.5 transition-colors cursor-pointer border-b border-border/40 last:border-0"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-between gap-2.5 transition-colors cursor-pointer"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    <span className="truncate">{cityName}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span className="truncate font-bold">{city.name}</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                      {city.region}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -299,18 +320,27 @@ export default function TravelPlannerPage() {
 
             {/* Destination Suggestions Dropdown */}
             {showDestDropdown && (
-              <div className="absolute left-0 right-0 z-50 mt-1 bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in max-h-56 overflow-y-auto">
-                {destSuggestions.map((cityName, idx) => (
+              <div className="absolute left-0 right-0 z-50 mt-1 bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in max-h-60 overflow-y-auto divide-y divide-border/30">
+                <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                  <span>Arrival City Suggestions</span>
+                  <span>{destSuggestions.length} found</span>
+                </div>
+                {destSuggestions.map((city, idx) => (
                   <button
                     key={idx}
                     onClick={() => {
-                      setDestInput(cityName);
+                      setDestInput(city.name);
                       setShowDestDropdown(false);
                     }}
-                    className="w-full px-3.5 py-2.5 text-left text-xs font-semibold hover:bg-muted/80 text-foreground flex items-center gap-2.5 transition-colors cursor-pointer border-b border-border/40 last:border-0"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-between gap-2.5 transition-colors cursor-pointer"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                    <span className="truncate">{cityName}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                      <span className="truncate font-bold">{city.name}</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                      {city.region}
+                    </span>
                   </button>
                 ))}
               </div>
