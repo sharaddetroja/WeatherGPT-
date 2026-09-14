@@ -38,7 +38,7 @@ export default function LanguageSelectionPage() {
       <div className="space-y-4">
         <h3 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
           <Languages className="w-4 h-4 text-primary" />
-          <span>Available Site Languages (ભાષા પસંદ કરો):</span>
+          <span>Available Site Languages:</span>
         </h3>
 
         <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 xs:gap-4">

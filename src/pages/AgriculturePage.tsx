@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sprout, Droplets, Sun, Wind, Download, Sparkles, MapPin, Loader2 } from 'lucide-react';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useLanguage } from '../hooks/useLanguage';
 import { exportWeatherPDF } from '../utils/exportReports';
 import { getWeatherData } from '../services/weatherService';
 import { WeatherGPTLive } from '../components/WeatherGPTLive';
@@ -8,69 +9,60 @@ import { WeatherGPTLive } from '../components/WeatherGPTLive';
 export interface CropProfile {
   id: string;
   name: string;
-  nativeNameGu: string;
-  nativeNameHi: string;
+  category: string;
   icon: string;
   soilMoistureOptimal: string;
   waterNeed: string;
   pestRisk: 'Low' | 'Moderate' | 'High';
-  adviceGu: string;
   adviceEn: string;
 }
 
 const CROPS: CropProfile[] = [
   {
     id: 'groundnut',
-    name: 'Groundnut',
-    nativeNameGu: 'મગફળી (Groundnut)',
-    nativeNameHi: 'मूंगफली',
+    name: 'Groundnut (Peanut)',
+    category: 'Oilseed & Legume',
     icon: '🥜',
     soilMoistureOptimal: '65% - 75%',
     waterNeed: 'Moderate (Light Shower)',
     pestRisk: 'Low',
-    adviceGu: 'આગામી 48 કલાકમાં હળવોથી મધ્યમ વરસાદ મગફળીના પાક માટે ઉત્તમ છે. ખેતરમાં વધારાના પાણીના નિકાલની વ્યવસ્થા રાખવી.',
-    adviceEn: 'Light to moderate rain over the next 48h is highly beneficial for pod development. Ensure drainage channels are clear.'
+    adviceEn: 'Light to moderate rain over the next 48h is highly beneficial for pod development. Ensure drainage channels are clear to prevent waterlogging.'
   },
   {
     id: 'cotton',
     name: 'Cotton',
-    nativeNameGu: 'કપાસ (Cotton)',
-    nativeNameHi: 'कपास',
+    category: 'Commercial Cash Crop',
     icon: '🌾',
     soilMoistureOptimal: '60% - 70%',
     waterNeed: 'High',
     pestRisk: 'Moderate',
-    adviceGu: 'ભેજ 80% હોવાના કારણે ગુલાબી અળસીના ઉપદ્રવ પર નજર રાખવી. બપોર પછી જંતુનાશક દવાનો છંટકાવ ટાળવો.',
-    adviceEn: 'High humidity increases pink bollworm risk. Avoid pesticide sprays during evening showers.'
+    adviceEn: 'High humidity increases pink bollworm risk. Avoid pesticide sprays during evening showers and maintain proper row aeration.'
   },
   {
     id: 'wheat',
     name: 'Wheat',
-    nativeNameGu: 'ઘઉં (Wheat)',
-    nativeNameHi: 'गेहूँ',
+    category: 'Cereal Grain',
     icon: '🌾',
     soilMoistureOptimal: '55% - 65%',
     waterNeed: 'Moderate',
     pestRisk: 'Low',
-    adviceGu: 'પવનની ઝડપ 18 કિમી/કલાક હોવાથી સિંચાઈનું પાણી નિયંત્રિત આપવું જેથી પાક ઢળી ન પડે.',
-    adviceEn: 'Controlled irrigation recommended due to 18 km/h wind gusts to prevent crop lodging.'
+    adviceEn: 'Controlled irrigation recommended due to 18 km/h wind gusts to prevent crop lodging. Ideal weather for tillering.'
   },
   {
     id: 'rice',
     name: 'Paddy Rice',
-    nativeNameGu: 'ડાંગર (Paddy)',
-    nativeNameHi: 'धान',
+    category: 'Staple Cereal',
     icon: '🌱',
     soilMoistureOptimal: '80% - 90%',
     waterNeed: 'Very High',
     pestRisk: 'High',
-    adviceGu: 'વરસાદનું પાણી સંગ્રહિત કરવું. ડાંગરના ખેતરમાં 5 સેમી પાણીની સપાટી જાળવી રાખવી.',
-    adviceEn: 'Retain rainwater in standing bunds. Maintain 5 cm water table across paddy plots.'
+    adviceEn: 'Retain rainwater in standing bunds. Maintain a 5 cm water table across paddy plots and monitor for fungal blast symptoms.'
   }
 ];
 
 export default function AgriculturePage() {
   const { profile, convertTemp, tempUnitSymbol } = useUserProfile();
+  const { t } = useLanguage();
   const [selectedCrop, setSelectedCrop] = useState<CropProfile>(CROPS[0]);
   const [liveWeatherData, setLiveWeatherData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -118,9 +110,9 @@ export default function AgriculturePage() {
             <Sprout className="w-4 h-4" />
             <span>Kisan Agriculture Advisory</span>
           </div>
-          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">ખેડૂત હવામાન અને પાક સલાહકાર</h1>
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">{t('kisan_title', 'Farmer Weather & Crop Advisory')}</h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-            Real-time soil moisture tracking, crop advisory, and rainfall forecasting.
+            {t('kisan_subtitle', 'Real-time soil moisture tracking, rainfall advisory, and live WeatherGPT AI assistance tailored for farming.')}
           </p>
         </div>
 
@@ -151,7 +143,7 @@ export default function AgriculturePage() {
       {/* Crop Selector Grid */}
       <div className="space-y-3">
         <h3 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
-          <span>Select Your Active Crop (પાક પસંદ કરો):</span>
+          <span>{t('crop_select', 'Select Your Active Crop')}:</span>
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 xs:gap-3">
           {CROPS.map((crop) => (
@@ -166,8 +158,8 @@ export default function AgriculturePage() {
             >
               <div className="text-2xl xs:text-3xl mb-1.5 xs:mb-2">{crop.icon}</div>
               <div>
-                <div className="font-extrabold text-xs xs:text-sm text-foreground">{crop.nativeNameGu}</div>
-                <div className="text-[11px] xs:text-xs text-muted-foreground mt-0.5">{crop.name}</div>
+                <div className="font-extrabold text-xs xs:text-sm text-foreground">{crop.name}</div>
+                <div className="text-[11px] xs:text-xs text-muted-foreground mt-0.5">{crop.category}</div>
               </div>
             </button>
           ))}
@@ -182,7 +174,7 @@ export default function AgriculturePage() {
               <div className="flex items-center gap-3">
                 <span className="text-4xl">{selectedCrop.icon}</span>
                 <div>
-                  <h2 className="text-xl font-black text-foreground">{selectedCrop.nativeNameGu}</h2>
+                  <h2 className="text-xl font-black text-foreground">{selectedCrop.name}</h2>
                   <p className="text-xs text-muted-foreground">Optimal Soil Moisture Target: {selectedCrop.soilMoistureOptimal}</p>
                 </div>
               </div>
@@ -195,21 +187,15 @@ export default function AgriculturePage() {
               </span>
             </div>
 
-            {/* Gujarati Advisory Callout */}
+            {/* Weather & Agronomy Advisory Callout */}
             <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
               <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-300 text-sm">
                 <Sparkles className="w-4 h-4" />
-                <span>ખેડૂત વિશેષ હવામાન આપત્તિ & સિંચાઈ સલાહ:</span>
+                <span>Agricultural Weather & Irrigation Advisory:</span>
               </div>
               <p className="text-sm leading-relaxed text-foreground font-semibold">
-                {selectedCrop.adviceGu}
+                {selectedCrop.adviceEn}
               </p>
-            </div>
-
-            {/* English Summary */}
-            <div className="p-4 rounded-2xl bg-muted/50 border border-border text-xs leading-relaxed text-muted-foreground">
-              <strong className="text-foreground">English Agronomy Summary: </strong>
-              {selectedCrop.adviceEn}
             </div>
           </div>
         </div>
@@ -263,10 +249,10 @@ export default function AgriculturePage() {
       <div className="pt-2">
         <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-500" />
-          <span>Kisan Live WeatherGPT Assistant (ખેડૂત AI પૂછપરછ):</span>
+          <span>Kisan Live WeatherGPT Assistant:</span>
         </h3>
         <WeatherGPTLive 
-          defaultQuestion="મગફળી અને કપાસના પાક માટે આગામી વરસાદનું પૂર્વાનુમાન શું છે?" 
+          defaultQuestion="What is the rainfall forecast for groundnut and cotton crops over the next 7 days?" 
           className="shadow-xl border-emerald-500/30"
         />
       </div>

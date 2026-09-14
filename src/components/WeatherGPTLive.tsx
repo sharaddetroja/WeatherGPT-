@@ -33,10 +33,10 @@ export function WeatherGPTLive({ className, defaultQuestion = '' }: WeatherGPTLi
   const { t } = useLanguage();
 
   const sampleQueries = [
-    { label: "Kale Rajkot ma varsad hase?", lang: "Gujarati (Roman)" },
-    { label: "Morbi ma kale garmi kevi hase?", lang: "Gujarati" },
-    { label: "क्या आज राजकोट में बारिश होगी?", lang: "Hindi" },
-    { label: "What is the 7-day weather forecast for Ahmedabad?", lang: "English" },
+    { label: "Will it rain in Rajkot tomorrow?", lang: "Rain Forecast" },
+    { label: "What will the temperature be in Morbi this weekend?", lang: "Temperature" },
+    { label: "Is there any storm warning or gale alert for coastal areas?", lang: "Severe Weather" },
+    { label: "What is the 7-day weather forecast for Ahmedabad?", lang: "Weekly Forecast" },
   ];
 
   const handleSubmit = async (queryToSubmit?: string) => {
@@ -90,8 +90,8 @@ export function WeatherGPTLive({ className, defaultQuestion = '' }: WeatherGPTLi
 
   const getLanguageLabel = (lang?: string) => {
     switch (lang) {
-      case 'gu': return '🇮🇳 Gujarati (ગુજરાતી)';
-      case 'hi': return '🇮🇳 Hindi (हिन्दी)';
+      case 'gu': return '🇮🇳 Gujarati';
+      case 'hi': return '🇮🇳 Hindi';
       case 'en': return '🇺🇸 English';
       default: return lang ? lang.toUpperCase() : '🌐 Auto';
     }

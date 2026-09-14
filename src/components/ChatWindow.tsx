@@ -262,9 +262,9 @@ export default function ChatWindow() {
   };
 
   const suggestions = [
-    "Kale Rajkot ma varsad hase?",
-    "Morbi ma garmi kevi hase?",
-    "Will it rain today?"
+    "Will it rain today in Rajkot?",
+    "What is the temperature in Morbi?",
+    "Show me the 7-day weather forecast"
   ];
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import { useLanguage } from '../hooks/useLanguage';
 export interface CoastalZone {
   id: string;
   name: string;
-  nameGu: string;
+  region: string;
   waveHeight: string;
   seaTemp: string;
   windSpeed: string;
@@ -13,7 +13,6 @@ export interface CoastalZone {
   alertLevel: 'Red Alert' | 'Orange Advisory' | 'Clear Safe';
   highTide: string;
   lowTide: string;
-  advisoryGu: string;
   advisoryEn: string;
 }
 
@@ -21,7 +20,7 @@ const COASTAL_ZONES: CoastalZone[] = [
   {
     id: 'saurashtra',
     name: 'Saurashtra Coast & Gulf of Khambhat',
-    nameGu: 'સૌરાષ્ટ્ર દરિયાકાંઠો અને ખંભાતનો અખાત',
+    region: 'Gujarat Coastal Belt',
     waveHeight: '2.8 - 3.4 meters (Rough Sea)',
     seaTemp: '27.4°C',
     windSpeed: '45 - 62 km/h NW',
@@ -29,13 +28,12 @@ const COASTAL_ZONES: CoastalZone[] = [
     alertLevel: 'Red Alert',
     highTide: '03:45 PM (4.2m)',
     lowTide: '09:20 PM (0.8m)',
-    advisoryGu: 'દરિયામાં ખૂબ ઊંચા મોજા ઉછળવાની અને 62 કિમી/કલાકના પવનની શક્યતા હોવાથી માછીમારોને દરિયો ન ખેડવાની કડક સૂચના આપવામાં આવે છે.',
     advisoryEn: 'High wave warning and gale squalls up to 62 km/h. Fishermen are strictly advised not to venture into sea.'
   },
   {
     id: 'porbandar-dwarka',
     name: 'Porbandar & Dwarka Coastline',
-    nameGu: 'પોરબંદર અને દ્વારકા દરિયાકાંઠો',
+    region: 'Arabian Sea Corridor',
     waveHeight: '2.1 - 2.6 meters (Moderate to Rough)',
     seaTemp: '26.8°C',
     windSpeed: '32 - 40 km/h W',
@@ -43,13 +41,12 @@ const COASTAL_ZONES: CoastalZone[] = [
     alertLevel: 'Orange Advisory',
     highTide: '04:10 PM (3.8m)',
     lowTide: '10:05 PM (1.1m)',
-    advisoryGu: 'દરિયાકિનારે મધ્યમ વાવાઝોડાનો સંકેત છે. નાના હોડી વાહકોએ સાવચેતી રાખવી.',
-    advisoryEn: 'Moderate sea state. Small boat operators should exercise caution near shore.'
+    advisoryEn: 'Moderate sea state. Small boat operators should exercise caution near shore and avoid open reef zones.'
   },
   {
     id: 'mumbai-coast',
     name: 'Konkan & Mumbai Coastal Waters',
-    nameGu: 'કોંકણ અને મુંબઈ દરિયાઈ વિસ્તાર',
+    region: 'Maharashtra Coastline',
     waveHeight: '1.5 - 2.0 meters (Slight)',
     seaTemp: '28.2°C',
     windSpeed: '20 - 28 km/h SW',
@@ -57,8 +54,7 @@ const COASTAL_ZONES: CoastalZone[] = [
     alertLevel: 'Clear Safe',
     highTide: '02:30 PM (3.4m)',
     lowTide: '08:45 PM (1.3m)',
-    advisoryGu: 'દરિયાકાંઠે હવામાન સામાન્ય છે. નિયમિત માછીમારી પ્રવૃત્તિઓ માટે અનુકૂળ પરિસ્થિતિ.',
-    advisoryEn: 'Sea conditions normal. Safe for offshore fishing and harbor navigation.'
+    advisoryEn: 'Sea conditions normal. Safe for offshore fishing, commercial shipping, and harbor navigation.'
   }
 ];
 
@@ -101,8 +97,8 @@ export default function MarineSafetyPage() {
                   : 'bg-card hover:bg-muted border-border'
               }`}
             >
-              <div className="font-extrabold text-xs xs:text-sm text-foreground">{zone.nameGu}</div>
-              <div className="text-[11px] xs:text-xs text-muted-foreground mt-0.5">{zone.name}</div>
+              <div className="font-extrabold text-xs xs:text-sm text-foreground">{zone.name}</div>
+              <div className="text-[11px] xs:text-xs text-muted-foreground mt-0.5">{zone.region}</div>
             </button>
           ))}
         </div>
@@ -114,8 +110,8 @@ export default function MarineSafetyPage() {
           <div className="p-4 xs:p-5 sm:p-6 rounded-3xl bg-card border border-border shadow-lg space-y-4 xs:space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-black text-foreground">{selectedZone.nameGu}</h2>
-                <p className="text-xs text-muted-foreground">{selectedZone.name}</p>
+                <h2 className="text-xl font-black text-foreground">{selectedZone.name}</h2>
+                <p className="text-xs text-muted-foreground">{selectedZone.region}</p>
               </div>
               <span className={`px-3.5 py-1.5 rounded-full text-xs font-black border uppercase tracking-wider ${alertColor}`}>
                 {selectedZone.alertLevel}
@@ -128,8 +124,8 @@ export default function MarineSafetyPage() {
             }`}>
               <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <div>
-                <strong className="font-extrabold block text-sm mb-0.5">માછીમાર હવામાન સૂચના:</strong>
-                <span>{selectedZone.advisoryGu}</span>
+                <strong className="font-extrabold block text-sm mb-0.5">Maritime Safety Advisory:</strong>
+                <span>{selectedZone.advisoryEn}</span>
               </div>
             </div>
 
@@ -173,11 +169,11 @@ export default function MarineSafetyPage() {
         {/* High / Low Tide Timetable */}
         <div className="space-y-4">
           <div className="p-5 rounded-3xl bg-card border border-border shadow-lg space-y-3">
-            <h3 className="font-extrabold text-sm text-foreground uppercase tracking-wider">Tide Schedule (ભરતી અને ઓટ)</h3>
+            <h3 className="font-extrabold text-sm text-foreground uppercase tracking-wider">Tide Schedule</h3>
             <div className="space-y-3">
               <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-extrabold text-cyan-600 uppercase">High Tide (ભરતી)</span>
+                  <span className="text-xs font-extrabold text-cyan-600 uppercase">High Tide</span>
                   <div className="text-base font-black text-foreground mt-0.5">{selectedZone.highTide}</div>
                 </div>
                 <Waves className="w-8 h-8 text-cyan-500 animate-pulse" />
@@ -185,7 +181,7 @@ export default function MarineSafetyPage() {
 
               <div className="p-4 rounded-2xl bg-muted/50 border border-border flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-extrabold text-muted-foreground uppercase">Low Tide (ઓટ)</span>
+                  <span className="text-xs font-extrabold text-muted-foreground uppercase">Low Tide</span>
                   <div className="text-base font-black text-foreground mt-0.5">{selectedZone.lowTide}</div>
                 </div>
                 <Anchor className="w-6 h-6 text-muted-foreground" />

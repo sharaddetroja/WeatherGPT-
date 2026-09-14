@@ -46,14 +46,14 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = [
   {
     code: 'auto',
     name: 'Auto-Detect',
-    nativeName: 'Auto-Detect (સ્વચાલિત / स्वचालित)',
+    nativeName: 'Auto-Detect (Multilingual)',
     flag: '🌐',
     speechLang: 'en-US',
-    greeting: "Hello! I am WeatherGPT Voice AI. Speak or type in English, Gujarati, or Hindi and I will automatically detect and answer in your language!",
+    greeting: "Hello! I am WeatherGPT Voice AI. Speak or type your weather query and I will answer with live forecasts and recommendations!",
     suggestions: [
       "Will it rain today in Rajkot?",
-      "શું આજે વરસાદ પડશે?",
-      "क्या आज बारिश होगी?",
+      "What is the 7-day temperature forecast?",
+      "Are there any severe weather alerts for my area?",
       "Should I carry an umbrella this evening?"
     ]
   },
@@ -1818,13 +1818,13 @@ export default function VoiceAssistantPage() {
 
             <div className="mt-12 text-center space-y-4 relative z-20">
               <div className="text-2xl font-black">
-                {voiceState === 'listening' && (selectedLang.code === 'gu' ? "સાંભળી રહ્યો છું..." : "Listening...")}
-                {voiceState === 'thinking' && (selectedLang.code === 'gu' ? "વિચાર કરી રહ્યો છું..." : "Thinking...")}
-                {voiceState === 'speaking' && (selectedLang.code === 'gu' ? "WeatherGPT બોલી રહ્યો છે..." : "WeatherGPT Speaking...")}
-                {voiceState === 'idle' && (selectedLang.code === 'gu' ? "બોલવા માટે માઇક દબાવો" : "Tap mic to speak")}
+                {voiceState === 'listening' && "Listening..."}
+                {voiceState === 'thinking' && "Thinking..."}
+                {voiceState === 'speaking' && "WeatherGPT Speaking..."}
+                {voiceState === 'idle' && "Tap mic to speak"}
               </div>
               <div className="h-16 text-muted-foreground max-w-md mx-auto text-lg font-medium">
-                {liveTranscript || <span className="opacity-60">Speak in any language (Gujarati, Hindi, English...)...</span>}
+                {liveTranscript || <span className="opacity-60">Ask any weather question...</span>}
               </div>
             </div>
           </div>
