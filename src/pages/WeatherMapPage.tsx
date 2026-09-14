@@ -14,17 +14,20 @@ import {
   CloudRain,
   AlertTriangle,
   RefreshCw,
-  Info
+  Info,
+  X
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '../components/Card';
 import { cn } from '../utils/cn';
 import L from 'leaflet';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { getWeatherData } from '../services/weatherService';
 import { getUserLocation, reverseGeocodeLocation, fetchWeatherAlertsApi } from '../services/weatherGptApi';
+import { INDIAN_CITIES, type IndianCity } from '../data/indianCities';
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -352,6 +355,7 @@ export default function WeatherMapPage() {
   const [styleDropdownOpen, setStyleDropdownOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
@@ -371,7 +375,18 @@ export default function WeatherMapPage() {
   const [regionalCache, setRegionalCache] = useState<Record<string, NormalizedMapWeatherData>>({});
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
   const currentTheme = mapThemes.find(t => t.id === mapStyle) || mapThemes[0];
+
+  // Dynamic city suggestions filtered by query across all Indian cities
+  const suggestions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q || q.length < 1) return [];
+    return INDIAN_CITIES.filter(city =>
+      city.name.toLowerCase().includes(q) ||
+      city.region.toLowerCase().includes(q)
+    ).slice(0, 8);
+  }, [searchQuery]);
 
   // Helper to fetch backend weather data for any city and normalize it
   const fetchBackendWeatherForCity = async (cityName: string, lat?: number, lon?: number) => {
@@ -442,16 +457,66 @@ export default function WeatherMapPage() {
     }
   }, [searchParams]);
 
-  // Close custom dropdown when clicking outside
+  // Close custom dropdown and search suggestions when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setStyleDropdownOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Handler for clicking a search suggestion
+  const handleSelectSuggestion = async (cityName: string) => {
+    setSearchQuery(cityName);
+    setShowSuggestions(false);
+    setSearching(true);
+    setSearchError('');
+
+    try {
+      const norm = await fetchBackendWeatherForCity(cityName);
+      if (norm) {
+        setSearchResult({
+          lat: norm.location.lat,
+          lon: norm.location.lon,
+          name: norm.location.name
+        });
+        setMapCenter([norm.location.lat, norm.location.lon]);
+        setMapZoom(11);
+
+        if (updateProfile) {
+          updateProfile({ location: norm.location.name });
+        }
+      } else {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+            const name = data[0].display_name.split(',').slice(0, 2).join(',');
+
+            setSearchResult({ lat, lon, name });
+            setMapCenter([lat, lon]);
+            setMapZoom(11);
+            await fetchBackendWeatherForCity(name, lat, lon);
+          }
+        }
+      }
+    } catch {
+      setSearchError('Failed to fetch data for selected city.');
+    } finally {
+      setSearching(false);
+    }
+  };
 
   // Map Click Handler — fetches real weather for clicked point immediately
   const handleMapClick = async (lat: number, lon: number) => {
@@ -617,30 +682,94 @@ export default function WeatherMapPage() {
         
         {/* Search & Location Controls Toolbar */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-card border rounded-xl p-1 sm:p-1.5 shadow-sm flex-1 sm:flex-initial focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all min-w-0">
-            <Search className="w-4 h-4 text-muted-foreground ml-1.5 sm:ml-2 flex-shrink-0" />
-            <input 
-              type="text" 
-              placeholder={t('map_search_placeholder', 'Search city or area...')} 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="bg-transparent border-none outline-none text-xs sm:text-sm px-1.5 sm:px-2 py-1 w-full sm:w-60 text-foreground min-w-0"
-            />
-            <button
-              onClick={handleSearch}
-              disabled={searching || !searchQuery.trim()}
-              className="px-2.5 sm:px-3.5 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs sm:text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
-            >
-              {searching ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <>
-                  <Search className="w-3.5 h-3.5" />
-                  <span className="hidden xs:inline">{t('map_search_btn', 'Search')}</span>
-                </>
+          <div ref={searchRef} className="relative flex-1 sm:flex-initial">
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-card border rounded-xl p-1 sm:p-1.5 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all min-w-0">
+              <Search className="w-4 h-4 text-muted-foreground ml-1.5 sm:ml-2 flex-shrink-0" />
+              <input 
+                type="text" 
+                placeholder={t('map_search_placeholder', 'Search city or area...')} 
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => {
+                  if (searchQuery.trim().length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setShowSuggestions(false);
+                    handleKeyDown(e);
+                  }
+                }}
+                className="bg-transparent border-none outline-none text-xs sm:text-sm px-1.5 sm:px-2 py-1 w-full sm:w-60 text-foreground min-w-0"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setShowSuggestions(false);
+                  }}
+                  className="text-muted-foreground hover:text-foreground p-1 mr-0.5 cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               )}
-            </button>
+              <button
+                onClick={() => {
+                  setShowSuggestions(false);
+                  handleSearch();
+                }}
+                disabled={searching || !searchQuery.trim()}
+                className="px-2.5 sm:px-3.5 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs sm:text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
+              >
+                {searching ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Search className="w-3.5 h-3.5" />
+                    <span className="hidden xs:inline">{t('map_search_btn', 'Search')}</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* City Search Suggestions Dropdown */}
+            <AnimatePresence>
+              {showSuggestions && suggestions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 right-0 z-50 mt-1.5 bg-card/95 backdrop-blur-xl border border-border/90 rounded-2xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto divide-y divide-border/30"
+                >
+                  <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                    <span>Suggested Cities</span>
+                    <span>{suggestions.length} match{suggestions.length > 1 ? 'es' : ''}</span>
+                  </div>
+                  {suggestions.map((item: IndianCity, idx: number) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSelectSuggestion(item.name)}
+                      className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-between cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span className="truncate font-bold">{item.name}</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                        {item.region}
+                      </span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Integrated My Location Button right in toolbar */}
