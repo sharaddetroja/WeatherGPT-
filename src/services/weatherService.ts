@@ -80,6 +80,52 @@ export const generateLast7DaysHistory = (baseTemp: number = 28): HistoricalWeath
   return list;
 };
 
+export const generateDynamicHourlyForecast = (baseTemp: number = 28, conditionText?: string): Array<{
+  time: string;
+  temp_c: number;
+  icon: string;
+  chance_of_rain: number;
+  wind_kph?: number;
+}> => {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const isNight = (h: number) => h < 6 || h >= 19;
+
+  const getIcon = (h: number, cond?: string) => {
+    const night = isNight(h);
+    const c = (cond || '').toLowerCase();
+    if (c.includes('rain') || c.includes('shower') || c.includes('drizzle')) return 'cloud-rain';
+    if (c.includes('thunder')) return 'cloud-rain';
+    if (c.includes('cloud') || c.includes('overcast')) return night ? 'cloud' : 'cloud-sun';
+    return night ? 'cloud' : 'sun';
+  };
+
+  const list = [];
+  for (let i = 0; i < 12; i++) {
+    const h = (currentHour + i) % 24;
+    const timeStr = `${String(h).padStart(2, '0')}:00`;
+    
+    // Smooth natural temperature variation starting strictly from baseTemp at i = 0
+    let temp = Math.round(baseTemp);
+    if (i > 0) {
+      const diff = (14 - Math.abs(h - 14)) - (14 - Math.abs(currentHour - 14));
+      temp = Math.round(baseTemp + diff * 0.35);
+    }
+
+    const rainChance = Math.min(100, Math.max(5, Math.round(15 + ((i * 11) % 45))));
+    const wind = Math.max(4, Math.round(10 + Math.sin(i) * 5));
+
+    list.push({
+      time: timeStr,
+      temp_c: temp,
+      icon: getIcon(h, conditionText),
+      chance_of_rain: rainChance,
+      wind_kph: wind,
+    });
+  }
+  return list;
+};
+
 /**
  * Main weather data fetcher connecting to production Express backend
  */
@@ -147,16 +193,7 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
           is_stale: isStale,
           fetched_at: liveCurrent.fetched_at,
         },
-        hourly: [
-          { time: "09:00", temp_c: Math.round(tempC - 1), icon: "sun", chance_of_rain: 10 },
-          { time: "10:00", temp_c: Math.round(tempC), icon: "cloud-sun", chance_of_rain: 20 },
-          { time: "11:00", temp_c: Math.round(tempC + 1), icon: "cloud-sun", chance_of_rain: 30 },
-          { time: "12:00", temp_c: Math.round(tempC + 2), icon: "cloud", chance_of_rain: 40 },
-          { time: "13:00", temp_c: Math.round(tempC + 3), icon: "cloud-rain", chance_of_rain: 60 },
-          { time: "14:00", temp_c: Math.round(tempC + 3), icon: "cloud-rain", chance_of_rain: 80 },
-          { time: "15:00", temp_c: Math.round(tempC + 2), icon: "cloud-rain", chance_of_rain: 90 },
-          { time: "16:00", temp_c: Math.round(tempC + 1), icon: "cloud", chance_of_rain: 50 },
-        ],
+        hourly: generateDynamicHourlyForecast(tempC, liveCurrent.condition?.text),
         forecast: [
           { date: "2026-09-13", day: "Today", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: liveCurrent.condition?.text || "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.5, humidity: liveCurrent.humidity || 65, wind_kph: liveCurrent.wind_kph || 12 },
           { date: "2026-09-14", day: "Mon", min_temp: Math.round(tempC - 5), max_temp: Math.round(tempC + 3), condition: "Rain Showers", chance_of_rain: 70, rainfall_mm: 8.5, humidity: 78, wind_kph: 18 },
@@ -214,16 +251,7 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
         precip_mm: 0.0,
         is_stale: false,
       },
-      hourly: [
-        { time: "09:00", temp_c: 27, icon: "sun", chance_of_rain: 10 },
-        { time: "10:00", temp_c: 28, icon: "cloud-sun", chance_of_rain: 20 },
-        { time: "11:00", temp_c: 29, icon: "cloud-sun", chance_of_rain: 30 },
-        { time: "12:00", temp_c: 30, icon: "cloud", chance_of_rain: 40 },
-        { time: "13:00", temp_c: 31, icon: "cloud-rain", chance_of_rain: 60 },
-        { time: "14:00", temp_c: 31, icon: "cloud-rain", chance_of_rain: 80 },
-        { time: "15:00", temp_c: 30, icon: "cloud-rain", chance_of_rain: 90 },
-        { time: "16:00", temp_c: 29, icon: "cloud", chance_of_rain: 50 },
-      ],
+      hourly: generateDynamicHourlyForecast(28, "Partly Cloudy"),
       forecast: [
         { date: "2026-09-08", day: "Mon", min_temp: 24, max_temp: 32, condition: "Rain", chance_of_rain: 80, rainfall_mm: 12.5, humidity: 82, wind_kph: 20 },
         { date: "2026-09-09", day: "Tue", min_temp: 23, max_temp: 31, condition: "Thunderstorm", chance_of_rain: 90, rainfall_mm: 25.0, humidity: 88, wind_kph: 26 },

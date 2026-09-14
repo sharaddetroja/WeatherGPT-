@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Cloud, Sun, CloudRain, CloudSun, Wind, Droplets } from 'lucide-react';
+import { generateDynamicHourlyForecast } from '../../services/weatherService';
 
 export interface HourlyItem {
   time: string;
@@ -23,27 +24,36 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
   className = '',
 }) => {
   // Map and convert temps for all available forecast hours (up to 12 hours)
+  // Highlights according to current time as shown in photo
   const items = useMemo(() => {
-    const rawList = (hourlyData && hourlyData.length > 0) ? hourlyData : [];
-    const list = rawList.length >= 8 ? rawList : [
-      { time: '09:00', temp_c: 27, icon: 'sun', chance_of_rain: 10, wind_kph: 12 },
-      { time: '10:00', temp_c: 28, icon: 'cloud-sun', chance_of_rain: 20, wind_kph: 14 },
-      { time: '11:00', temp_c: 29, icon: 'cloud-sun', chance_of_rain: 30, wind_kph: 15 },
-      { time: '12:00', temp_c: 30, icon: 'cloud', chance_of_rain: 40, wind_kph: 16 },
-      { time: '13:00', temp_c: 31, icon: 'cloud-rain', chance_of_rain: 60, wind_kph: 18 },
-      { time: '14:00', temp_c: 31, icon: 'cloud-rain', chance_of_rain: 80, wind_kph: 20 },
-      { time: '15:00', temp_c: 30, icon: 'cloud-rain', chance_of_rain: 90, wind_kph: 19 },
-      { time: '16:00', temp_c: 29, icon: 'cloud', chance_of_rain: 50, wind_kph: 17 },
-      { time: '17:00', temp_c: 28, icon: 'cloud-sun', chance_of_rain: 30, wind_kph: 15 },
-      { time: '18:00', temp_c: 27, icon: 'sun', chance_of_rain: 10, wind_kph: 14 }
-    ];
+    const rawList = (hourlyData && hourlyData.length > 0) 
+      ? hourlyData 
+      : generateDynamicHourlyForecast(28, 'Partly Cloudy');
+    
+    const currentHour = new Date().getHours();
+    const currentHourPrefix = String(currentHour).padStart(2, '0');
 
-    return list.slice(0, 12).map((h, i) => ({
-      ...h,
-      displayTime: i === 0 ? 'Now' : h.time,
-      temp: convertTemp(h.temp_c),
-      isCurrent: i === 0,
-    }));
+    // Find if any item matches the current hour
+    const activeIdx = rawList.findIndex(h => {
+      const hStr = h.time.split(':')[0];
+      return hStr === currentHourPrefix || h.time === 'Now';
+    });
+
+    let displayList = rawList;
+    if (activeIdx > 0 && rawList.length >= 20) {
+      // If 24-hour cycle provided, rotate so current hour starts first
+      displayList = [...rawList.slice(activeIdx), ...rawList.slice(0, activeIdx)];
+    }
+
+    return displayList.slice(0, 12).map((h, i) => {
+      const isCurrent = i === 0;
+      return {
+        ...h,
+        displayTime: isCurrent ? 'Now' : h.time,
+        temp: convertTemp(h.temp_c),
+        isCurrent,
+      };
+    });
   }, [hourlyData, convertTemp]);
 
   // Find min and max for chart scaling
@@ -144,16 +154,21 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
       <div className="w-full overflow-x-auto overflow-y-hidden pb-1 -mx-1 px-1 scrollbar-none">
         <div className="min-w-[620px] sm:min-w-0 w-full relative select-none">
         
-        {/* Active Hour Vertical Glass Highlight Column */}
+        {/* Active Hour Vertical Glass Highlight Column - EXACTLY matching iOS photo */}
         {currentPoint && (
           <div 
-            className="absolute top-0 bottom-0 rounded-2xl pointer-events-none transition-all z-0"
+            className="absolute top-1 bottom-1 rounded-[28px] pointer-events-none transition-all duration-300 z-0"
             style={{
               left: `${(currentPoint.x / VIEWBOX_WIDTH) * 100}%`,
               transform: 'translateX(-50%)',
-              width: `${Math.max(6, (70 / VIEWBOX_WIDTH) * 100)}%`,
-              background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 100%)',
+              width: `${Math.max(7.2, (74 / VIEWBOX_WIDTH) * 100)}%`,
+              minWidth: '58px',
+              maxWidth: '76px',
+              background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%)',
               border: '1px solid rgba(255, 255, 255, 0.22)',
+              boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.20)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
             }}
           />
         )}
@@ -211,21 +226,21 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
                 <circle
                   cx={pt.x}
                   cy={pt.y}
-                  r={isNow || isMax ? "5.5" : "4.5"}
+                  r={isNow ? "6" : isMax ? "5" : "4.5"}
                   fill={isNow ? "#22C55E" : isMax ? "#EF4444" : "#83C78C"}
                   stroke="#FFFFFF"
-                  strokeWidth="2"
+                  strokeWidth={isNow ? "2.5" : "2"}
                   className="drop-shadow-xs"
                 />
-                {/* Temperature Text Label Above Point - EXACTLY like 29° */}
+                {/* Temperature Text Label Above Point - EXACTLY like 29° in photo */}
                 <text
                   x={pt.x}
                   y={pt.y - 10}
                   textAnchor="middle"
                   fill="#FFFFFF"
-                  fontSize="12"
-                  fontWeight="bold"
-                  className="select-none"
+                  fontSize={isNow ? "13" : "12"}
+                  fontWeight={isNow ? "800" : "700"}
+                  className="select-none tracking-tight"
                 >
                   {pt.temp}°
                 </text>
@@ -263,7 +278,7 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
               </div>
 
               {/* Time Label */}
-              <span className={`text-xs font-bold mt-1 ${pt.isCurrent ? 'text-white' : 'text-white/80'}`}>
+              <span className={`text-xs mt-1 tracking-tight ${pt.isCurrent ? 'text-white font-black' : 'text-white/70 font-bold'}`}>
                 {pt.displayTime}
               </span>
             </div>
