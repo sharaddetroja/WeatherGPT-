@@ -9,7 +9,8 @@ import {
   RefreshCw, 
   AlertTriangle,
   MapPin,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react';
 import { getWeatherData } from '../services/weatherService';
 import { getUserLocation, reverseGeocodeLocation } from '../services/weatherGptApi';
@@ -276,7 +277,7 @@ export default function Dashboard() {
           {/* Quick City Search Bar with Suggestions */}
           <div ref={searchContainerRef} className="relative flex-1 sm:flex-initial min-w-[130px]">
             <form onSubmit={handleCitySearchSubmit} className="relative flex items-center">
-              <Search className="absolute left-3 w-3.5 h-3.5 text-white/50 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/50 pointer-events-none z-10" />
               <input
                 type="text"
                 value={citySearch}
@@ -286,8 +287,21 @@ export default function Dashboard() {
                   setShowSuggestions(true);
                 }}
                 placeholder="Search city..."
-                className="w-full sm:w-44 lg:w-56 pl-8.5 pr-3 py-1.5 text-xs rounded-full glass-input transition-all"
+                className="w-full sm:w-44 lg:w-56 pl-9 pr-7 py-1.5 text-xs rounded-full glass-input transition-all"
               />
+              {citySearch && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCitySearch('');
+                    setShowSuggestions(false);
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white cursor-pointer p-0.5"
+                  title="Clear search"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
             </form>
 
             {/* Suggestions Dropdown */}

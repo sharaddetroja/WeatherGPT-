@@ -139,7 +139,7 @@ export function WeatherGPTLive({ className, defaultQuestion = '' }: WeatherGPTLi
         className="space-y-3 relative z-10"
       >
         <div className="relative flex items-center">
-          <Search className="absolute left-4.5 w-5 h-5 text-white/50 pointer-events-none" />
+          <Search className="absolute left-4 w-5 h-5 text-white/50 pointer-events-none" />
           <input
             type="text"
             value={question}
