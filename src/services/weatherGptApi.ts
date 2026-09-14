@@ -72,7 +72,7 @@ export interface AskApiResponse {
 }
 
 // Base URL configuration supporting .env and default production Render URL
-const RAW_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://weathergpt-back-end.onrender.com').replace(/\/+$/, '');
+const RAW_BASE_URL = (import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://weathergpt-backend-46or.onrender.com').replace(/\/+$/, '');
 export const BASE_API_URL = RAW_BASE_URL.endsWith('/api') ? RAW_BASE_URL : `${RAW_BASE_URL}/api`;
 
 const API_ENDPOINT = `${BASE_API_URL}/ask`;
