@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { User, Settings, Bell, MapPin, Moon, Sun, Save, Check, X, Edit3, Mail, Sparkles, CheckCircle2, LogOut } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { useTheme } from '../hooks/useTheme';
 import { useUserProfile, type TemperatureUnit, type UserProfile, type UserPreferences } from '../hooks/useUserProfile';
 import { useLanguage } from '../hooks/useLanguage';
@@ -88,68 +87,64 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Overview Card */}
-      <Card>
-        <CardContent className="p-6">
-          {!isAuthenticated ? (
-            <div className="flex flex-col items-center justify-center text-center space-y-4 py-4">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-foreground">Not Logged In</h2>
-                <p className="text-sm text-muted-foreground mt-1">Log in to sync your weather preferences and access the AI Chat.</p>
-              </div>
-              <button 
-                onClick={() => window.location.href = '/assistant'}
-                className="mt-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-md transition-all hover:scale-105"
-              >
-                Log In / Sign Up
-              </button>
+      <div className="glass-panel rounded-3xl p-5 sm:p-7 border border-white/20 shadow-xl backdrop-blur-xl">
+        {!isAuthenticated ? (
+          <div className="flex flex-col items-center justify-center text-center space-y-4 py-4">
+            <div className="w-16 h-16 bg-primary/20 border border-primary/40 rounded-full flex items-center justify-center">
+              <User className="w-8 h-8 text-sky-300" />
             </div>
-          ) : (
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 rounded-full flex items-center justify-center text-primary text-3xl font-extrabold shadow-inner">
-                {profile.avatarInitials || 'JD'}
-              </div>
-              <div className="flex-1 text-center md:text-left space-y-2">
-                <h2 className="text-2xl font-bold text-foreground">{profile.name}</h2>
-                <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-1.5 text-sm">
-                  <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                  {profile.email}
-                </p>
-                <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-primary bg-primary/10 w-fit mx-auto md:mx-0 px-3.5 py-1 rounded-full border border-primary/20">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  <span>{profile.location}</span>
-                </div>
-              </div>
-              <button 
-                onClick={handleOpenEditModal}
-                className="flex items-center gap-2 px-4 py-2.5 border border-border bg-card hover:bg-muted font-medium rounded-xl transition-all cursor-pointer shadow-2xs hover:scale-105"
-              >
-                <Edit3 className="w-4 h-4 text-primary" />
-                <span>Edit Profile</span>
-              </button>
+            <div>
+              <h2 className="text-xl font-bold text-white">Not Logged In</h2>
+              <p className="text-sm text-white/70 mt-1">Log in to sync your weather preferences and access the AI Chat.</p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <button 
+              onClick={() => window.location.href = '/assistant'}
+              className="mt-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-md transition-all hover:scale-105 border border-white/20 cursor-pointer"
+            >
+              Log In / Sign Up
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="w-24 h-24 bg-gradient-to-br from-primary/30 to-sky-500/20 border-2 border-sky-400/40 rounded-full flex items-center justify-center text-white text-3xl font-extrabold shadow-inner">
+              {profile.avatarInitials || 'JD'}
+            </div>
+            <div className="flex-1 text-center md:text-left space-y-2">
+              <h2 className="text-2xl font-bold text-white">{profile.name}</h2>
+              <p className="text-white/75 flex items-center justify-center md:justify-start gap-1.5 text-sm">
+                <Mail className="w-3.5 h-3.5 text-sky-300" />
+                {profile.email}
+              </p>
+              <div className="flex items-center justify-center md:justify-start gap-2 text-sm font-semibold text-sky-200 bg-sky-500/15 w-fit mx-auto md:mx-0 px-3.5 py-1 rounded-full border border-sky-500/30">
+                <MapPin className="w-4 h-4 text-sky-300" />
+                <span>{profile.location}</span>
+              </div>
+            </div>
+            <button 
+              onClick={handleOpenEditModal}
+              className="flex items-center gap-2 px-4 py-2.5 glass-pill border border-white/20 text-white hover:bg-white/20 font-semibold rounded-xl transition-all cursor-pointer shadow-xs hover:scale-105"
+            >
+              <Edit3 className="w-4 h-4 text-sky-300" />
+              <span>Edit Profile</span>
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Preferences & Notifications Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Preferences Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5 text-primary" />
-              <span>Preferences</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/20 shadow-xl backdrop-blur-xl space-y-6">
+          <div className="flex items-center gap-2 text-base font-bold text-white border-b border-white/10 pb-3">
+            <Settings className="w-5 h-5 text-sky-300" />
+            <span>Preferences</span>
+          </div>
+          <div className="space-y-6">
             {/* Temperature Unit Preference */}
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-semibold text-foreground">Temperature Unit</p>
-                <p className="text-xs text-muted-foreground">Select Celsius (°C) or Fahrenheit (°F)</p>
+                <p className="font-semibold text-white">Temperature Unit</p>
+                <p className="text-xs text-white/70">Select Celsius (°C) or Fahrenheit (°F)</p>
               </div>
               <select 
                 value={formPreferences.tempUnit}
@@ -159,7 +154,7 @@ export default function ProfilePage() {
                   setFormPreferences(updated);
                   saveChanges(formProfile, updated);
                 }}
-                className="glass-input rounded-xl px-3.5 py-2 font-medium cursor-pointer"
+                className="glass-input rounded-xl px-3.5 py-2 font-semibold cursor-pointer border border-white/20"
               >
                 <option value="celsius">Celsius (°C)</option>
                 <option value="fahrenheit">Fahrenheit (°F)</option>
@@ -169,16 +164,16 @@ export default function ProfilePage() {
             {/* Appearance Preference */}
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-semibold text-foreground">Appearance</p>
-                <p className="text-xs text-muted-foreground">Light or dark interface theme</p>
+                <p className="font-semibold text-white">Appearance</p>
+                <p className="text-xs text-white/70">Light or dark interface theme</p>
               </div>
-              <div className="flex bg-muted rounded-xl p-1 border border-border/50">
+              <div className="flex bg-white/10 rounded-xl p-1 border border-white/15">
                 <button 
                   onClick={() => setTheme('light')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     theme === 'light' 
-                      ? 'bg-background text-foreground shadow-xs' 
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-white text-slate-900 shadow-xs font-bold' 
+                      : 'text-white/75 hover:text-white'
                   }`}
                 >
                   <Sun className="w-4 h-4" />
@@ -188,8 +183,8 @@ export default function ProfilePage() {
                   onClick={() => setTheme('dark')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     theme === 'dark' 
-                      ? 'bg-background text-foreground shadow-xs' 
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-white/25 text-white shadow-xs font-bold border border-white/30' 
+                      : 'text-white/75 hover:text-white'
                   }`}
                 >
                   <Moon className="w-4 h-4" />
@@ -198,22 +193,20 @@ export default function ProfilePage() {
               </div>
             </div>
 
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Notifications Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-primary" />
-              <span>Notifications</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <div className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/20 shadow-xl backdrop-blur-xl space-y-6">
+          <div className="flex items-center gap-2 text-base font-bold text-white border-b border-white/10 pb-3">
+            <Bell className="w-5 h-5 text-sky-300" />
+            <span>Notifications</span>
+          </div>
+          <div className="space-y-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-semibold text-foreground">Weather Alerts</p>
-                <p className="text-xs text-muted-foreground">Severe rain & storm warnings</p>
+                <p className="font-semibold text-white">Weather Alerts</p>
+                <p className="text-xs text-white/70">Severe rain & storm warnings</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -226,14 +219,14 @@ export default function ProfilePage() {
                     saveChanges(formProfile, updated);
                   }}
                 />
-                <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <div className="w-11 h-6 bg-white/15 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-sky-400/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-white/30 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
 
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-semibold text-foreground">Daily Forecast</p>
-                <p className="text-xs text-muted-foreground">Morning weather summary</p>
+                <p className="font-semibold text-white">Daily Forecast</p>
+                <p className="text-xs text-white/70">Morning weather summary</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -246,11 +239,11 @@ export default function ProfilePage() {
                     saveChanges(formProfile, updated);
                   }}
                 />
-                <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <div className="w-11 h-6 bg-white/15 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-sky-400/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-white/30 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Save Changes Bottom Action */}

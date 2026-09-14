@@ -182,23 +182,23 @@ export default function TravelPlannerPage() {
     <div className="space-y-4 xs:space-y-6 pb-12 animate-in fade-in duration-300">
       
       {/* Header Banner */}
-      <div className="p-4 xs:p-5 sm:p-7 rounded-2xl xs:rounded-3xl bg-card border border-border/80 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="glass-panel p-4 xs:p-5 sm:p-7 rounded-2xl xs:rounded-3xl border border-white/20 shadow-xl backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-sky-400 font-bold text-[11px] xs:text-xs uppercase tracking-wider mb-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20">
+          <div className="inline-flex items-center gap-2 text-sky-300 font-bold text-[11px] xs:text-xs uppercase tracking-wider mb-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-500/30">
             <Car className="w-3.5 h-3.5" />
             <span>Highway & Route Telemetry</span>
           </div>
-          <h1 className="text-xl xs:text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-black text-white tracking-tight">
             {t('travel_title', 'Source ➔ Destination Weather')}
           </h1>
-          <p className="text-xs text-muted-foreground mt-1 max-w-xl leading-relaxed">
+          <p className="text-xs text-white/70 mt-1 max-w-xl leading-relaxed">
             {t('travel_subtitle', 'Live arrival-time weather forecasts, highway hazard alerts, and route telemetry along your travel corridor.')}
           </p>
         </div>
 
         {/* Preset Quick Buttons with smooth horizontal scroll */}
         <div className="w-full md:w-auto overflow-hidden">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5 md:hidden">
+          <span className="text-[10px] font-bold text-white/60 uppercase tracking-wider block mb-1.5 md:hidden">
             Popular Corridors:
           </span>
           <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full scrollbar-none md:flex-wrap">
@@ -212,10 +212,10 @@ export default function TravelPlannerPage() {
                     setDestInput(preset.destination);
                     handleCalculateRoute(preset.source, preset.destination);
                   }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0 border ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs whitespace-nowrap shrink-0 border ${
                     isSelected
-                      ? 'bg-primary text-primary-foreground border-primary font-bold shadow-sm'
-                      : 'bg-muted/70 hover:bg-muted border-border/70 text-foreground hover:border-border'
+                      ? 'bg-primary text-white border-sky-400 font-bold shadow-md scale-105'
+                      : 'glass-pill border-white/15 text-white/80 hover:text-white hover:bg-white/15'
                   }`}
                 >
                   {preset.label}
@@ -227,13 +227,13 @@ export default function TravelPlannerPage() {
       </div>
 
       {/* Main Interactive Route Search Form Card */}
-      <div className="p-4 xs:p-5 sm:p-6 rounded-2xl xs:rounded-3xl bg-card border border-border/80 shadow-md space-y-4">
+      <div className="glass-panel p-4 xs:p-5 sm:p-6 rounded-2xl xs:rounded-3xl border border-white/20 shadow-xl backdrop-blur-xl space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs xs:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
-            <Navigation className="w-4 h-4 text-primary" />
+          <h2 className="text-xs xs:text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+            <Navigation className="w-4 h-4 text-sky-400" />
             <span>Plan Your Journey Weather</span>
           </h2>
-          <span className="text-[10px] text-muted-foreground hidden sm:inline-block">
+          <span className="text-[10px] text-white/60 hidden sm:inline-block font-medium">
             Auto-detects live route corridor & waypoints
           </span>
         </div>
@@ -242,26 +242,26 @@ export default function TravelPlannerPage() {
           
           {/* Source Input */}
           <div className="md:col-span-5 relative" ref={sourceRef}>
-            <label className="text-xs font-bold text-muted-foreground block mb-1.5 flex items-center justify-between">
+            <label className="text-xs font-bold text-white/80 block mb-1.5 flex items-center justify-between">
               <span>Source Location</span>
-              <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Start Point</span>
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Start Point</span>
             </label>
             <div className="relative">
-              <MapPin className="w-4 h-4 text-emerald-500 absolute left-3 top-3 pointer-events-none" />
+              <MapPin className="w-4 h-4 text-emerald-400 absolute left-3 top-3 pointer-events-none" />
               <input
                 type="text"
                 placeholder="e.g. Morbi"
                 value={sourceInput}
                 onChange={e => handleSourceChange(e.target.value)}
                 onFocus={() => sourceSuggestions.length > 0 && setShowSourceDropdown(true)}
-                className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-2.5 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-2xs"
+                className="w-full glass-input rounded-xl pl-9 pr-3 py-2.5 text-sm font-semibold text-white placeholder-white/50 border border-white/20 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-all shadow-xs"
               />
             </div>
 
             {/* Source Suggestions Dropdown */}
             {showSourceDropdown && (
-              <div className="absolute left-0 right-0 z-50 mt-1 bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in max-h-60 overflow-y-auto divide-y divide-border/30">
-                <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+              <div className="absolute left-0 right-0 z-50 mt-1 glass-panel bg-slate-900/95 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in max-h-60 overflow-y-auto divide-y divide-white/10">
+                <div className="px-3 py-1.5 bg-white/5 text-[10px] font-bold uppercase tracking-wider text-white/60 flex items-center justify-between">
                   <span>Start City Suggestions</span>
                   <span>{sourceSuggestions.length} found</span>
                 </div>
@@ -272,13 +272,13 @@ export default function TravelPlannerPage() {
                       setSourceInput(city.name);
                       setShowSourceDropdown(false);
                     }}
-                    className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-between gap-2.5 transition-colors cursor-pointer"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-white/15 text-white flex items-center justify-between gap-2.5 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                       <span className="truncate font-bold">{city.name}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                    <span className="text-[10px] text-white/70 bg-white/10 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0 border border-white/10">
                       {city.region}
                     </span>
                   </button>
@@ -292,36 +292,36 @@ export default function TravelPlannerPage() {
             <button
               onClick={handleSwap}
               type="button"
-              className="p-2.5 rounded-xl bg-muted/70 hover:bg-muted border border-border text-muted-foreground hover:text-foreground active:scale-95 transition-all cursor-pointer shadow-2xs"
+              className="p-2.5 rounded-xl glass-pill border border-white/20 text-white/80 hover:text-white hover:bg-white/20 active:scale-95 transition-all cursor-pointer shadow-xs"
               title="Swap Source and Destination"
               aria-label="Swap Source and Destination"
             >
-              <ArrowLeftRight className="w-4 h-4 rotate-90 md:rotate-0" />
+              <ArrowLeftRight className="w-4 h-4 rotate-90 md:rotate-0 text-sky-300" />
             </button>
           </div>
 
           {/* Destination Input */}
           <div className="md:col-span-4 relative" ref={destRef}>
-            <label className="text-xs font-bold text-muted-foreground block mb-1.5 flex items-center justify-between">
+            <label className="text-xs font-bold text-white/80 block mb-1.5 flex items-center justify-between">
               <span>Destination Location</span>
-              <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider">Arrival Point</span>
+              <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider">Arrival Point</span>
             </label>
             <div className="relative">
-              <MapPin className="w-4 h-4 text-rose-500 absolute left-3 top-3 pointer-events-none" />
+              <MapPin className="w-4 h-4 text-rose-400 absolute left-3 top-3 pointer-events-none" />
               <input
                 type="text"
                 placeholder="e.g. Surat"
                 value={destInput}
                 onChange={e => handleDestChange(e.target.value)}
                 onFocus={() => destSuggestions.length > 0 && setShowDestDropdown(true)}
-                className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-2.5 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-2xs"
+                className="w-full glass-input rounded-xl pl-9 pr-3 py-2.5 text-sm font-semibold text-white placeholder-white/50 border border-white/20 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-all shadow-xs"
               />
             </div>
 
             {/* Destination Suggestions Dropdown */}
             {showDestDropdown && (
-              <div className="absolute left-0 right-0 z-50 mt-1 bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in max-h-60 overflow-y-auto divide-y divide-border/30">
-                <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+              <div className="absolute left-0 right-0 z-50 mt-1 glass-panel bg-slate-900/95 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in max-h-60 overflow-y-auto divide-y divide-white/10">
+                <div className="px-3 py-1.5 bg-white/5 text-[10px] font-bold uppercase tracking-wider text-white/60 flex items-center justify-between">
                   <span>Arrival City Suggestions</span>
                   <span>{destSuggestions.length} found</span>
                 </div>
@@ -332,13 +332,13 @@ export default function TravelPlannerPage() {
                       setDestInput(city.name);
                       setShowDestDropdown(false);
                     }}
-                    className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-between gap-2.5 transition-colors cursor-pointer"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-white/15 text-white flex items-center justify-between gap-2.5 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                       <span className="truncate font-bold">{city.name}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                    <span className="text-[10px] text-white/70 bg-white/10 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0 border border-white/10">
                       {city.region}
                     </span>
                   </button>

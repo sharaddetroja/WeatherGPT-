@@ -13,7 +13,6 @@ import {
   Database,
   X
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { cn } from '../utils/cn';
 import { 
   LineChart, 
@@ -142,17 +141,17 @@ export default function ClimatePage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="p-2 sm:p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-sky-500/20 text-sky-300 border border-sky-400/30 shrink-0 shadow-xs">
               <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               {t('climate_title', 'Climate Trends & Historical Intelligence')}
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pl-0.5">
-            <span>Historical observations for <strong className="text-foreground">{selectedCity}</strong></span>
+          <p className="text-xs text-white/70 flex items-center gap-2 flex-wrap pl-0.5">
+            <span>Historical observations for <strong className="text-white font-bold">{selectedCity}</strong></span>
             {location?.latitude && location?.longitude && (
-              <span className="text-[11px] font-mono bg-muted/40 px-2 py-0.5 rounded-md text-muted-foreground">
+              <span className="text-[11px] font-mono bg-white/10 px-2 py-0.5 rounded-md text-white/80 border border-white/15">
                 {location.latitude.toFixed(2)}°N, {location.longitude.toFixed(2)}°E
               </span>
             )}
@@ -164,7 +163,7 @@ export default function ClimatePage() {
           {/* City Search Bar */}
           <div className="relative w-full sm:w-56 lg:w-64" ref={searchRef}>
             <div className="relative flex items-center">
-              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
+              <Search className="w-4 h-4 text-white/60 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
               <input
                 type="text"
                 placeholder="Search city..."
@@ -179,7 +178,7 @@ export default function ClimatePage() {
                     handleSelectCity(searchInput.trim());
                   }
                 }}
-                className="w-full bg-background border border-border rounded-xl pl-9 pr-7 py-2 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary outline-none transition-all shadow-2xs"
+                className="w-full glass-input rounded-xl pl-9 pr-7 py-2 text-xs font-semibold text-white placeholder-white/50 border border-white/20 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-all shadow-xs"
               />
               {searchInput && (
                 <button
@@ -188,7 +187,7 @@ export default function ClimatePage() {
                     setSearchInput('');
                     setShowSuggestions(false);
                   }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/60 hover:text-white p-0.5 cursor-pointer"
                   title="Clear search"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -203,9 +202,9 @@ export default function ClimatePage() {
                   initial={{ opacity: 0, y: 4, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                  className="absolute left-0 right-0 z-50 mt-1.5 bg-card/95 backdrop-blur-xl border border-border/90 rounded-2xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto divide-y divide-border/30"
+                  className="absolute left-0 right-0 z-50 mt-1.5 glass-panel bg-slate-900/95 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto divide-y divide-white/10"
                 >
-                  <div className="px-3 py-1.5 bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                  <div className="px-3 py-1.5 bg-white/5 text-[10px] font-bold uppercase tracking-wider text-white/60 flex items-center justify-between">
                     <span>Indian Cities & Regions</span>
                     <span>{suggestions.length} match{suggestions.length > 1 ? 'es' : ''}</span>
                   </div>
@@ -213,13 +212,13 @@ export default function ClimatePage() {
                     <button
                       key={idx}
                       onClick={() => handleSelectCity(item.name)}
-                      className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-between cursor-pointer transition-colors"
+                      className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-white/15 text-white flex items-center justify-between cursor-pointer transition-colors"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                         <span className="truncate font-bold">{item.name}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                      <span className="text-[10px] text-white/70 bg-white/10 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0 border border-white/10">
                         {item.region}
                       </span>
                     </button>
@@ -238,8 +237,8 @@ export default function ClimatePage() {
                 className={cn(
                   "px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0",
                   selectedCity.toLowerCase() === preset.name.toLowerCase()
-                    ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
-                    : "bg-muted/40 border-border text-foreground hover:bg-muted"
+                    ? "bg-primary text-white border-sky-400 font-bold shadow-xs scale-105"
+                    : "glass-pill border-white/15 text-white/80 hover:text-white hover:bg-white/15"
                 )}
               >
                 {preset.name}
@@ -288,68 +287,66 @@ export default function ClimatePage() {
       ) : (
         <>
           {/* Top Dynamic Climate Insight Card */}
-          <Card className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-600/10 border-emerald-500/20 shadow-md overflow-hidden">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="p-2.5 sm:p-3 bg-emerald-500 text-white rounded-2xl shrink-0 shadow-xs">
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
-                </div>
-                <div className="space-y-1 min-w-0 flex-1">
-                  <h3 className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-400">
-                    {climateData.insight.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-foreground leading-relaxed">
-                    {climateData.insight.description}
-                  </p>
-                </div>
+          <div className="glass-panel rounded-3xl p-4 sm:p-6 border border-emerald-500/30 bg-emerald-950/20 shadow-xl backdrop-blur-xl">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="p-2.5 sm:p-3 bg-emerald-500 text-white rounded-2xl shrink-0 shadow-md border border-emerald-400/40">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-            </CardContent>
-          </Card>
+              <div className="space-y-1 min-w-0 flex-1">
+                <h3 className="text-base sm:text-lg font-bold text-emerald-300">
+                  {climateData.insight.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-white/90 leading-relaxed">
+                  {climateData.insight.description}
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* 4 Dynamic Climate Overview Summary Cards */}
           {summary && summary.averageTemperatureC !== null && (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Card 1: Average Temperature */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-card border border-border shadow-xs flex flex-col justify-between min-h-[96px] space-y-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <ThermometerSun className="w-3.5 h-3.5 text-orange-500 shrink-0" /> 
+              <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/20 shadow-md flex flex-col justify-between min-h-[96px] space-y-1 hover:border-white/30 transition-all">
+                <span className="text-[10px] sm:text-[11px] font-bold text-white/60 uppercase tracking-wider flex items-center gap-1.5">
+                  <ThermometerSun className="w-3.5 h-3.5 text-orange-400 shrink-0" /> 
                   <span className="truncate">Avg Temperature</span>
                 </span>
-                <div className="text-lg sm:text-2xl font-black text-foreground tracking-tight">
+                <div className="text-lg sm:text-2xl font-black text-white tracking-tight">
                   {convertTemp(summary.averageTemperatureC)}{tempUnitSymbol}
                 </div>
               </div>
 
               {/* Card 2: Temperature Range */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-card border border-border shadow-xs flex flex-col justify-between min-h-[96px] space-y-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Gauge className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> 
+              <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/20 shadow-md flex flex-col justify-between min-h-[96px] space-y-1 hover:border-white/30 transition-all">
+                <span className="text-[10px] sm:text-[11px] font-bold text-white/60 uppercase tracking-wider flex items-center gap-1.5">
+                  <Gauge className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> 
                   <span className="truncate">Temp Range</span>
                 </span>
-                <div className="text-lg sm:text-2xl font-black text-foreground tracking-tight truncate">
+                <div className="text-lg sm:text-2xl font-black text-white tracking-tight truncate">
                   {summary.minTemperatureC !== null ? convertTemp(summary.minTemperatureC) : '--'}° ~ {summary.maxTemperatureC !== null ? convertTemp(summary.maxTemperatureC) : '--'}{tempUnitSymbol}
                 </div>
               </div>
 
               {/* Card 3: Total Rainfall */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-card border border-border shadow-xs flex flex-col justify-between min-h-[96px] space-y-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Droplets className="w-3.5 h-3.5 text-blue-500 shrink-0" /> 
+              <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/20 shadow-md flex flex-col justify-between min-h-[96px] space-y-1 hover:border-white/30 transition-all">
+                <span className="text-[10px] sm:text-[11px] font-bold text-white/60 uppercase tracking-wider flex items-center gap-1.5">
+                  <Droplets className="w-3.5 h-3.5 text-sky-400 shrink-0" /> 
                   <span className="truncate">Total Rainfall</span>
                 </span>
-                <div className="text-lg sm:text-2xl font-black text-foreground tracking-tight">
-                  {summary.totalRainfallMm !== null ? summary.totalRainfallMm : 0} <span className="text-xs font-semibold text-muted-foreground">mm</span>
+                <div className="text-lg sm:text-2xl font-black text-white tracking-tight">
+                  {summary.totalRainfallMm !== null ? summary.totalRainfallMm : 0} <span className="text-xs font-semibold text-white/60">mm</span>
                 </div>
               </div>
 
               {/* Card 4: Rainy Days */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-card border border-border shadow-xs flex flex-col justify-between min-h-[96px] space-y-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <CloudRain className="w-3.5 h-3.5 text-cyan-500 shrink-0" /> 
+              <div className="glass-panel p-3.5 sm:p-4 rounded-2xl border border-white/20 shadow-md flex flex-col justify-between min-h-[96px] space-y-1 hover:border-white/30 transition-all">
+                <span className="text-[10px] sm:text-[11px] font-bold text-white/60 uppercase tracking-wider flex items-center gap-1.5">
+                  <CloudRain className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> 
                   <span className="truncate">Rainy Days</span>
                 </span>
-                <div className="text-lg sm:text-2xl font-black text-foreground tracking-tight">
-                  {summary.rainyDaysCount} <span className="text-xs font-semibold text-muted-foreground">/ {summary.totalRecordedDays} Days</span>
+                <div className="text-lg sm:text-2xl font-black text-white tracking-tight">
+                  {summary.rainyDaysCount} <span className="text-xs font-semibold text-white/60">/ {summary.totalRecordedDays} Days</span>
                 </div>
               </div>
             </div>
@@ -359,29 +356,28 @@ export default function ClimatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             
             {/* Chart 1: Daily / Historical Average Temperature Trend */}
-            <Card className="shadow-lg border-border overflow-hidden">
-              <CardHeader className="p-4 sm:p-6 pb-2">
-                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 sm:gap-2">
-                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-extrabold truncate">
-                    <ThermometerSun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 shrink-0" />
-                    <span className="truncate">Average Temp Trend ({selectedCity})</span>
-                  </CardTitle>
-                  <span className="text-[11px] sm:text-xs font-bold text-muted-foreground shrink-0">Unit: {tempUnitSymbol}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="p-2 sm:p-6 pt-0">
+            {/* Chart 1: Daily / Historical Average Temperature Trend */}
+            <div className="glass-panel rounded-3xl border border-white/20 shadow-xl backdrop-blur-xl overflow-hidden p-4 sm:p-6">
+              <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 sm:gap-2 pb-2 border-b border-white/10">
+                <h3 className="flex items-center gap-2 text-sm sm:text-base font-extrabold text-white truncate">
+                  <ThermometerSun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 shrink-0" />
+                  <span className="truncate">Average Temp Trend ({selectedCity})</span>
+                </h3>
+                <span className="text-[11px] sm:text-xs font-semibold text-white/70 shrink-0">Unit: {tempUnitSymbol}</span>
+              </div>
+              <div className="pt-2">
                 {tempTrendData.length < 2 ? (
-                  <div className="h-[280px] sm:h-[320px] flex items-center justify-center text-xs text-muted-foreground">
+                  <div className="h-[280px] sm:h-[320px] flex items-center justify-center text-xs text-white/60">
                     Not enough historical data points to display a trend line.
                   </div>
                 ) : (
                   <div className="h-[280px] sm:h-[320px] w-full pt-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={tempTrendData} margin={{ top: 15, right: 15, bottom: 5, left: -15 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.2)" vertical={false} />
-                        <XAxis dataKey="shortLabel" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.12)" vertical={false} />
+                        <XAxis dataKey="shortLabel" stroke="rgba(255, 255, 255, 0.6)" fontSize={11} tickLine={false} axisLine={false} />
                         <YAxis 
-                          stroke="#94a3b8" 
+                          stroke="rgba(255, 255, 255, 0.6)" 
                           fontSize={11} 
                           tickLine={false} 
                           axisLine={false} 
@@ -390,11 +386,11 @@ export default function ClimatePage() {
                         />
                         <Tooltip 
                           contentStyle={{ 
-                            backgroundColor: '#ffffff', 
-                            color: '#0f172a',
-                            borderRadius: '14px', 
-                            border: '1px solid #cbd5e1', 
-                            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
+                            backgroundColor: '#0b1528', 
+                            color: '#ffffff',
+                            borderRadius: '16px', 
+                            border: '1px solid rgba(255, 255, 255, 0.25)', 
+                            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.4)',
                             fontWeight: 'bold',
                             fontSize: '12px'
                           }}
@@ -408,42 +404,40 @@ export default function ClimatePage() {
                           type="monotone" 
                           dataKey="temp" 
                           name="Temperature" 
-                          stroke="#f97316" 
+                          stroke="#fb923c" 
                           strokeWidth={3} 
-                          dot={{ r: 4, fill: '#f97316', stroke: '#ffffff', strokeWidth: 2 }} 
-                          activeDot={{ r: 6, fill: '#f97316', stroke: '#ffffff', strokeWidth: 2 }} 
+                          dot={{ r: 4, fill: '#fb923c', stroke: '#0b1528', strokeWidth: 2 }} 
+                          activeDot={{ r: 6, fill: '#fb923c', stroke: '#ffffff', strokeWidth: 2 }} 
                         />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Chart 2: Daily / Historical Rainfall Pattern */}
-            <Card className="shadow-lg border-border overflow-hidden">
-              <CardHeader className="p-4 sm:p-6 pb-2">
-                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 sm:gap-2">
-                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-extrabold truncate">
-                    <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 shrink-0" />
-                    <span className="truncate">Daily Rainfall ({selectedCity})</span>
-                  </CardTitle>
-                  <span className="text-[11px] sm:text-xs font-bold text-muted-foreground shrink-0">Unit: mm</span>
-                </div>
-              </CardHeader>
-              <CardContent className="p-2 sm:p-6 pt-0">
+            <div className="glass-panel rounded-3xl border border-white/20 shadow-xl backdrop-blur-xl overflow-hidden p-4 sm:p-6">
+              <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 sm:gap-2 pb-2 border-b border-white/10">
+                <h3 className="flex items-center gap-2 text-sm sm:text-base font-extrabold text-white truncate">
+                  <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400 shrink-0" />
+                  <span className="truncate">Daily Rainfall ({selectedCity})</span>
+                </h3>
+                <span className="text-[11px] sm:text-xs font-semibold text-white/70 shrink-0">Unit: mm</span>
+              </div>
+              <div className="pt-2">
                 {rainTrendData.length < 1 ? (
-                  <div className="h-[280px] sm:h-[320px] flex items-center justify-center text-xs text-muted-foreground">
+                  <div className="h-[280px] sm:h-[320px] flex items-center justify-center text-xs text-white/60">
                     No precipitation records available for this location.
                   </div>
                 ) : (
                   <div className="h-[280px] sm:h-[320px] w-full pt-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={rainTrendData} margin={{ top: 15, right: 15, bottom: 5, left: -15 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.2)" vertical={false} />
-                        <XAxis dataKey="shortLabel" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.12)" vertical={false} />
+                        <XAxis dataKey="shortLabel" stroke="rgba(255, 255, 255, 0.6)" fontSize={11} tickLine={false} axisLine={false} />
                         <YAxis 
-                          stroke="#94a3b8" 
+                          stroke="rgba(255, 255, 255, 0.6)" 
                           fontSize={11} 
                           tickLine={false} 
                           axisLine={false} 
@@ -451,15 +445,15 @@ export default function ClimatePage() {
                         />
                         <Tooltip 
                           contentStyle={{ 
-                            backgroundColor: '#ffffff', 
-                            color: '#0f172a',
-                            borderRadius: '14px', 
-                            border: '1px solid #cbd5e1', 
-                            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
+                            backgroundColor: '#0b1528', 
+                            color: '#ffffff',
+                            borderRadius: '16px', 
+                            border: '1px solid rgba(255, 255, 255, 0.25)', 
+                            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.4)',
                             fontWeight: 'bold',
                             fontSize: '12px'
                           }}
-                          cursor={{ fill: 'rgba(59, 130, 246, 0.12)' }}
+                          cursor={{ fill: 'rgba(56, 189, 248, 0.12)' }}
                           labelFormatter={(label, items) => {
                             const pt = items?.[0]?.payload;
                             return pt?.label || label;
@@ -469,15 +463,15 @@ export default function ClimatePage() {
                         <Bar 
                           dataKey="rain" 
                           name="Rainfall" 
-                          fill="#3b82f6" 
+                          fill="#38bdf8" 
                           radius={[6, 6, 0, 0]} 
                         />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
           </div>
         </>
