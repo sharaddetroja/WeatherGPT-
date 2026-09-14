@@ -67,13 +67,13 @@ export default function LanguageSelectionPage() {
                     <h4 className="font-extrabold text-base text-foreground group-hover:text-primary transition-colors">
                       {lang.nativeName}
                     </h4>
-                    <p className="text-xs text-muted-foreground font-medium">{lang.name}</p>
+                    <p className="text-xs text-white/70 font-medium">{lang.name}</p>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-border/50 flex items-center justify-between text-xs font-bold text-muted-foreground">
+                <div className="pt-3 border-t border-white/15 flex items-center justify-between text-xs font-bold text-white/70">
                   <span>{isSelected ? 'Selected ✓' : 'Click to apply'}</span>
-                  <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'text-primary' : 'group-hover:translate-x-1'}`} />
+                  <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'text-white' : 'group-hover:translate-x-1'}`} />
                 </div>
               </button>
             );
@@ -82,20 +82,20 @@ export default function LanguageSelectionPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="p-6 glass-panel border border-white/20 text-white rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+      <div className="p-6 glass-panel border border-white/20 text-white rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-emerald-500/10 text-emerald-600 rounded-2xl">
+          <div className="p-3 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-2xl">
             <Sparkles className="w-6 h-6 animate-pulse" />
           </div>
           <div>
-            <h4 className="font-bold text-sm text-foreground">Selected: {currentLang.nativeName} ({currentLang.name})</h4>
-            <p className="text-xs text-muted-foreground mt-0.5">All dashboard items, voice assistant, and navigation will render in this language.</p>
+            <h4 className="font-extrabold text-sm text-white">Selected: {currentLang.nativeName} ({currentLang.name})</h4>
+            <p className="text-xs text-white/75 mt-0.5">All dashboard items, voice assistant, and navigation will render in this language.</p>
           </div>
         </div>
 
         <button
           onClick={() => navigate('/')}
-          className="px-5 py-2.5 bg-primary text-primary-foreground font-extrabold text-xs rounded-xl hover:bg-primary/90 transition-all shadow-md cursor-pointer flex-shrink-0"
+          className="px-5 py-3 bg-white text-[#1D4ED8] font-extrabold text-xs rounded-xl hover:bg-white/90 transition-all shadow-lg cursor-pointer flex-shrink-0"
         >
           Return to Dashboard →
         </button>

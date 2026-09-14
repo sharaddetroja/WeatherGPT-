@@ -11,7 +11,9 @@ import {
   Sparkles, 
   CheckCheck, 
   BellRing,
-  Navigation
+  Navigation,
+  Sprout,
+  Anchor
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
@@ -25,7 +27,7 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { profile, isAuthenticated } = useUserProfile();
-  const { t } = useLanguage();
+  const { currentLang, t } = useLanguage();
   const [notifOpen, setNotifOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
@@ -37,6 +39,8 @@ export default function Navbar() {
     { icon: CloudRain, label: t('nav_alerts', 'Alerts'), path: '/alerts' },
     { icon: Map, label: t('nav_map', 'Map'), path: '/map' },
     { icon: BarChart2, label: t('nav_climate', 'Climate'), path: '/climate' },
+    { icon: Sprout, label: t('nav_agriculture', 'Agriculture'), path: '/agriculture' },
+    { icon: Anchor, label: t('nav_marine', 'Marine'), path: '/marine' },
   ];
 
   const { 
@@ -241,6 +245,16 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
           
+          {/* Language Selector Link */}
+          <Link
+            to="/language"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold glass-pill text-white hover:bg-white/20 transition-all cursor-pointer flex-shrink-0"
+            title="Change language"
+          >
+            <span className="text-sm">{currentLang.flag || '🌐'}</span>
+            <span className="text-[11px] font-bold uppercase">{currentLang.code}</span>
+          </Link>
+
           {/* WeatherGPT AI Voice Assistant Link */}
           <Link
             ref={askAIBtnRef}
@@ -296,6 +310,14 @@ export default function Navbar() {
               ))}
 
               <div className="pt-2 space-y-1 border-t border-white/10">
+                <Link
+                  to="/language"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold text-white/90 hover:bg-white/10"
+                >
+                  <span className="text-lg mr-3">🌐</span>
+                  <span>{t('nav_language', 'Language Settings')}</span>
+                </Link>
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}

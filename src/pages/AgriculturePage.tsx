@@ -102,16 +102,16 @@ export default function AgriculturePage() {
   const soilMoistureCalc = Math.min(95, Math.max(50, Math.round(humidity * 0.95)));
 
   return (
-    <div className="space-y-6 pb-12 animate-in fade-in duration-300">
+    <div className="space-y-6 pb-12 animate-in fade-in duration-300 text-white">
       {/* Header Banner */}
-      <div className="p-4 xs:p-5 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="glass-panel p-4 xs:p-5 sm:p-8 rounded-3xl border border-white/20 shadow-xl backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
-            <Sprout className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-emerald-300 font-bold text-xs uppercase tracking-wider mb-1">
+            <Sprout className="w-4 h-4 text-emerald-400" />
             <span>Kisan Agriculture Advisory</span>
           </div>
-          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">{t('kisan_title', 'Farmer Weather & Crop Advisory')}</h1>
-          <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{t('kisan_title', 'Farmer Weather & Crop Advisory')}</h1>
+          <p className="text-xs text-white/70 mt-1 max-w-xl leading-relaxed">
             {t('kisan_subtitle', 'Real-time soil moisture tracking, rainfall advisory, and live WeatherGPT AI assistance tailored for farming.')}
           </p>
         </div>
@@ -119,7 +119,7 @@ export default function AgriculturePage() {
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleExportPDF}
-            className="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/30"
           >
             <Download className="w-4 h-4" />
             <span>Export Crop Report</span>
@@ -128,13 +128,13 @@ export default function AgriculturePage() {
       </div>
 
       {/* Location & Live Stream Status Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 xs:p-4 bg-card rounded-2xl border border-border gap-2.5 sm:gap-3">
-        <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground">
-          <MapPin className="w-4 h-4 text-emerald-500 shrink-0" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 xs:p-4 glass-panel rounded-2xl border border-white/15 gap-2.5 sm:gap-3 backdrop-blur-md">
+        <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-white">
+          <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>Farming Belt: {profile.location || 'Rajkot & Saurashtra District'}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-muted text-muted-foreground">
+          <span className="text-xs font-bold px-3 py-1 rounded-full glass-pill border border-white/20 text-emerald-300">
             Kharif Season
           </span>
         </div>
@@ -142,7 +142,7 @@ export default function AgriculturePage() {
 
       {/* Crop Selector Grid */}
       <div className="space-y-3">
-        <h3 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
+        <h3 className="text-xs sm:text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
           <span>{t('crop_select', 'Select Your Active Crop')}:</span>
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 xs:gap-3">
@@ -150,16 +150,16 @@ export default function AgriculturePage() {
             <button
               key={crop.id}
               onClick={() => setSelectedCrop(crop)}
-              className={`p-3 xs:p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+              className={`p-3.5 xs:p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                 selectedCrop.id === crop.id
-                  ? 'bg-emerald-500/10 border-emerald-500 shadow-md ring-2 ring-emerald-500/20'
-                  : 'bg-card hover:bg-muted border-border'
+                  ? 'bg-emerald-500/25 border-emerald-400 shadow-lg ring-2 ring-emerald-400/30 scale-[1.02]'
+                  : 'glass-panel text-white hover:bg-white/15 border-white/15'
               }`}
             >
               <div className="text-2xl xs:text-3xl mb-1.5 xs:mb-2">{crop.icon}</div>
               <div>
-                <div className="font-extrabold text-xs xs:text-sm text-foreground">{crop.name}</div>
-                <div className="text-[11px] xs:text-xs text-muted-foreground mt-0.5">{crop.category}</div>
+                <div className="font-extrabold text-xs xs:text-sm text-white">{crop.name}</div>
+                <div className="text-[11px] xs:text-xs text-white/60 mt-0.5">{crop.category}</div>
               </div>
             </button>
           ))}
@@ -169,31 +169,31 @@ export default function AgriculturePage() {
       {/* Crop Deep Dive & Advisory */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="p-6 rounded-3xl bg-card border border-border shadow-lg space-y-4">
+          <div className="p-5 sm:p-6 rounded-3xl glass-panel border border-white/20 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-4xl">{selectedCrop.icon}</span>
                 <div>
-                  <h2 className="text-xl font-black text-foreground">{selectedCrop.name}</h2>
-                  <p className="text-xs text-muted-foreground">Optimal Soil Moisture Target: {selectedCrop.soilMoistureOptimal}</p>
+                  <h2 className="text-xl font-black text-white">{selectedCrop.name}</h2>
+                  <p className="text-xs text-white/70">Optimal Soil Moisture Target: {selectedCrop.soilMoistureOptimal}</p>
                 </div>
               </div>
               <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                selectedCrop.pestRisk === 'Low' ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30' :
-                selectedCrop.pestRisk === 'Moderate' ? 'bg-amber-500/15 text-amber-600 border-amber-500/30' :
-                'bg-red-500/15 text-red-600 border-red-500/30'
+                selectedCrop.pestRisk === 'Low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
+                selectedCrop.pestRisk === 'Moderate' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
+                'bg-red-500/20 text-red-300 border-red-500/40'
               }`}>
                 Pest Risk: {selectedCrop.pestRisk}
               </span>
             </div>
 
             {/* Weather & Agronomy Advisory Callout */}
-            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
-              <div className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-300 text-sm">
-                <Sparkles className="w-4 h-4" />
+            <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/35 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-emerald-300 text-sm">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
                 <span>Agricultural Weather & Irrigation Advisory:</span>
               </div>
-              <p className="text-sm leading-relaxed text-foreground font-semibold">
+              <p className="text-sm leading-relaxed text-white/95 font-medium">
                 {selectedCrop.adviceEn}
               </p>
             </div>
@@ -202,43 +202,43 @@ export default function AgriculturePage() {
 
         {/* Live Soil & Weather Metrics */}
         <div className="space-y-4">
-          <div className="p-5 rounded-3xl bg-card border border-border shadow-lg space-y-3">
+          <div className="p-5 rounded-3xl glass-panel border border-white/20 shadow-xl space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-extrabold text-sm text-foreground uppercase tracking-wider">Live Soil & Weather Metrics</h3>
-              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-500" />}
+              <h3 className="font-extrabold text-sm text-white uppercase tracking-wider">Live Soil & Weather Metrics</h3>
+              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />}
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/50">
-                <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                  <Droplets className="w-4 h-4 text-blue-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/10 border border-white/10">
+                <div className="flex items-center gap-2 text-xs font-bold text-white/80">
+                  <Droplets className="w-4 h-4 text-sky-400" />
                   <span>Real-time Soil Moisture</span>
                 </div>
-                <span className="text-sm font-black text-blue-600">{soilMoistureCalc}% (Optimal)</span>
+                <span className="text-sm font-black text-sky-300">{soilMoistureCalc}% (Optimal)</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/50">
-                <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                  <Sun className="w-4 h-4 text-amber-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/10 border border-white/10">
+                <div className="flex items-center gap-2 text-xs font-bold text-white/80">
+                  <Sun className="w-4 h-4 text-amber-400" />
                   <span>Evapotranspiration</span>
                 </div>
-                <span className="text-sm font-black text-amber-600">4.2 mm/day</span>
+                <span className="text-sm font-black text-amber-300">4.2 mm/day</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/50">
-                <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                  <Wind className="w-4 h-4 text-teal-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/10 border border-white/10">
+                <div className="flex items-center gap-2 text-xs font-bold text-white/80">
+                  <Wind className="w-4 h-4 text-teal-400" />
                   <span>Surface Wind Speed</span>
                 </div>
-                <span className="text-sm font-black text-teal-600">{windKph} km/h NW</span>
+                <span className="text-sm font-black text-teal-300">{windKph} km/h NW</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/50">
-                <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                  <Droplets className="w-4 h-4 text-indigo-500" />
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/10 border border-white/10">
+                <div className="flex items-center gap-2 text-xs font-bold text-white/80">
+                  <Droplets className="w-4 h-4 text-indigo-400" />
                   <span>Air Humidity</span>
                 </div>
-                <span className="text-sm font-black text-indigo-600">{humidity}%</span>
+                <span className="text-sm font-black text-indigo-300">{humidity}%</span>
               </div>
             </div>
           </div>
@@ -247,13 +247,13 @@ export default function AgriculturePage() {
 
       {/* Live Kisan AI Advisory Section */}
       <div className="pt-2">
-        <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-500" />
+        <h3 className="text-sm font-extrabold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-amber-400" />
           <span>Kisan Live WeatherGPT Assistant:</span>
         </h3>
         <WeatherGPTLive 
           defaultQuestion="What is the rainfall forecast for groundnut and cotton crops over the next 7 days?" 
-          className="shadow-xl border-emerald-500/30"
+          className="shadow-xl border-emerald-500/40 glass-panel"
         />
       </div>
     </div>
