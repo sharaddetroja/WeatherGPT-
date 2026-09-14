@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cloud, Sun, CloudRain, CloudLightning, Snowflake, CloudSun, Calendar, Droplets, Wind } from 'lucide-react';
+import { Cloud, CloudRain, CloudLightning, Snowflake, CloudSun, Calendar, Moon, CloudMoon, Droplet } from 'lucide-react';
 
 export interface ForecastDay {
   date: string;
@@ -30,34 +30,70 @@ export const DailyForecastGlass: React.FC<DailyForecastGlassProps> = ({
   timelineTab,
   onSelectTab,
 }) => {
-  const getConditionIcon = (cond?: string) => {
+  // Daytime Weather Icon
+  const getDayIcon = (cond?: string) => {
     const c = (cond || '').toLowerCase();
-    if (c.includes('rain') || c.includes('drizzle')) return <CloudRain className="w-5 h-5 text-blue-200 shrink-0" />;
-    if (c.includes('storm') || c.includes('thunder')) return <CloudLightning className="w-5 h-5 text-amber-300 shrink-0" />;
-    if (c.includes('snow')) return <Snowflake className="w-5 h-5 text-cyan-200 shrink-0" />;
-    if (c.includes('partly') || (c.includes('sun') && c.includes('cloud'))) return <CloudSun className="w-5 h-5 text-amber-200 shrink-0" />;
-    if (c.includes('sun') || c.includes('clear')) return <Sun className="w-5 h-5 text-amber-300 shrink-0" />;
-    return <Cloud className="w-5 h-5 text-white/80 shrink-0" />;
+    if (c.includes('storm') || c.includes('thunder')) {
+      return (
+        <div className="relative flex items-center justify-center">
+          <CloudLightning className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]" />
+        </div>
+      );
+    }
+    if (c.includes('heavy rain') || c.includes('torrential')) {
+      return <CloudRain className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 drop-shadow-[0_2px_8px_rgba(96,165,250,0.5)]" />;
+    }
+    if (c.includes('rain') || c.includes('drizzle') || c.includes('shower')) {
+      return <CloudRain className="w-5 h-5 sm:w-6 sm:h-6 text-sky-300 drop-shadow-[0_2px_8px_rgba(125,211,252,0.4)]" />;
+    }
+    if (c.includes('snow')) {
+      return <Snowflake className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-200" />;
+    }
+    if (c.includes('cloud') && (c.includes('sun') || c.includes('partly'))) {
+      return <CloudSun className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300 drop-shadow-[0_2px_8px_rgba(252,211,77,0.4)]" />;
+    }
+    if (c.includes('sun') || c.includes('clear')) {
+      return (
+        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.8)] border border-amber-300/60" />
+      );
+    }
+    return <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-slate-200/90 drop-shadow-[0_2px_6px_rgba(255,255,255,0.2)]" />;
   };
 
-  const formattedUnit = tempUnit.startsWith('°') ? tempUnit : `°${tempUnit}`;
-
-  // Find min/max across all days for normalized temperature range bars
-  const globalMin = Math.min(...forecastData.map(d => convertTemp(d.min_temp)));
-  const globalMax = Math.max(...forecastData.map(d => convertTemp(d.max_temp)));
-  const globalRange = globalMax - globalMin || 1;
+  // Nighttime / Secondary Forecast Icon
+  const getNightIcon = (cond?: string) => {
+    const c = (cond || '').toLowerCase();
+    if (c.includes('storm') || c.includes('thunder')) {
+      return (
+        <div className="relative flex items-center justify-center">
+          <CloudLightning className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]" />
+        </div>
+      );
+    }
+    if (c.includes('rain') || c.includes('drizzle') || c.includes('shower')) {
+      return <CloudRain className="w-5 h-5 sm:w-6 sm:h-6 text-blue-300/90" />;
+    }
+    if (c.includes('cloud') && !c.includes('clear')) {
+      return <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300/80" />;
+    }
+    if (c.includes('partly')) {
+      return <CloudMoon className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-200/90" />;
+    }
+    return <Moon className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-100/90 drop-shadow-[0_0_8px_rgba(165,243,252,0.4)]" />;
+  };
 
   return (
-    <div className={`glass-panel rounded-3xl p-3.5 xs:p-4 sm:p-6 text-white h-full flex flex-col justify-between ${className}`}>
+    <div className={`glass-panel rounded-3xl p-4 sm:p-6 text-white h-full flex flex-col justify-between border border-white/20 shadow-2xl backdrop-blur-2xl ${className}`}>
       <div>
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        {/* Top Header Bar & Tabs */}
+        <div className="flex items-center justify-between mb-4 sm:mb-5 flex-wrap gap-2 pb-3 border-b border-white/10">
           {onSelectTab ? (
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/10 text-white border border-white/10 shadow-xs w-full sm:w-auto">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/10 text-white border border-white/15 shadow-inner w-full sm:w-auto">
               <button
                 onClick={() => onSelectTab('forecast')}
-                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   timelineTab === 'forecast'
-                    ? 'bg-white text-[#1D4ED8] shadow-md'
+                    ? 'bg-white text-slate-900 shadow-md scale-105'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
@@ -65,9 +101,9 @@ export const DailyForecastGlass: React.FC<DailyForecastGlassProps> = ({
               </button>
               <button
                 onClick={() => onSelectTab('history')}
-                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   timelineTab === 'history'
-                    ? 'bg-white text-[#1D4ED8] shadow-md'
+                    ? 'bg-white text-slate-900 shadow-md scale-105'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
@@ -75,111 +111,82 @@ export const DailyForecastGlass: React.FC<DailyForecastGlassProps> = ({
               </button>
             </div>
           ) : (
-            <h2 className="text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-white/75" />
-              <span>7-Day Forecast</span>
+            <h2 className="text-sm sm:text-base font-extrabold text-white tracking-wide flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-sky-300" />
+              <span>7-Day Weather Forecast</span>
             </h2>
           )}
 
-          <span className="text-[11px] sm:text-xs font-semibold text-white/60">
-            Daily High / Low ({formattedUnit})
+          <span className="text-[11px] sm:text-xs font-bold text-white/60">
+            High / Low ({tempUnit})
           </span>
         </div>
 
-        <div className="space-y-2">
+        {/* Forecast Rows List - Styled Exactly Like Reference */}
+        <div className="divide-y divide-white/10">
           {forecastData.map((item, idx) => {
             const isToday = idx === 0;
             const min = convertTemp(item.min_temp);
             const max = convertTemp(item.max_temp);
-            
-            // Calculate percentage bar width and left offset
-            const leftPercent = Math.max(0, Math.min(100, ((min - globalMin) / globalRange) * 100));
-            const widthPercent = Math.max(15, Math.min(100 - leftPercent, ((max - min) / globalRange) * 100));
+            const rainChance = item.chance_of_rain ?? (item.rainfall_mm && item.rainfall_mm > 0 ? Math.min(100, Math.round(item.rainfall_mm * 15)) : 0);
 
-            // Format date string for display (e.g., 09/12)
-            const dateLabel = item.date ? item.date.slice(5).replace('-', '/') : '';
+            // Calculate fill percentage for droplet icon (e.g. 100%, 75%, 20%)
+            const hasRain = rainChance > 0;
 
             return (
               <div
                 key={idx}
-                className={`flex items-center gap-1.5 xs:gap-2 sm:gap-3 py-2 px-2 xs:px-2.5 sm:py-2.5 sm:px-3.5 rounded-2xl transition-all ${
+                className={`grid grid-cols-12 items-center py-3.5 px-2 sm:px-4 rounded-2xl transition-all ${
                   isToday 
-                    ? 'bg-white/18 border border-white/25 shadow-xs font-semibold' 
-                    : 'hover:bg-white/8 border border-transparent'
+                    ? 'bg-white/12 border border-white/20 shadow-xs' 
+                    : 'hover:bg-white/5 border border-transparent'
                 }`}
               >
-                {/* Day & Date */}
-                <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 w-[72px] xs:w-[84px] sm:w-[92px] shrink-0">
-                  <span className="text-[10px] xs:text-xs text-white/50 font-mono w-[30px] xs:w-[34px] sm:w-[38px]">{dateLabel}</span>
-                  <span className={`text-[11px] xs:text-xs sm:text-sm font-bold truncate ${isToday ? 'text-white' : 'text-white/90'}`}>
+                {/* 1. Left: Day Name (e.g. "Today", "Tue", "Wed") */}
+                <div className="col-span-3 sm:col-span-3 flex items-center min-w-0">
+                  <span className={`text-sm sm:text-base font-bold tracking-tight truncate ${isToday ? 'text-white font-black' : 'text-white/90'}`}>
                     {isToday ? 'Today' : item.day}
                   </span>
                 </div>
 
-                {/* Condition Icon & Text */}
-                <div className="flex items-center gap-1 sm:gap-2 w-[24px] xs:w-[28px] sm:w-[125px] shrink-0">
-                  {getConditionIcon(item.condition)}
-                  <span className="text-xs font-medium text-white/85 truncate hidden sm:inline">
-                    {item.condition}
-                  </span>
-                </div>
-
-                {/* Rain Badge */}
-                <div className="w-[54px] xs:w-[68px] sm:w-[82px] shrink-0 flex items-center justify-start">
-                  {(item.rainfall_mm !== undefined && item.rainfall_mm > 0) ? (
-                    <span className="w-full py-0.5 px-1 xs:px-1.5 sm:px-2 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/25 font-semibold flex items-center justify-center gap-0.5 sm:gap-1 text-[10px] xs:text-[11px] whitespace-nowrap">
-                      <CloudRain className="w-2.5 h-2.5 xs:w-3 xs:h-3 shrink-0" /> {item.rainfall_mm} <span className="hidden xs:inline">mm</span>
-                    </span>
-                  ) : item.chance_of_rain !== undefined && item.chance_of_rain > 0 ? (
-                    <span className="w-full py-0.5 px-1 xs:px-1.5 sm:px-2 rounded-full bg-sky-500/20 text-sky-200 border border-sky-400/25 font-semibold flex items-center justify-center gap-0.5 sm:gap-1 text-[10px] xs:text-[11px] whitespace-nowrap">
-                      <CloudRain className="w-2.5 h-2.5 xs:w-3 xs:h-3 shrink-0" /> {item.chance_of_rain}%
-                    </span>
+                {/* 2. Center-Left: Droplet Icon & Rain Probability (e.g. 💧 100%) */}
+                <div className="col-span-3 sm:col-span-3 flex items-center justify-start gap-1.5">
+                  {hasRain ? (
+                    <div className="flex items-center gap-1.5">
+                      <div className="relative flex items-center justify-center">
+                        <Droplet 
+                          className="w-4 h-4 text-cyan-300 fill-cyan-300 shrink-0 drop-shadow-[0_0_6px_rgba(103,232,249,0.6)]" 
+                        />
+                      </div>
+                      <span className="text-xs sm:text-sm font-bold text-white/90 font-mono tracking-tight">
+                        {rainChance}%
+                      </span>
+                    </div>
                   ) : (
-                    <span className="w-full py-0.5 px-1 rounded-full bg-white/5 text-white/40 border border-white/10 text-[9px] xs:text-[10px] font-medium flex items-center justify-center whitespace-nowrap">
-                      <span className="hidden xs:inline">No Rain</span>
-                      <span className="xs:hidden">-</span>
-                    </span>
+                    <div className="flex items-center gap-1.5 opacity-40">
+                      <Droplet className="w-4 h-4 text-white/40 shrink-0" />
+                      <span className="text-xs sm:text-sm font-semibold text-white/40 font-mono">0%</span>
+                    </div>
                   )}
                 </div>
 
-                {/* Humidity telemetry */}
-                <div className="w-[55px] min-w-[55px] shrink-0 hidden md:flex items-center gap-1 text-[11px] text-white/60">
-                  {item.humidity !== undefined && (
-                    <>
-                      <Droplets className="w-3 h-3 text-sky-300 shrink-0" />
-                      <span>{item.humidity}%</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Wind telemetry */}
-                <div className="w-[75px] min-w-[75px] shrink-0 hidden lg:flex items-center gap-1 text-[11px] text-white/60">
-                  {item.wind_kph !== undefined && (
-                    <>
-                      <Wind className="w-3 h-3 text-cyan-300 shrink-0" />
-                      <span>{item.wind_kph} km/h</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Temperature Bar & Min/Max */}
-                <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 flex-1 min-w-[75px] xs:min-w-[90px] sm:min-w-[120px] ml-auto">
-                  <span className="text-[11px] xs:text-xs font-medium text-white/70 w-[22px] xs:w-[26px] sm:w-[28px] text-right shrink-0">
-                    {min}°
-                  </span>
-
-                  <div className="flex-1 h-1.5 xs:h-2 bg-black/20 rounded-full relative overflow-hidden min-w-[28px] xs:min-w-[36px] sm:min-w-[40px]">
-                    <div
-                      className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 via-amber-300 to-rose-400 opacity-90"
-                      style={{
-                        left: `${leftPercent}%`,
-                        width: `${widthPercent}%`,
-                      }}
-                    />
+                {/* 3. Center: Dual Condition Icons (Day condition + Night/Secondary condition) */}
+                <div className="col-span-3 sm:col-span-3 flex items-center justify-center gap-3 sm:gap-4">
+                  <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 shrink-0">
+                    {getDayIcon(item.condition)}
                   </div>
+                  <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 shrink-0">
+                    {getNightIcon(item.condition)}
+                  </div>
+                </div>
 
-                  <span className="text-[11px] xs:text-xs font-bold text-white w-[22px] xs:w-[26px] sm:w-[28px] text-left shrink-0">
+                {/* 4. Right: High and Low Temperatures (e.g. 27° 25°) */}
+                <div className="col-span-3 sm:col-span-3 flex items-center justify-end gap-2 sm:gap-3 text-right">
+                  <span className="text-sm sm:text-base font-black text-white tracking-tight">
                     {max}°
+                  </span>
+                  <span className="text-sm sm:text-base font-bold text-white/60 tracking-tight">
+                    {min}°
                   </span>
                 </div>
               </div>

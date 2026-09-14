@@ -3,7 +3,6 @@ import {
   History, 
   CloudRain, 
   Droplets, 
-  Wind, 
   Sun, 
   Cloud, 
   CloudSun, 
@@ -11,8 +10,7 @@ import {
   Snowflake, 
   TrendingUp, 
   TrendingDown, 
-  Gauge,
-  CloudOff
+  Gauge
 } from 'lucide-react';
 import type { HistoricalWeatherDay } from '../../services/weatherService';
 
@@ -57,9 +55,6 @@ export const Last7DaysHistoryGlass: React.FC<Last7DaysHistoryGlassProps> = ({
   const lowestTemp = Math.min(...minTemps);
   const avgTemp = Math.round((historyData.reduce((acc, d) => acc + convertTemp(d.avg_temp), 0) / historyData.length) * 10) / 10;
   
-  const globalMin = Math.min(...minTemps);
-  const globalMax = Math.max(...maxTemps);
-  const globalRange = globalMax - globalMin || 1;
 
   return (
     <div className={`glass-panel rounded-3xl p-3.5 xs:p-4 sm:p-6 text-white transition-all shadow-xl h-full flex flex-col justify-between ${className}`}>
@@ -157,90 +152,82 @@ export const Last7DaysHistoryGlass: React.FC<Last7DaysHistoryGlassProps> = ({
           </div>
         </div>
 
-        {/* Day by Day Historical Table/Cards */}
-        <div className="space-y-2">
+        {/* Day by Day Historical Table/Cards Styled Like Reference Image */}
+        <div className="divide-y divide-white/10">
           {historyData.map((item, idx) => {
             const min = convertTemp(item.min_temp);
             const max = convertTemp(item.max_temp);
-            
-            const leftPercent = Math.max(0, Math.min(100, ((min - globalMin) / globalRange) * 100));
-            const widthPercent = Math.max(15, Math.min(100 - leftPercent, ((max - min) / globalRange) * 100));
-            const dateLabel = item.date ? item.date.slice(5).replace('-', '/') : '';
-            const isSelected = selectedDay?.date === item.date;
+            const isYesterday = idx === 0;
+            const rainChance = item.rainfall_mm > 0 ? Math.min(100, Math.max(20, Math.round(item.rainfall_mm * 20))) : 0;
+            const hasRain = rainChance > 0;
+
+            const getNightIcon = (cond?: string) => {
+              const c = (cond || '').toLowerCase();
+              if (c.includes('storm') || c.includes('thunder')) {
+                return <CloudLightning className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]" />;
+              }
+              if (c.includes('rain') || c.includes('drizzle')) {
+                return <CloudRain className="w-5 h-5 sm:w-6 sm:h-6 text-blue-300" />;
+              }
+              if (c.includes('partly')) {
+                return <CloudSun className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-200" />;
+              }
+              return <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300/80" />;
+            };
 
             return (
               <div
                 key={idx}
-                onClick={() => setSelectedDay(isSelected ? null : item)}
-                className={`flex items-center gap-1.5 xs:gap-2 sm:gap-3 py-2 px-2 xs:px-2.5 sm:py-2.5 sm:px-3.5 rounded-2xl transition-all cursor-pointer border ${
-                  isSelected 
-                    ? 'bg-white/15 border-sky-400/40 shadow-sm' 
-                    : 'hover:bg-white/8 border-transparent bg-white/[0.03]'
+                onClick={() => setSelectedDay(selectedDay?.date === item.date ? null : item)}
+                className={`grid grid-cols-12 items-center py-3.5 px-2 sm:px-4 rounded-2xl transition-all cursor-pointer ${
+                  selectedDay?.date === item.date
+                    ? 'bg-white/15 border border-sky-400/40 shadow-xs'
+                    : isYesterday
+                    ? 'bg-white/10 border border-white/20'
+                    : 'hover:bg-white/5 border border-transparent'
                 }`}
               >
-                {/* Day & Date */}
-                <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 w-[72px] xs:w-[84px] sm:w-[92px] shrink-0">
-                  <span className="text-[10px] xs:text-xs text-white/50 font-mono w-[30px] xs:w-[34px] sm:w-[38px]">{dateLabel}</span>
-                  <span className="text-[11px] xs:text-xs sm:text-sm font-bold text-white truncate">{item.day}</span>
-                </div>
-
-                {/* Condition Icon & Text */}
-                <div className="flex items-center gap-1 sm:gap-1.5 w-[24px] xs:w-[28px] sm:w-[140px] shrink-0">
-                  {getConditionIcon(item.condition)}
-                  <span className="text-xs font-medium text-white/85 truncate hidden sm:inline">
-                    {item.condition}
+                {/* 1. Left: Day Label (e.g. "Yesterday", "Sun", "Sat") */}
+                <div className="col-span-3 sm:col-span-3 flex items-center min-w-0">
+                  <span className={`text-sm sm:text-base font-bold tracking-tight truncate ${isYesterday ? 'text-white font-black' : 'text-white/90'}`}>
+                    {isYesterday ? 'Yesterday' : item.day}
                   </span>
-                  {item.is_stale && (
-                    <span className="hidden sm:flex px-1.5 py-0.5 rounded-full bg-amber-500/25 text-amber-200 border border-amber-500/40 text-[9px] font-extrabold items-center gap-0.5 shrink-0" title="Cached Weather">
-                      <CloudOff className="w-2.5 h-2.5 text-amber-300" /> Cached
-                    </span>
-                  )}
                 </div>
 
-                {/* Rain Badge */}
-                <div className="w-[54px] xs:w-[68px] sm:w-[82px] shrink-0 flex items-center justify-start">
-                  {item.rainfall_mm > 0 ? (
-                    <span className="w-full py-0.5 px-1 xs:px-1.5 sm:px-2 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/25 font-semibold flex items-center justify-center gap-0.5 sm:gap-1 text-[10px] xs:text-[11px] whitespace-nowrap">
-                      <CloudRain className="w-2.5 h-2.5 xs:w-3 xs:h-3 shrink-0" /> {item.rainfall_mm} <span className="hidden xs:inline">mm</span>
-                    </span>
+                {/* 2. Center-Left: Droplet Icon & Rain Probability / Precipitation */}
+                <div className="col-span-3 sm:col-span-3 flex items-center justify-start gap-1.5">
+                  {hasRain ? (
+                    <div className="flex items-center gap-1.5">
+                      <Droplets className="w-4 h-4 text-cyan-300 fill-cyan-300 shrink-0 drop-shadow-[0_0_6px_rgba(103,232,249,0.6)]" />
+                      <span className="text-xs sm:text-sm font-bold text-white/90 font-mono tracking-tight">
+                        {rainChance}%
+                      </span>
+                    </div>
                   ) : (
-                    <span className="w-full py-0.5 px-1 rounded-full bg-white/5 text-white/40 border border-white/10 text-[9px] xs:text-[10px] font-medium flex items-center justify-center whitespace-nowrap">
-                      <span className="hidden xs:inline">No Rain</span>
-                      <span className="xs:hidden">-</span>
-                    </span>
+                    <div className="flex items-center gap-1.5 opacity-40">
+                      <Droplets className="w-4 h-4 text-white/40 shrink-0" />
+                      <span className="text-xs sm:text-sm font-semibold text-white/40 font-mono">0%</span>
+                    </div>
                   )}
                 </div>
 
-                {/* Humidity telemetry */}
-                <div className="w-[55px] min-w-[55px] shrink-0 hidden md:flex items-center gap-1 text-[11px] text-white/60">
-                  <Droplets className="w-3 h-3 text-sky-300 shrink-0" />
-                  <span>{item.humidity}%</span>
-                </div>
-
-                {/* Wind telemetry */}
-                <div className="w-[75px] min-w-[75px] shrink-0 hidden lg:flex items-center gap-1 text-[11px] text-white/60">
-                  <Wind className="w-3 h-3 text-cyan-300 shrink-0" />
-                  <span>{item.wind_kph} km/h</span>
-                </div>
-
-                {/* Temperature Bar & Min/Max */}
-                <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 flex-1 min-w-[75px] xs:min-w-[90px] sm:min-w-[120px] ml-auto">
-                  <span className="text-[11px] xs:text-xs font-medium text-white/70 w-[22px] xs:w-[26px] sm:w-[28px] text-right shrink-0">
-                    {min}°
-                  </span>
-
-                  <div className="flex-1 h-1.5 xs:h-2 bg-black/20 rounded-full relative overflow-hidden min-w-[28px] xs:min-w-[36px] sm:min-w-[40px]">
-                    <div
-                      className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-sky-400 via-amber-300 to-rose-400 opacity-90"
-                      style={{
-                        left: `${leftPercent}%`,
-                        width: `${widthPercent}%`
-                      }}
-                    />
+                {/* 3. Center: Dual Condition Icons (Day condition + Night/Secondary condition) */}
+                <div className="col-span-3 sm:col-span-3 flex items-center justify-center gap-3 sm:gap-4">
+                  <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 shrink-0">
+                    {getConditionIcon(item.condition)}
                   </div>
+                  <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 shrink-0">
+                    {getNightIcon(item.condition)}
+                  </div>
+                </div>
 
-                  <span className="text-[11px] xs:text-xs font-bold text-white w-[22px] xs:w-[26px] sm:w-[28px] text-left shrink-0">
+                {/* 4. Right: High and Low Temperatures (e.g. 27° 25°) */}
+                <div className="col-span-3 sm:col-span-3 flex items-center justify-end gap-2 sm:gap-3 text-right">
+                  <span className="text-sm sm:text-base font-black text-white tracking-tight">
                     {max}°
+                  </span>
+                  <span className="text-sm sm:text-base font-bold text-white/60 tracking-tight">
+                    {min}°
                   </span>
                 </div>
               </div>
