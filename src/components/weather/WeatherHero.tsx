@@ -1,6 +1,7 @@
 import React from 'react';
 import { Cloud, Sun, CloudRain, CloudLightning, Wind, Snowflake, CloudSun, CloudOff } from 'lucide-react';
 import { motion } from 'motion/react';
+import { getCityAQI } from '../../utils/airQuality';
 
 interface WeatherHeroProps {
   locationName: string;
@@ -12,6 +13,7 @@ interface WeatherHeroProps {
   maxTemp: number | string;
   feelsLike: number | string;
   pm25?: number | string;
+  aqi?: number;
   isStale?: boolean;
   className?: string;
 }
@@ -25,10 +27,18 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
   minTemp,
   maxTemp,
   feelsLike,
-  pm25 = 13,
+  pm25,
+  aqi,
   isStale = false,
   className = '',
 }) => {
+  const aqiInfo = getCityAQI(
+    locationName,
+    typeof aqi === 'number' ? aqi : undefined,
+    typeof pm25 === 'number' ? pm25 : undefined
+  );
+  const activePm25 = pm25 !== undefined ? pm25 : aqiInfo.pm25;
+
   const getConditionIcon = (cond?: string) => {
     const c = (cond || '').toLowerCase();
     if (c.includes('rain') || c.includes('drizzle')) return CloudRain;
@@ -69,10 +79,26 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           )}
         </div>
 
-        {/* PM2.5 Glass Pill */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 xs:px-3 xs:py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-md text-xs font-semibold text-white shadow-xs shrink-0">
-          <span className="text-[9px] xs:text-[10px] uppercase font-bold tracking-wider text-white/80">PM 2.5</span>
-          <span className="font-extrabold">{pm25}</span>
+        {/* Air Quality & PM2.5 Badges */}
+        <div className="flex items-center gap-1.5 xs:gap-2 shrink-0 flex-wrap justify-end">
+          {/* Dynamic AQI Indicator Pill */}
+          <div 
+            className={`flex items-center gap-1.5 px-2.5 py-1 xs:px-3 xs:py-1.5 rounded-full ${aqiInfo.badgeBg} border ${aqiInfo.badgeBorder} backdrop-blur-md text-xs font-semibold text-white shadow-xs`}
+            title={`Air Quality Index: ${aqiInfo.score} (${aqiInfo.label}) - ${aqiInfo.advice}`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${aqiInfo.dotColor} animate-pulse`} />
+            <span className="text-[9px] xs:text-[10px] uppercase font-bold tracking-wider text-white/80">AQI</span>
+            <span className={`font-black ${aqiInfo.textColor}`}>{aqiInfo.score}</span>
+            <span className="hidden xs:inline text-[10px] font-medium text-white/70">
+              • {aqiInfo.label}
+            </span>
+          </div>
+
+          {/* PM2.5 Glass Pill */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 xs:px-3 xs:py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-md text-xs font-semibold text-white shadow-xs">
+            <span className="text-[9px] xs:text-[10px] uppercase font-bold tracking-wider text-white/80">PM 2.5</span>
+            <span className="font-extrabold">{activePm25}</span>
+          </div>
         </div>
       </div>
 

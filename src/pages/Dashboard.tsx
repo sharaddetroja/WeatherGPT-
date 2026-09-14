@@ -441,7 +441,6 @@ export default function Dashboard() {
             minTemp={convertTemp(data.forecast[0].min_temp)}
             maxTemp={convertTemp(data.forecast[0].max_temp)}
             feelsLike={convertTemp(data.current.feelslike_c)}
-            pm25={13}
             isStale={Boolean(data.current?.is_stale)}
           />
         </div>
@@ -505,8 +504,9 @@ export default function Dashboard() {
 
         {/* Weather Details */}
         <div className="lg:col-span-5 h-full">
-          {/* 8 Compact Glass Metric Details */}
+          {/* 8 Compact Glass Metric Details + City Air Quality Summary */}
           <WeatherDetailsGrid
+            locationName={currentLocationName}
             feelsLike={convertTemp(data.current.feelslike_c)}
             tempUnit={tempUnitSymbol}
             humidity={data.current.humidity}

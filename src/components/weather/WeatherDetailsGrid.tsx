@@ -7,8 +7,11 @@ import {
   Gauge, 
   CloudRain, 
   Thermometer, 
-  Compass 
+  Compass,
+  Activity,
+  ShieldCheck
 } from 'lucide-react';
+import { getCityAQI } from '../../utils/airQuality';
 
 interface WeatherDetailsGridProps {
   feelsLike: number | string;
@@ -21,6 +24,8 @@ interface WeatherDetailsGridProps {
   pressureMb: number;
   precipMm?: number;
   rainProbability?: number;
+  aqi?: number;
+  locationName?: string;
   className?: string;
 }
 
@@ -35,8 +40,11 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
   pressureMb,
   precipMm = 0.0,
   rainProbability = 10,
+  aqi,
+  locationName,
   className = '',
 }) => {
+  const aqiInfo = getCityAQI(locationName, typeof aqi === 'number' ? aqi : undefined);
   const getUVDescription = (uv: number) => {
     if (uv <= 2) return 'Low';
     if (uv <= 5) return 'Moderate';
@@ -144,6 +152,31 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Integrated City Air Quality Summary Pill Banner */}
+      <div className="mt-4 pt-3.5 border-t border-white/10 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className={`p-1.5 rounded-xl ${aqiInfo.badgeBg} border ${aqiInfo.badgeBorder} shrink-0`}>
+            <Activity className={`w-4 h-4 ${aqiInfo.textColor}`} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-extrabold text-white">City Air Quality</span>
+              <span className={`px-2 py-0.2 rounded-full text-[10px] font-extrabold ${aqiInfo.badgeBg} ${aqiInfo.textColor} border ${aqiInfo.badgeBorder}`}>
+                AQI {aqiInfo.score} • {aqiInfo.label}
+              </span>
+            </div>
+            <p className="text-[10px] text-white/65 truncate mt-0.5">
+              PM 2.5: {aqiInfo.pm25} µg/m³ · PM 10: {aqiInfo.pm10} µg/m³
+            </p>
+          </div>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-1 text-[11px] text-white/75 font-medium shrink-0">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+          <span>{aqiInfo.category === 'good' || aqiInfo.category === 'moderate' ? 'Safe outdoors' : 'Caution outdoors'}</span>
         </div>
       </div>
     </div>
