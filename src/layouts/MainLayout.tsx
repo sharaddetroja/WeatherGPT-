@@ -27,10 +27,10 @@ export default function MainLayout() {
         <Navbar />
         <NotificationToast />
         <main className={cn(
-          "flex-1 w-full mx-auto",
+          "flex-1 w-full mx-auto max-w-7xl 2xl:max-w-[1600px]",
           isAssistantPage 
             ? "h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] p-2 md:p-3 overflow-hidden flex flex-col" 
-            : "overflow-x-hidden px-2 sm:px-3 lg:px-4 py-4 sm:py-6"
+            : "overflow-x-hidden px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6"
         )}>
           <Outlet />
         </main>

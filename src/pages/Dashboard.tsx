@@ -446,7 +446,7 @@ export default function Dashboard() {
       {/* ===================================================================== */}
       {/* ROW 2: TIMELINE (7-DAY FORECAST / LAST 7 DAYS HISTORY) & METRICS      */}
       {/* ===================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
         
         {/* 7-Day Forecast or Past 7 Days History */}
         <div className="lg:col-span-7 h-full">

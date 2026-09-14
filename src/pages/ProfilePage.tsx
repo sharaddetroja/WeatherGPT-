@@ -135,7 +135,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Preferences & Notifications Cards */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Preferences Card */}
         <Card>
           <CardHeader>
@@ -291,8 +291,8 @@ export default function ProfilePage() {
 
       {/* Interactive Edit Profile Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="glass-panel text-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-3 xs:p-4 animate-in fade-in duration-200">
+          <div className="glass-panel text-white rounded-2xl shadow-2xl w-full max-w-md p-4 sm:p-6 space-y-4 sm:space-y-5 animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">

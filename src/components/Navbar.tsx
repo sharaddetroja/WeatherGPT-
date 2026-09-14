@@ -61,7 +61,7 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/15 bg-white/10 backdrop-blur-xl text-white shadow-xs">
-      <div className="flex h-16 items-center px-2 sm:px-4 lg:px-6 w-full mx-auto">
+      <div className="flex h-16 items-center px-3 xs:px-4 sm:px-6 lg:px-8 w-full max-w-7xl 2xl:max-w-[1600px] mx-auto">
         <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
           <div className="w-8 h-8 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center text-white shadow-xs backdrop-blur-md">
             <CloudRain className="h-4 h-4 text-sky-200" />
@@ -71,8 +71,8 @@ export default function Navbar() {
           </span>
         </Link>
         
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center ml-6 space-x-1">
+        {/* Desktop & Tablet Nav */}
+        <div className="hidden md:flex items-center ml-4 lg:ml-6 space-x-0.5 lg:space-x-1">
           {mainNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -80,7 +80,7 @@ export default function Navbar() {
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  "relative px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex-shrink-0",
+                  "relative px-2.5 lg:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex-shrink-0",
                   isActive 
                     ? "bg-white/20 text-white border border-white/25 shadow-xs" 
                     : "text-white/75 hover:text-white hover:bg-white/10"

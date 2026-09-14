@@ -100,9 +100,9 @@ const AuthPage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="max-w-sm w-full z-10"
+        className="max-w-md w-full z-10"
       >
-        <div className="glass-panel rounded-3xl shadow-2xl overflow-hidden p-8 text-white">
+        <div className="glass-panel rounded-3xl shadow-2xl overflow-hidden p-5 xs:p-6 sm:p-8 text-white">
           <div className="flex flex-col items-center justify-center mb-8">
             <motion.div 
               initial={{ scale: 0.8 }}

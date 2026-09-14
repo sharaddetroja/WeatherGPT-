@@ -9,26 +9,26 @@ export default function LanguageSelectionPage() {
   return (
     <div className="space-y-8 pb-12 animate-in fade-in duration-400">
       {/* Banner */}
-      <div className="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-primary via-blue-600 to-indigo-700 text-white shadow-2xl relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="p-4 xs:p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-primary via-blue-600 to-indigo-700 text-white shadow-2xl relative overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
             <div className="flex items-center gap-2 text-amber-300 font-bold text-xs uppercase tracking-wider mb-2">
               <Globe2 className="w-4 h-4 animate-spin" style={{ animationDuration: '12s' }} />
               <span>Multi-Lingual Portal Settings</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
+            <h1 className="text-xl xs:text-2xl sm:text-4xl font-black tracking-tight">
               {t('select_language_title', 'Select Your Site Language')}
             </h1>
-            <p className="text-sm text-primary-foreground/90 mt-2 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-primary-foreground/90 mt-2 max-w-2xl leading-relaxed">
               {t('select_language_subtitle', 'Choose your preferred language to translate the entire WeatherGPT portal interface, menus, AI assistant, and weather advisories.')}
             </p>
           </div>
 
-          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20">
-            <span className="text-3xl">{currentLang.flag}</span>
+          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl border border-white/20 w-full sm:w-auto">
+            <span className="text-2xl sm:text-3xl">{currentLang.flag}</span>
             <div>
               <div className="text-[10px] text-white/80 font-bold uppercase">{t('active_language', 'Active Language')}</div>
-              <div className="text-sm font-extrabold">{currentLang.nativeName} ({currentLang.name})</div>
+              <div className="text-xs sm:text-sm font-extrabold">{currentLang.nativeName} ({currentLang.name})</div>
             </div>
           </div>
         </div>
@@ -36,12 +36,12 @@ export default function LanguageSelectionPage() {
 
       {/* Grid of Language Options */}
       <div className="space-y-4">
-        <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
+        <h3 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
           <Languages className="w-4 h-4 text-primary" />
           <span>Available Site Languages (ભાષા પસંદ કરો):</span>
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 xs:gap-4">
           {SITE_LANGUAGES.map((lang) => {
             const isSelected = currentLang.code === lang.code;
             return (
