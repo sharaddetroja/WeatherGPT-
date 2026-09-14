@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { askWeatherGPT, getUserLocation, analyzeWeatherLens } from '../services/weatherGptApi';
 import type { WeatherLensResponse } from '../services/weatherGptApi';
+import { detectLanguage } from '../pages/VoiceAssistantPage';
 import { Send, Mic, MicOff, Sparkles, X, Bot, User, Maximize2, Loader2, Edit2, Copy, Camera, Image as ImageIcon, ChevronDown, Share2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useUserProfile } from '../hooks/useUserProfile';
@@ -226,9 +227,12 @@ export default function ChatWindow() {
       const loc = await getUserLocation();
       const locationStr = loc ? `${loc.latitude},${loc.longitude}` : 'Unknown';
 
+      // Automatically detect language from user's query text
+      const detectedLang = detectLanguage(q);
+
       if (currentImage) {
         // AI Sky Camera Mode
-        const res = await analyzeWeatherLens(currentImage, q, locationStr);
+        const res = await analyzeWeatherLens(currentImage, q, locationStr, detectedLang);
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
@@ -236,8 +240,8 @@ export default function ChatWindow() {
           lensData: res
         }]);
       } else {
-        // Standard Ask Mode - sends directly to /api/ask with selected UI language
-        const res = await askWeatherGPT({ question: q, location: loc, language: currentLang?.code });
+        // Standard Ask Mode - sends directly to /api/ask with auto-detected query language
+        const res = await askWeatherGPT({ question: q, location: loc, language: detectedLang });
         let replyText = res.answer;
       if (!replyText && res.error) {
         replyText = `⚠️ **Error**: ${typeof res.error === 'string' ? res.error : res.error.message}`;

@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useUserProfile } from '../hooks/useUserProfile';
-import { useLanguage, SITE_LANGUAGES } from '../hooks/useLanguage';
 import { AIVoiceOrb3D } from '../components/3d/AIVoiceOrb3D';
 
 // Supported Languages for Voice & Text
@@ -374,13 +373,8 @@ export default function VoiceAssistantPage() {
     }
   }, [sessions, currentUserEmail]);
 
-  const { setLanguage: setGlobalLanguage } = useLanguage();
-
-  // Selected Language: Default to 'auto' (Auto Detect) on initial load per requirements
-  const [selectedLang, setSelectedLang] = useState<LanguageOption>(() => {
-    return SUPPORTED_LANGUAGES[0]; // 'auto' is the first entry
-  });
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  // Selected Language: Defaults to 'auto' (Auto-Detect multilingual)
+  const selectedLang = SUPPORTED_LANGUAGES[0];
 
   // Sidebar & Layout state
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -1088,8 +1082,9 @@ export default function VoiceAssistantPage() {
     const messageContent = (textToSend || input).trim();
     if ((!messageContent && !previewImage) || isTyping) return;
 
-    // Keep selectedLang as 'auto' if chosen, while using detected language for message tagging
-    const effectiveLangCode = selectedLang.code === 'auto' ? detectLanguage(messageContent) : selectedLang.code;
+    // Automatic Language Detection: Detect the language of the user's input text dynamically
+    const detectedLangCode = detectLanguage(messageContent);
+    const effectiveLangCode = detectedLangCode || 'en';
 
     const currentImage = previewImage;
     const userMessage: ChatMessage = {
@@ -1134,7 +1129,7 @@ export default function VoiceAssistantPage() {
     let aiLensData: import('../services/weatherGptApi').WeatherLensResponse | undefined = undefined;
 
     try {
-      // Call live WeatherGPT backend API
+      // Call live WeatherGPT backend API with auto/detected language
       const loc = await getUserLocation();
       const locationStr = loc ? `${loc.latitude},${loc.longitude}` : 'Unknown';
 
@@ -1146,7 +1141,7 @@ export default function VoiceAssistantPage() {
         const apiRes = await askWeatherGPT({
           question: messageContent,
           location: loc,
-          language: selectedLang.code === 'auto' ? 'auto' : selectedLang.code
+          language: effectiveLangCode
         });
         
         if (apiRes.answer) {
@@ -1414,43 +1409,14 @@ export default function VoiceAssistantPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Language Dropdown in Header */}
-            <div className="relative">
-              <button
-                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 hover:bg-muted rounded-xl text-xs font-bold transition-colors cursor-pointer"
-              >
-                <span>{selectedLang.flag}</span>
-                <span className="hidden sm:inline">{selectedLang.name}</span>
-                <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-              {langDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-56 glass-panel text-white border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50">
-                  <div className="p-1 max-h-64 overflow-y-auto">
-                    {SUPPORTED_LANGUAGES.map((l) => (
-                      <button
-                        key={l.code}
-                        onClick={() => {
-                          setSelectedLang(l);
-                          const globalMatch = SITE_LANGUAGES.find(g => g.code === l.code);
-                          if (globalMatch) setGlobalLanguage(globalMatch);
-                          setLangDropdownOpen(false);
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer text-left",
-                          selectedLang.code === l.code ? "bg-primary/10 text-primary" : "hover:bg-muted text-foreground"
-                        )}
-                      >
-                        <span className="text-base">{l.flag}</span>
-                        <div className="flex flex-col">
-                          <span>{l.nativeName}</span>
-                          <span className="text-[10px] text-muted-foreground opacity-70">{l.name}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+            {/* Auto-Detect Language Pill Indicator */}
+            <div 
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 border border-border/50 rounded-xl text-xs font-semibold text-muted-foreground shadow-xs select-none"
+              title="Auto-Detect Language: WeatherGPT automatically detects the language you speak or type in, and responds in that same language."
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[11px] font-bold text-foreground">Auto-Detect</span>
+              <span className="text-[10px] opacity-70 hidden sm:inline">• Multilingual</span>
             </div>
 
             <button

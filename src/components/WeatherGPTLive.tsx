@@ -16,6 +16,7 @@ import {
   Check
 } from 'lucide-react';
 import { askWeatherGPT, getUserLocation, type AskApiResponse } from '../services/weatherGptApi';
+import { detectLanguage } from '../pages/VoiceAssistantPage';
 import { cn } from '../utils/cn';
 import { useLanguage } from '../hooks/useLanguage';
 
@@ -50,10 +51,12 @@ export function WeatherGPTLive({ className, defaultQuestion = '' }: WeatherGPTLi
     try {
       // Try fetching location silently
       const loc = await getUserLocation();
+      const detectedLang = detectLanguage(q);
       
       const res = await askWeatherGPT({
         question: q,
         location: loc,
+        language: detectedLang,
       });
 
       if (res.success && res.answer) {

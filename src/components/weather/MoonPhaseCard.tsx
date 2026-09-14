@@ -24,10 +24,10 @@ export const MoonPhaseCard: React.FC<MoonPhaseCardProps> = ({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.05 }}
-      className={`relative select-none overflow-hidden rounded-3xl p-5 sm:p-6 text-white border border-white/15 bg-gradient-to-b from-[#244353]/90 via-[#1c3846]/90 to-[#142d3a]/90 backdrop-blur-xl shadow-xl flex flex-col justify-between ${className}`}
+      className={`glass-panel rounded-3xl p-5 sm:p-6 text-white border border-white/20 shadow-2xl backdrop-blur-2xl relative select-none overflow-hidden flex flex-col justify-between ${className}`}
     >
       {/* Background Moon Glow */}
-      <div className="absolute top-4 left-6 w-36 h-36 bg-sky-200/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute top-4 left-6 w-36 h-36 bg-sky-300/15 rounded-full blur-2xl pointer-events-none" />
 
       {/* Main Content Body */}
       <div className="flex items-center justify-between gap-4 py-1">

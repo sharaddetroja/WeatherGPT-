@@ -13,6 +13,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { askWeatherGPT, type AskApiResponse } from '../../services/weatherGptApi';
+import { detectLanguage } from '../../pages/VoiceAssistantPage';
 
 interface WeatherGPTAssistantGlassProps {
   currentLocationName?: string;
@@ -45,7 +46,8 @@ export const WeatherGPTAssistantGlass: React.FC<WeatherGPTAssistantGlassProps> =
     setError(null);
 
     try {
-      const res = await askWeatherGPT(q);
+      const detectedLang = detectLanguage(q);
+      const res = await askWeatherGPT({ question: q, language: detectedLang });
       if (res.success && res.answer) {
         setResponse(res);
       } else {

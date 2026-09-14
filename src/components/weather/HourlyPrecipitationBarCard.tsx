@@ -49,15 +49,15 @@ export const HourlyPrecipitationBarCard: React.FC<HourlyPrecipitationBarCardProp
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className={`relative select-none overflow-hidden rounded-3xl p-5 sm:p-6 text-white border border-white/15 bg-gradient-to-b from-[#244353]/90 via-[#1c3846]/90 to-[#142d3a]/90 backdrop-blur-xl shadow-xl flex flex-col justify-between ${className}`}
+      className={`glass-panel rounded-3xl p-5 sm:p-6 text-white border border-white/20 shadow-2xl backdrop-blur-2xl relative select-none overflow-hidden flex flex-col justify-between ${className}`}
     >
-      {/* Background Subtle Gradient Glow */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Background Subtle Ambient Sky Glow */}
+      <div className="absolute top-0 right-0 w-48 h-48 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Header Times Row */}
-      <div className="grid grid-cols-6 text-center text-[11px] sm:text-xs md:text-sm font-medium text-white/85 tracking-tight border-b border-white/10 pb-3">
+      <div className="grid grid-cols-6 text-center text-[11px] sm:text-xs md:text-sm font-semibold text-white/90 tracking-tight border-b border-white/10 pb-3">
         {items.map((item, idx) => (
-          <div key={idx} className="truncate px-0.5 font-semibold">
+          <div key={idx} className="truncate px-0.5">
             {item.timeLabel}
           </div>
         ))}
@@ -93,12 +93,12 @@ export const HourlyPrecipitationBarCard: React.FC<HourlyPrecipitationBarCardProp
                   initial={{ height: 0 }}
                   animate={{ height: `${heightPercent}%` }}
                   transition={{ duration: 0.6, delay: idx * 0.08, ease: 'easeOut' }}
-                  className="w-full max-w-[56px] rounded-t-lg sm:rounded-t-xl bg-gradient-to-t from-[#2a6882]/70 via-[#459ab5]/85 to-[#87d3e6]/95 border-t border-x border-sky-200/40 relative shadow-sm group-hover:brightness-110 transition-all cursor-pointer"
+                  className="w-full max-w-[56px] rounded-t-lg sm:rounded-t-xl bg-gradient-to-t from-[#1d4b82]/80 via-[#2575b8]/90 to-[#5bb2ee] border-t border-x border-sky-300/40 relative shadow-md group-hover:brightness-115 transition-all cursor-pointer"
                 >
                   {/* Subtle Curved Liquid Meniscus Cap */}
-                  <div className="absolute -top-[2px] left-0 right-0 h-[4px] rounded-full bg-white/75 blur-[0.5px]" />
+                  <div className="absolute -top-[2px] left-0 right-0 h-[4px] rounded-full bg-sky-100/90 blur-[0.5px]" />
                   {/* Vertical Rain Strands Shimmer */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/25 to-transparent opacity-60 rounded-t-lg" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-sky-200/10 to-transparent opacity-70 rounded-t-lg" />
                 </motion.div>
               </div>
             );
