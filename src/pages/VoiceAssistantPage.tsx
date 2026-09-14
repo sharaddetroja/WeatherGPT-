@@ -715,7 +715,7 @@ export default function VoiceAssistantPage() {
     // 2. Check for browser Web Speech Recognition support
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Speech Recognition is not supported by your browser. Please use Google Chrome, Microsoft Edge, or Safari.');
+      alert("Your browser does not support voice input. Please use Chrome or Edge.");
       setIsSpeechRecognitionActive(false);
       setVoiceState('idle');
       return;
@@ -749,8 +749,10 @@ export default function VoiceAssistantPage() {
         speechLang = 'gu-IN';
       } else if (currLang.code === 'hi') {
         speechLang = 'hi-IN';
+      } else if (currLang.code === 'en') {
+        speechLang = 'en-IN';
       } else if (currLang.code === 'auto') {
-        // Auto: default to Indian English / Hindi context
+        // Auto: default to Indian English context
         speechLang = 'en-IN';
       } else if (currLang.speechLang) {
         speechLang = currLang.speechLang;

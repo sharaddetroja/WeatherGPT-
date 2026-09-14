@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { askWeatherGPT, getUserLocation, analyzeWeatherLens } from '../services/weatherGptApi';
 import type { WeatherLensResponse } from '../services/weatherGptApi';
-import { Send, Mic, Sparkles, X, Bot, User, Maximize2, Loader2, Edit2, Copy, Camera, Image as ImageIcon, ChevronDown, Share2 } from 'lucide-react';
+import { Send, Mic, MicOff, Sparkles, X, Bot, User, Maximize2, Loader2, Edit2, Copy, Camera, Image as ImageIcon, ChevronDown, Share2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useUserProfile } from '../hooks/useUserProfile';
 
@@ -18,10 +18,23 @@ interface Message {
   explainWhy?: any;
 }
 
+// Map UI language code to speech recognition language tags
+const getSpeechRecognitionLang = (langCode?: string): string => {
+  switch (langCode) {
+    case 'hi':
+      return 'hi-IN';
+    case 'gu':
+      return 'gu-IN';
+    case 'en':
+    default:
+      return 'en-IN';
+  }
+};
+
 export default function ChatWindow() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useLanguage();
+  const { t, currentLang } = useLanguage();
   const { isAuthenticated } = useUserProfile();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -30,6 +43,13 @@ export default function ChatWindow() {
   const [showCameraOptions, setShowCameraOptions] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // Native Web Speech Recognition state
+  const [isListening, setIsListening] = useState(false);
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const recognitionRef = useRef<any>(null);
+  const capturedTextRef = useRef('');
+  const hasSubmittedRef = useRef(false);
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -49,6 +69,124 @@ export default function ChatWindow() {
     scrollToBottom();
   }, [messages, isTyping]);
 
+  // Clean up speech recognition on component unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch {}
+      }
+    };
+  }, []);
+
+  // Stop listening when chat drawer closes
+  useEffect(() => {
+    if (!isOpen && isListening) {
+      stopListening();
+    }
+  }, [isOpen, isListening]);
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.warn('Error stopping speech recognition:', e);
+      }
+    }
+    setIsListening(false);
+  };
+
+  const startListening = () => {
+    // 1. Browser support validation
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Your browser does not support voice input. Please use Chrome or Edge.");
+      return;
+    }
+
+    // 2. Clean up any previous recognition instance
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {
+        console.warn('Error aborting previous speech recognition:', e);
+      }
+      recognitionRef.current = null;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      recognition.lang = getSpeechRecognitionLang(currentLang?.code);
+
+      capturedTextRef.current = '';
+      hasSubmittedRef.current = false;
+      setLiveTranscript('');
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        let interimText = '';
+        let finalText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcriptChunk = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalText += transcriptChunk;
+          } else {
+            interimText += transcriptChunk;
+          }
+        }
+        const combined = finalText || interimText;
+        if (combined) {
+          capturedTextRef.current = combined;
+          setLiveTranscript(combined);
+          setInput(combined);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('Speech recognition error:', event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed') {
+          alert('Microphone access was denied. Please allow microphone permissions in your browser settings.');
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        const queryText = (capturedTextRef.current || input).trim();
+        if (queryText && !hasSubmittedRef.current) {
+          hasSubmittedRef.current = true;
+          setInput(queryText);
+          handleSend(queryText);
+        }
+      };
+
+      recognition.start();
+    } catch (err: any) {
+      console.error('Failed to start speech recognition:', err);
+      setIsListening(false);
+      if (err.name === 'NotAllowedError') {
+        alert('Microphone access was denied. Please allow microphone permissions in your browser settings.');
+      }
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -64,6 +202,10 @@ export default function ChatWindow() {
   };
 
   const handleSend = async (queryOverride?: string) => {
+    if (isListening) {
+      stopListening();
+    }
+
     const q = (queryOverride || input).trim();
     if ((!q && !previewImage) || isTyping) return;
     
@@ -94,8 +236,8 @@ export default function ChatWindow() {
           lensData: res
         }]);
       } else {
-        // Standard Ask Mode
-        const res = await askWeatherGPT({ question: q, location: loc });
+        // Standard Ask Mode - sends directly to /api/ask with selected UI language
+        const res = await askWeatherGPT({ question: q, location: loc, language: currentLang?.code });
         let replyText = res.answer;
       if (!replyText && res.error) {
         replyText = `⚠️ **Error**: ${typeof res.error === 'string' ? res.error : res.error.message}`;
@@ -377,6 +519,18 @@ export default function ChatWindow() {
             ))}
           </div>
         )}
+
+        {/* Live Voice Dictation Feedback Banner */}
+        {isListening && (
+          <div className="flex items-center gap-2 px-3 py-1.5 mb-2 bg-primary/10 border border-primary/30 rounded-xl text-xs text-primary animate-in fade-in slide-in-from-bottom-1 duration-200">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+            <span className="font-bold">Listening...</span>
+            <span className="text-foreground font-medium truncate max-w-[220px]">
+              {liveTranscript || 'Speak now...'}
+            </span>
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center bg-muted rounded-full px-4 py-2 border focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
             <button 
@@ -391,11 +545,21 @@ export default function ChatWindow() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={previewImage ? "Ask about this photo..." : t('chat_placeholder')}
+              placeholder={isListening ? "Listening..." : (previewImage ? "Ask about this photo..." : t('chat_placeholder'))}
               className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground"
             />
-            <button className="p-1 hover:text-primary transition-colors text-muted-foreground cursor-pointer">
-              <Mic className="w-4 h-4" />
+            <button 
+              type="button"
+              onClick={toggleListening}
+              className={cn(
+                "p-1.5 rounded-full transition-all cursor-pointer",
+                isListening 
+                  ? "bg-red-500 text-white animate-pulse shadow-md shadow-red-500/30" 
+                  : "hover:text-primary text-muted-foreground hover:bg-primary/10"
+              )}
+              title={isListening ? "Stop listening" : "Voice input"}
+            >
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
           </div>
           <button 
