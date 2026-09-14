@@ -144,26 +144,26 @@ const AuthPage = () => {
 
                 <button
                   onClick={() => setShowEmailForm(true)}
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 glass-pill rounded-xl text-sm font-semibold transition-all hover:bg-white/15 text-white"
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 glass-pill rounded-xl text-sm font-semibold transition-all hover:bg-white/10 text-white"
                 >
-                  <Mail className="w-5 h-5 text-white/90" />
+                  <Mail className="w-5 h-5 text-foreground" />
                   Continue with Email
                 </button>
 
                 <div className="relative py-4 flex items-center">
-                  <div className="flex-grow border-t border-white/20"></div>
-                  <span className="flex-shrink-0 mx-4 text-xs text-white/70 uppercase tracking-widest font-bold">Or</span>
-                  <div className="flex-grow border-t border-white/20"></div>
+                  <div className="flex-grow border-t border-border"></div>
+                  <span className="flex-shrink-0 mx-4 text-xs text-muted-foreground uppercase tracking-widest font-semibold">Or</span>
+                  <div className="flex-grow border-t border-border"></div>
                 </div>
 
                 <button
                   onClick={handleGuest}
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl text-sm font-bold bg-white text-[#1D4ED8] hover:bg-white/90 shadow-lg transition-all"
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 shadow-md rounded-xl text-sm font-semibold transition-all"
                 >
                   Continue as Guest
                 </button>
-                <p className="text-center text-xs text-white/70 mt-2">
-                  (Standard weather dashboard, AI assistant requires login)
+                <p className="text-center text-xs text-muted-foreground mt-2">
+                  (Weather only, AI disabled)
                 </p>
               </motion.div>
             ) : (
@@ -175,9 +175,9 @@ const AuthPage = () => {
               >
                 <button 
                   onClick={() => setShowEmailForm(false)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-white/70 hover:text-white mb-4 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground mb-4 transition-colors"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5" /> Back to Login Options
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back
                 </button>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -185,13 +185,13 @@ const AuthPage = () => {
                     <div>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <User className="h-4 w-4 text-white/60" />
+                          <User className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <input
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm text-white placeholder-white/40"
+                          className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm"
                           placeholder="Full Name"
                           required={!isLogin}
                         />
@@ -202,13 +202,13 @@ const AuthPage = () => {
                   <div>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail className="h-4 w-4 text-white/60" />
+                        <Mail className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm text-white placeholder-white/40"
+                        className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm"
                         placeholder="Email Address"
                         required
                       />
@@ -218,13 +218,13 @@ const AuthPage = () => {
                   <div>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Lock className="h-4 w-4 text-white/60" />
+                        <Lock className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm text-white placeholder-white/40"
+                        className="block w-full pl-9 pr-3 py-2.5 glass-input rounded-xl transition-all sm:text-sm"
                         placeholder="Password"
                         required
                       />
@@ -234,15 +234,15 @@ const AuthPage = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl shadow-lg text-sm font-extrabold text-[#1D4ED8] bg-white hover:bg-white/95 transition-all mt-6 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="w-full flex justify-center items-center gap-2 py-2.5 px-4 rounded-xl shadow-md text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-all mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin text-[#1D4ED8]" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         {isLogin ? 'Signing In...' : 'Signing Up...'}
                       </>
                     ) : (
-                      isLogin ? 'Sign In' : 'Create Account'
+                      isLogin ? 'Sign In' : 'Sign Up'
                     )}
                   </button>
                 </form>
@@ -250,7 +250,7 @@ const AuthPage = () => {
                 <div className="mt-6 text-center">
                   <button
                     onClick={() => setIsLogin(!isLogin)}
-                    className="text-xs sm:text-sm font-semibold text-white/90 hover:text-white underline-offset-4 hover:underline transition-colors focus:outline-none cursor-pointer"
+                    className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors focus:outline-none"
                   >
                     {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
                   </button>
