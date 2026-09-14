@@ -391,24 +391,24 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel p-3.5 xs:p-4 sm:p-5 rounded-3xl border border-sky-400/30 bg-gradient-to-r from-sky-900/40 via-blue-900/30 to-indigo-900/40 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 text-white shadow-xl cursor-pointer hover:border-sky-400/50 transition-all"
+        className="group glass-panel relative overflow-hidden p-3.5 xs:p-4 sm:p-5 rounded-2xl xs:rounded-3xl border border-sky-400/30 bg-gradient-to-r from-sky-900/40 via-blue-900/30 to-indigo-900/40 backdrop-blur-xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 xs:gap-4 text-white shadow-xl cursor-pointer hover:border-sky-400/50 hover:shadow-sky-500/10 transition-all duration-300"
         onClick={() => navigate('/travel')}
       >
-        <div className="flex items-center gap-3 xs:gap-3.5">
-          <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shrink-0 shadow-xs">
-            <Compass className="w-5 h-5 xs:w-6 xs:h-6 animate-pulse" />
+        <div className="flex items-center gap-3 xs:gap-3.5 min-w-0">
+          <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-xl xs:rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shrink-0 shadow-xs group-hover:scale-105 transition-transform duration-300">
+            <Compass className="w-5 h-5 xs:w-5.5 xs:h-5.5 sm:w-6 sm:h-6 animate-pulse text-sky-300" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-400/25 text-sky-200 border border-sky-400/30 uppercase tracking-wider">
-                New Feature
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[9px] xs:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-400/25 text-sky-200 border border-sky-400/30 uppercase tracking-wider shrink-0">
+                Route Weather
               </span>
-              <h3 className="text-sm xs:text-base sm:text-lg font-extrabold text-white tracking-tight">
+              <h3 className="text-xs xs:text-sm sm:text-base font-extrabold text-white tracking-tight truncate">
                 Source ➔ Destination Weather
               </h3>
             </div>
-            <p className="text-[11px] xs:text-xs text-white/80 mt-0.5 leading-relaxed">
-              Plan your travel corridor with live arrival-time weather forecasts along Indian routes.
+            <p className="text-[11px] xs:text-xs text-white/75 mt-0.5 line-clamp-2 sm:line-clamp-1 leading-relaxed">
+              Live arrival-time forecasts, highway alerts & route telemetry along your travel corridor.
             </p>
           </div>
         </div>
@@ -417,10 +417,10 @@ export default function Dashboard() {
             e.stopPropagation();
             navigate('/travel');
           }}
-          className="w-full sm:w-auto px-4 py-2 bg-white text-slate-900 font-extrabold rounded-2xl text-xs hover:bg-white/90 transition-all cursor-pointer shrink-0 shadow-md flex items-center justify-center gap-1.5"
+          className="w-full md:w-auto px-4 py-2.5 xs:py-2 bg-white/95 hover:bg-white text-slate-900 font-extrabold rounded-xl xs:rounded-2xl text-xs hover:shadow-lg transition-all cursor-pointer shrink-0 shadow-md flex items-center justify-center gap-1.5 active:scale-[0.98]"
         >
           <span>View Route Weather</span>
-          <span className="text-sm">→</span>
+          <span className="text-sm font-bold group-hover:translate-x-0.5 transition-transform">→</span>
         </button>
       </motion.div>
 

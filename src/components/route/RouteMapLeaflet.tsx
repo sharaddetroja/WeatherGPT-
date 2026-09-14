@@ -69,7 +69,7 @@ export const RouteMapLeaflet: React.FC<RouteMapLeafletProps> = ({ route, places 
     : [22.8004, 70.8862];
 
   return (
-    <div className="w-full h-80 sm:h-96 rounded-3xl overflow-hidden border border-white/20 shadow-2xl relative z-10">
+    <div className="w-full h-72 xs:h-80 sm:h-96 md:h-[420px] rounded-2xl xs:rounded-3xl overflow-hidden border border-white/20 shadow-2xl relative z-10">
       <MapContainer
         center={defaultCenter}
         zoom={8}

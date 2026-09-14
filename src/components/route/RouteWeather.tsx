@@ -185,32 +185,33 @@ export function RouteWeather({
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel relative overflow-hidden p-6 sm:p-8 rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl bg-slate-900/50"
+        className="glass-panel relative overflow-hidden p-4 xs:p-5 sm:p-7 rounded-2xl xs:rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl bg-slate-900/60"
       >
         <div className="absolute -right-12 -top-12 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="relative z-10 space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
-            <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-sky-300">
-              <Navigation className="w-4 h-4 text-sky-400" />
-              <span>Highway & Trip Safety Planner</span>
+        <div className="relative z-10 space-y-4 xs:space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/10 pb-3 xs:pb-4">
+            <div className="flex items-center gap-2 text-[11px] xs:text-xs font-extrabold uppercase tracking-wider text-sky-300">
+              <Navigation className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-sky-400" />
+              <span>Highway & Trip Safety Corridor</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-white/75 font-medium">
-              <Clock className="w-3.5 h-3.5 text-white/60" />
-              <span>Departure: <strong className="text-white font-bold">{formatDateTime(route.departureTimeIso)}</strong></span>
+            <div className="flex items-center gap-1.5 xs:gap-2 text-[11px] xs:text-xs text-white/80 font-medium">
+              <Clock className="w-3.5 h-3.5 text-white/60 shrink-0" />
+              <span>Dep: <strong className="text-white font-bold">{formatDateTime(route.departureTimeIso)}</strong></span>
             </div>
           </div>
 
           {/* Main Source -> Destination Metrics Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6 py-2">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-1 xs:py-2">
+            
             {/* Source */}
-            <div className="flex items-center gap-3 xs:gap-3.5 w-full sm:w-auto">
-              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-xs">
-                <MapPin className="w-5 h-5 xs:w-6 xs:h-6 text-emerald-400" />
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-xl xs:rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-xs">
+                <MapPin className="w-5 h-5 xs:w-5.5 xs:h-5.5 sm:w-6 sm:h-6 text-emerald-400" />
               </div>
-              <div>
-                <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest block">SOURCE</span>
-                <h2 className="text-xl xs:text-2xl sm:text-3xl font-black text-white tracking-tight">{route.sourceName}</h2>
+              <div className="min-w-0 flex-1 md:flex-initial">
+                <span className="text-[9px] xs:text-[10px] font-bold text-emerald-300 uppercase tracking-widest block">SOURCE</span>
+                <h2 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight truncate">{route.sourceName}</h2>
                 <span className="text-[10px] xs:text-[11px] text-white/60 font-medium">
                   {route.sourceLat.toFixed(2)}°, {route.sourceLon.toFixed(2)}°
                 </span>
@@ -218,41 +219,42 @@ export function RouteWeather({
             </div>
 
             {/* Connecting Corridor Metric */}
-            <div className="flex-1 w-full sm:w-auto flex flex-col items-center justify-center px-2 sm:px-4">
-              <div className="flex items-center gap-2 sm:gap-3 text-xs font-bold text-sky-200 mb-2">
-                <span className="px-2.5 sm:px-3 py-1 rounded-full bg-white/10 border border-white/15 shadow-2xs text-[11px] sm:text-xs">
+            <div className="w-full md:flex-1 md:max-w-xs flex flex-col items-center justify-center px-1 sm:px-4 py-2 md:py-0">
+              <div className="flex items-center gap-2 text-xs font-bold text-sky-200 mb-2">
+                <span className="px-2.5 py-0.5 sm:py-1 rounded-full bg-white/10 border border-white/15 shadow-2xs text-[10px] xs:text-[11px] sm:text-xs font-semibold">
                   {route.distanceKm} km
                 </span>
-                <span>•</span>
-                <span className="px-2.5 sm:px-3 py-1 rounded-full bg-white/10 border border-white/15 shadow-2xs text-[11px] sm:text-xs">
+                <span className="text-white/40">•</span>
+                <span className="px-2.5 py-0.5 sm:py-1 rounded-full bg-white/10 border border-white/15 shadow-2xs text-[10px] xs:text-[11px] sm:text-xs font-semibold">
                   {formatDuration(route.durationMinutes)}
                 </span>
               </div>
 
               {/* Progress Line */}
               <div className="w-full relative flex items-center justify-between">
-                <div className="w-3 h-3 xs:w-3.5 xs:h-3.5 rounded-full bg-emerald-400 border-2 border-slate-900 z-10 shadow-xs" />
+                <div className="w-2.5 h-2.5 xs:w-3 xs:h-3 rounded-full bg-emerald-400 border-2 border-slate-900 z-10 shadow-xs shrink-0" />
                 <div className="h-1.5 flex-1 bg-gradient-to-r from-emerald-500 via-sky-400 to-rose-500 rounded-full mx-1 relative overflow-hidden">
                   <div className="absolute inset-0 bg-white/30 animate-pulse" />
                 </div>
-                <div className="w-3 h-3 xs:w-3.5 xs:h-3.5 rounded-full bg-rose-400 border-2 border-slate-900 z-10 shadow-xs" />
+                <div className="w-2.5 h-2.5 xs:w-3 xs:h-3 rounded-full bg-rose-400 border-2 border-slate-900 z-10 shadow-xs shrink-0" />
               </div>
-              <span className="text-[10px] text-white/50 font-medium mt-1">Planned Corridor Telemetry</span>
+              <span className="text-[9px] xs:text-[10px] text-white/50 font-medium mt-1">Planned Corridor Telemetry</span>
             </div>
 
             {/* Destination */}
-            <div className="flex items-center gap-3 xs:gap-3.5 w-full sm:w-auto justify-start sm:justify-end">
-              <div className="text-left sm:text-right order-2 sm:order-1">
-                <span className="text-[10px] font-bold text-rose-300 uppercase tracking-widest block">DESTINATION</span>
-                <h2 className="text-xl xs:text-2xl sm:text-3xl font-black text-white tracking-tight">{route.destinationName}</h2>
+            <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+              <div className="text-left md:text-right min-w-0 flex-1 md:flex-initial">
+                <span className="text-[9px] xs:text-[10px] font-bold text-rose-300 uppercase tracking-widest block">DESTINATION</span>
+                <h2 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight truncate">{route.destinationName}</h2>
                 <span className="text-[10px] xs:text-[11px] text-white/60 font-medium">
                   {route.destinationLat.toFixed(2)}°, {route.destinationLon.toFixed(2)}°
                 </span>
               </div>
-              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 order-1 sm:order-2 shadow-xs">
-                <MapPin className="w-5 h-5 xs:w-6 xs:h-6 text-rose-400" />
+              <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-xl xs:rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 shadow-xs">
+                <MapPin className="w-5 h-5 xs:w-5.5 xs:h-5.5 sm:w-6 sm:h-6 text-rose-400" />
               </div>
             </div>
+
           </div>
         </div>
       </motion.div>
@@ -475,73 +477,73 @@ export function RouteWeather({
 
                     {/* Main Weather Information Display */}
                     {weather ? (
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center pt-1">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-center pt-1">
                         
                         {/* Left: Condition Icon, Large Temp & Condition Text */}
-                        <div className="md:col-span-5 flex items-center gap-3.5">
-                          <div className="p-3 rounded-2xl bg-white/10 border border-white/15 shrink-0 shadow-xs">
+                        <div className="lg:col-span-5 flex items-center gap-3">
+                          <div className="p-2.5 xs:p-3 rounded-2xl bg-white/10 border border-white/15 shrink-0 shadow-xs">
                             {getWeatherIcon(weather.condition.text, weather.condition.icon)}
                           </div>
-                          <div>
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                          <div className="min-w-0">
+                            <div className="flex items-baseline gap-2 flex-wrap">
+                              <span className="text-xl xs:text-2xl sm:text-3xl font-black text-white tracking-tight">
                                 {convertTemp(weather.temperatureC)}{tempUnitSymbol}
                               </span>
                               {weather.feelsLikeC !== undefined && (
-                                <span className="text-xs text-white/60 font-medium">
+                                <span className="text-[11px] xs:text-xs text-white/60 font-medium">
                                   Feels like {convertTemp(weather.feelsLikeC)}{tempUnitSymbol}
                                 </span>
                               )}
                             </div>
-                            <span className="text-xs font-bold text-sky-200 block">
+                            <span className="text-xs font-bold text-sky-200 block truncate">
                               {weather.condition.text}
                             </span>
                           </div>
                         </div>
 
                         {/* Right: 4 Primary Metrics Grid (Humidity, Wind, Rain, Visibility) */}
-                        <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div className="lg:col-span-7 grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-4 gap-2">
                           
                           {/* Humidity */}
                           {weather.humidity !== undefined && (
-                            <div className="bg-white/5 px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
+                            <div className="bg-white/5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-white/10 flex items-center gap-2">
                               <Droplets className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                              <div>
+                              <div className="min-w-0">
                                 <span className="text-[9px] text-white/50 block font-medium">Humidity</span>
-                                <span className="text-xs font-bold text-white">{weather.humidity}%</span>
+                                <span className="text-xs font-bold text-white truncate block">{weather.humidity}%</span>
                               </div>
                             </div>
                           )}
 
                           {/* Wind */}
                           {weather.windSpeedKph !== undefined && (
-                            <div className="bg-white/5 px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
+                            <div className="bg-white/5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-white/10 flex items-center gap-2">
                               <Wind className="w-3.5 h-3.5 text-teal-300 shrink-0" />
-                              <div>
+                              <div className="min-w-0">
                                 <span className="text-[9px] text-white/50 block font-medium">Wind</span>
-                                <span className="text-xs font-bold text-white">{weather.windSpeedKph} km/h</span>
+                                <span className="text-xs font-bold text-white truncate block">{weather.windSpeedKph} km/h</span>
                               </div>
                             </div>
                           )}
 
                           {/* Rain Chance */}
                           {weather.rainProbability !== undefined && (
-                            <div className="bg-white/5 px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
+                            <div className="bg-white/5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-white/10 flex items-center gap-2">
                               <Umbrella className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                              <div>
-                                <span className="text-[9px] text-white/50 block font-medium">Rain Chance</span>
-                                <span className="text-xs font-bold text-amber-200">{weather.rainProbability}%</span>
+                              <div className="min-w-0">
+                                <span className="text-[9px] text-white/50 block font-medium">Rain</span>
+                                <span className="text-xs font-bold text-amber-200 truncate block">{weather.rainProbability}%</span>
                               </div>
                             </div>
                           )}
 
                           {/* Visibility */}
                           {weather.visibilityKm !== undefined && (
-                            <div className="bg-white/5 px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
+                            <div className="bg-white/5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-white/10 flex items-center gap-2">
                               <Eye className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                              <div>
+                              <div className="min-w-0">
                                 <span className="text-[9px] text-white/50 block font-medium">Visibility</span>
-                                <span className="text-xs font-bold text-white">{weather.visibilityKm} km</span>
+                                <span className="text-xs font-bold text-white truncate block">{weather.visibilityKm} km</span>
                               </div>
                             </div>
                           )}

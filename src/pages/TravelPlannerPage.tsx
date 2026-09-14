@@ -167,70 +167,88 @@ export default function TravelPlannerPage() {
     : rawBackendRouteWeatherResponse;
 
   return (
-    <div className="space-y-6 pb-12 animate-in fade-in duration-300">
+    <div className="space-y-4 xs:space-y-6 pb-12 animate-in fade-in duration-300">
       
       {/* Header Banner */}
-      <div className="p-4 xs:p-5 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-4 xs:p-5 sm:p-7 rounded-2xl xs:rounded-3xl bg-card border border-border/80 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="flex items-center gap-2 text-sky-400 font-bold text-xs uppercase tracking-wider mb-1">
-            <Car className="w-4 h-4" />
-            <span>Highway & Journey Weather</span>
+          <div className="inline-flex items-center gap-2 text-sky-400 font-bold text-[11px] xs:text-xs uppercase tracking-wider mb-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20">
+            <Car className="w-3.5 h-3.5" />
+            <span>Highway & Route Telemetry</span>
           </div>
-          <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold text-foreground">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-black text-foreground tracking-tight">
             {t('travel_title', 'Source ➔ Destination Weather')}
           </h1>
-          <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+          <p className="text-xs text-muted-foreground mt-1 max-w-xl leading-relaxed">
             {t('travel_subtitle', 'Live arrival-time weather forecasts, highway hazard alerts, and route telemetry along your travel corridor.')}
           </p>
         </div>
 
-        {/* Preset Quick Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full scrollbar-none sm:flex-wrap w-full md:w-auto">
-          {PRESET_ROUTES.map((preset, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                setSourceInput(preset.source);
-                setDestInput(preset.destination);
-                handleCalculateRoute(preset.source, preset.destination);
-              }}
-              className="px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted border border-border text-xs font-semibold text-foreground transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0"
-            >
-              {preset.label}
-            </button>
-          ))}
+        {/* Preset Quick Buttons with smooth horizontal scroll */}
+        <div className="w-full md:w-auto overflow-hidden">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5 md:hidden">
+            Popular Corridors:
+          </span>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full scrollbar-none md:flex-wrap">
+            {PRESET_ROUTES.map((preset, idx) => {
+              const isSelected = sourceInput.toLowerCase() === preset.source.toLowerCase() && destInput.toLowerCase() === preset.destination.toLowerCase();
+              return (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setSourceInput(preset.source);
+                    setDestInput(preset.destination);
+                    handleCalculateRoute(preset.source, preset.destination);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0 border ${
+                    isSelected
+                      ? 'bg-primary text-primary-foreground border-primary font-bold shadow-sm'
+                      : 'bg-muted/70 hover:bg-muted border-border/70 text-foreground hover:border-border'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Main Interactive Route Search Form Card */}
-      <div className="p-4 xs:p-5 sm:p-6 rounded-3xl bg-card border border-border shadow-lg space-y-4">
-        <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
-          <Navigation className="w-4 h-4 text-primary" />
-          <span>Plan Your Journey Weather</span>
-        </h2>
+      <div className="p-4 xs:p-5 sm:p-6 rounded-2xl xs:rounded-3xl bg-card border border-border/80 shadow-md space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs xs:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
+            <Navigation className="w-4 h-4 text-primary" />
+            <span>Plan Your Journey Weather</span>
+          </h2>
+          <span className="text-[10px] text-muted-foreground hidden sm:inline-block">
+            Auto-detects live route corridor & waypoints
+          </span>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
           
           {/* Source Input */}
           <div className="md:col-span-5 relative" ref={sourceRef}>
-            <label className="text-xs font-bold text-muted-foreground block mb-1.5">
-              Source Location
+            <label className="text-xs font-bold text-muted-foreground block mb-1.5 flex items-center justify-between">
+              <span>Source Location</span>
+              <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Start Point</span>
             </label>
             <div className="relative">
-              <MapPin className="w-4 h-4 text-emerald-500 absolute left-3 top-3" />
+              <MapPin className="w-4 h-4 text-emerald-500 absolute left-3 top-3 pointer-events-none" />
               <input
                 type="text"
                 placeholder="e.g. Morbi"
                 value={sourceInput}
                 onChange={e => handleSourceChange(e.target.value)}
                 onFocus={() => sourceSuggestions.length > 0 && setShowSourceDropdown(true)}
-                className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-2 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary outline-none"
+                className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-2.5 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-2xs"
               />
             </div>
 
             {/* Source Suggestions Dropdown */}
             {showSourceDropdown && (
-              <div className="absolute left-0 right-0 z-50 mt-1 bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in">
+              <div className="absolute left-0 right-0 z-50 mt-1 bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in max-h-56 overflow-y-auto">
                 {sourceSuggestions.map((cityName, idx) => (
                   <button
                     key={idx}
@@ -238,10 +256,10 @@ export default function TravelPlannerPage() {
                       setSourceInput(cityName);
                       setShowSourceDropdown(false);
                     }}
-                    className="w-full px-3 py-2 text-left text-xs font-semibold hover:bg-muted text-foreground flex items-center gap-2"
+                    className="w-full px-3.5 py-2.5 text-left text-xs font-semibold hover:bg-muted/80 text-foreground flex items-center gap-2.5 transition-colors cursor-pointer border-b border-border/40 last:border-0"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>{cityName}</span>
+                    <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span className="truncate">{cityName}</span>
                   </button>
                 ))}
               </div>
@@ -249,37 +267,39 @@ export default function TravelPlannerPage() {
           </div>
 
           {/* Swap Button */}
-          <div className="md:col-span-1 flex justify-center py-1 md:py-0">
+          <div className="md:col-span-1 flex justify-center py-0.5 md:py-0">
             <button
               onClick={handleSwap}
               type="button"
-              className="p-2.5 rounded-xl bg-muted hover:bg-muted/80 border border-border text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+              className="p-2.5 rounded-xl bg-muted/70 hover:bg-muted border border-border text-muted-foreground hover:text-foreground active:scale-95 transition-all cursor-pointer shadow-2xs"
               title="Swap Source and Destination"
+              aria-label="Swap Source and Destination"
             >
-              <ArrowLeftRight className="w-4 h-4" />
+              <ArrowLeftRight className="w-4 h-4 rotate-90 md:rotate-0" />
             </button>
           </div>
 
           {/* Destination Input */}
           <div className="md:col-span-4 relative" ref={destRef}>
-            <label className="text-xs font-bold text-muted-foreground block mb-1.5">
-              Destination Location
+            <label className="text-xs font-bold text-muted-foreground block mb-1.5 flex items-center justify-between">
+              <span>Destination Location</span>
+              <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider">Arrival Point</span>
             </label>
             <div className="relative">
-              <MapPin className="w-4 h-4 text-rose-500 absolute left-3 top-3" />
+              <MapPin className="w-4 h-4 text-rose-500 absolute left-3 top-3 pointer-events-none" />
               <input
                 type="text"
                 placeholder="e.g. Surat"
                 value={destInput}
                 onChange={e => handleDestChange(e.target.value)}
                 onFocus={() => destSuggestions.length > 0 && setShowDestDropdown(true)}
-                className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-2 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary outline-none"
+                className="w-full bg-background border border-border rounded-xl pl-9 pr-3 py-2.5 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-2xs"
               />
             </div>
 
             {/* Destination Suggestions Dropdown */}
             {showDestDropdown && (
-              <div className="absolute left-0 right-0 z-50 mt-1 bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in">
+              <div className="absolute left-0 right-0 z-50 mt-1 bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in max-h-56 overflow-y-auto">
                 {destSuggestions.map((cityName, idx) => (
                   <button
                     key={idx}
@@ -287,10 +307,10 @@ export default function TravelPlannerPage() {
                       setDestInput(cityName);
                       setShowDestDropdown(false);
                     }}
-                    className="w-full px-3 py-2 text-left text-xs font-semibold hover:bg-muted text-foreground flex items-center gap-2"
+                    className="w-full px-3.5 py-2.5 text-left text-xs font-semibold hover:bg-muted/80 text-foreground flex items-center gap-2.5 transition-colors cursor-pointer border-b border-border/40 last:border-0"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-rose-500" />
-                    <span>{cityName}</span>
+                    <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                    <span className="truncate">{cityName}</span>
                   </button>
                 ))}
               </div>
@@ -302,7 +322,7 @@ export default function TravelPlannerPage() {
             <button
               onClick={() => handleCalculateRoute()}
               disabled={loading}
-              className="w-full px-4 py-2 bg-primary text-primary-foreground font-extrabold text-xs sm:text-sm rounded-xl hover:bg-primary/90 transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 h-[38px]"
+              className="w-full px-4 py-2.5 bg-primary text-primary-foreground font-extrabold text-xs sm:text-sm rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 min-h-[42px]"
             >
               {loading ? (
                 <>
@@ -312,7 +332,7 @@ export default function TravelPlannerPage() {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
-                  <span className="truncate">Check Route</span>
+                  <span className="truncate font-bold">Check Route</span>
                 </>
               )}
             </button>
@@ -321,7 +341,7 @@ export default function TravelPlannerPage() {
 
         {/* Error message banner */}
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 font-semibold flex items-center justify-between gap-2">
+          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 font-semibold flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               <span>{errorMsg}</span>
