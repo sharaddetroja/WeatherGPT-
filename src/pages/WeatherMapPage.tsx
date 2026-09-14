@@ -604,11 +604,11 @@ export default function WeatherMapPage() {
   return (
     <div className="space-y-4 w-full mx-auto min-h-[calc(100vh-120px)] flex flex-col animate-in fade-in duration-500 text-white">
       {/* Top Header Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Map className="w-8 h-8 text-primary" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <Map className="w-6 h-6 sm:w-8 sm:h-8 text-primary shrink-0" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('map_title', 'Weather & Rainfall Map')}</h1>
+            <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold tracking-tight">{t('map_title', 'Weather & Rainfall Map')}</h1>
             <p className="text-xs text-muted-foreground hidden sm:block">
               {t('map_subtitle', 'Live backend weather, precipitation & atmospheric radar inspector')}
             </p>
@@ -617,27 +617,27 @@ export default function WeatherMapPage() {
         
         {/* Search & Location Controls Toolbar */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="flex items-center gap-2 bg-card border rounded-xl p-1.5 shadow-sm flex-1 sm:flex-initial focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
-            <Search className="w-5 h-5 text-muted-foreground ml-2 flex-shrink-0" />
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-card border rounded-xl p-1 sm:p-1.5 shadow-sm flex-1 sm:flex-initial focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all min-w-0">
+            <Search className="w-4 h-4 text-muted-foreground ml-1.5 sm:ml-2 flex-shrink-0" />
             <input 
               type="text" 
-              placeholder={t('map_search_placeholder', 'Search city, area or country...')} 
+              placeholder={t('map_search_placeholder', 'Search city or area...')} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="bg-transparent border-none outline-none text-sm px-2 py-1 w-full sm:w-60 text-foreground"
+              className="bg-transparent border-none outline-none text-xs sm:text-sm px-1.5 sm:px-2 py-1 w-full sm:w-60 text-foreground min-w-0"
             />
             <button
               onClick={handleSearch}
               disabled={searching || !searchQuery.trim()}
-              className="px-3.5 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
+              className="px-2.5 sm:px-3.5 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs sm:text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
             >
               {searching ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <>
                   <Search className="w-3.5 h-3.5" />
-                  <span>{t('map_search_btn', 'Search')}</span>
+                  <span className="hidden xs:inline">{t('map_search_btn', 'Search')}</span>
                 </>
               )}
             </button>
@@ -647,13 +647,13 @@ export default function WeatherMapPage() {
           <button
             onClick={handleUseMyLocation}
             disabled={locating}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-card hover:bg-muted border border-border text-primary rounded-xl text-sm font-medium shadow-sm transition-all hover:border-primary/50 disabled:opacity-60 flex-shrink-0 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 bg-card hover:bg-muted border border-border text-primary rounded-xl text-xs sm:text-sm font-medium shadow-sm transition-all hover:border-primary/50 disabled:opacity-60 flex-shrink-0 cursor-pointer"
             title="Detect my current GPS location and inspect weather"
           >
             {locating ? (
-              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-primary" />
             ) : (
-              <Navigation className="w-4 h-4 text-primary" />
+              <Navigation className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
             )}
             <span className="hidden md:inline text-xs font-semibold">{t('map_my_location', 'My Location')}</span>
           </button>
@@ -690,7 +690,7 @@ export default function WeatherMapPage() {
       {/* Main Map + Sidebar Area */}
       <div className="flex flex-col md:flex-row gap-4 h-full flex-1">
         {/* Controls Sidebar */}
-        <Card className="w-full md:w-96 lg:w-[380px] flex-shrink-0 h-fit max-h-[calc(100vh-140px)] overflow-y-auto border-border/80 shadow-lg">
+        <Card className="order-2 md:order-1 w-full md:w-96 lg:w-[380px] flex-shrink-0 h-fit max-h-[calc(100vh-140px)] overflow-y-auto border-border/80 shadow-lg">
           <CardContent className="p-4 sm:p-5 space-y-5">
             
             {/* Map Mode Selector */}
@@ -938,7 +938,7 @@ export default function WeatherMapPage() {
         </Card>
 
         {/* Interactive Leaflet Map Container */}
-        <div className="flex-1 rounded-2xl border bg-muted overflow-hidden relative shadow-sm min-h-[450px]">
+        <div className="order-1 md:order-2 flex-1 rounded-2xl border bg-muted overflow-hidden relative shadow-sm min-h-[340px] sm:min-h-[450px] h-[52vh] md:h-auto">
           {loadingWeather && (
             <div className="absolute top-4 left-4 z-[400] bg-background/90 backdrop-blur-md border border-border px-3.5 py-2 rounded-xl text-xs font-bold text-foreground flex items-center gap-2 shadow-lg">
               <Loader2 className="w-4 h-4 animate-spin text-primary" />

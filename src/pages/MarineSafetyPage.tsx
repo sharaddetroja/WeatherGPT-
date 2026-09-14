@@ -74,13 +74,13 @@ export default function MarineSafetyPage() {
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-4 xs:p-5 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 font-bold text-xs uppercase tracking-wider mb-1">
             <Anchor className="w-4 h-4" />
             <span>Marine & Coastal Safety</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('marine_title', 'Marine Safety Advisory')}</h1>
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">{t('marine_title', 'Marine Safety Advisory')}</h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-xl">
             {t('marine_subtitle', 'Tidal height, wave dynamics, sea surface temperature, and fisherman warnings.')}
           </p>
@@ -89,20 +89,20 @@ export default function MarineSafetyPage() {
 
       {/* Select Coastal Zone */}
       <div className="space-y-3">
-        <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider">Select Coastal Zone:</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <h3 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider">Select Coastal Zone:</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 xs:gap-3">
           {COASTAL_ZONES.map((zone) => (
             <button
               key={zone.id}
               onClick={() => setSelectedZone(zone)}
-              className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+              className={`p-3 xs:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                 selectedZone.id === zone.id
                   ? 'bg-teal-500/10 border-teal-500 shadow-md ring-2 ring-teal-500/20'
                   : 'bg-card hover:bg-muted border-border'
               }`}
             >
-              <div className="font-extrabold text-sm text-foreground">{zone.nameGu}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{zone.name}</div>
+              <div className="font-extrabold text-xs xs:text-sm text-foreground">{zone.nameGu}</div>
+              <div className="text-[11px] xs:text-xs text-muted-foreground mt-0.5">{zone.name}</div>
             </button>
           ))}
         </div>
@@ -111,7 +111,7 @@ export default function MarineSafetyPage() {
       {/* Zone Deep Dive */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="p-6 rounded-3xl bg-card border border-border shadow-lg space-y-5">
+          <div className="p-4 xs:p-5 sm:p-6 rounded-3xl bg-card border border-border shadow-lg space-y-4 xs:space-y-5">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-black text-foreground">{selectedZone.nameGu}</h2>

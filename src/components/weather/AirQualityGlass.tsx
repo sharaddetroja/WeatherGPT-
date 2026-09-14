@@ -61,7 +61,7 @@ export const AirQualityGlass: React.FC<AirQualityGlassProps> = ({
   const percentage = Math.min(100, Math.round((score / 300) * 100));
 
   return (
-    <div className={`glass-panel rounded-3xl p-5 sm:p-6 text-white flex flex-col justify-between ${className}`}>
+    <div className={`glass-panel rounded-3xl p-3.5 xs:p-4 sm:p-6 text-white flex flex-col justify-between ${className}`}>
       <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -71,7 +71,7 @@ export const AirQualityGlass: React.FC<AirQualityGlassProps> = ({
               Air Quality
             </h2>
           </div>
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${aqiInfo.badgeBg}`}>
+          <span className={`px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold border ${aqiInfo.badgeBg}`}>
             {aqiInfo.label}
           </span>
         </div>
@@ -79,14 +79,14 @@ export const AirQualityGlass: React.FC<AirQualityGlassProps> = ({
         {/* Main Score Display */}
         <div className="flex items-baseline justify-between mb-3">
           <div>
-            <span className="text-4xl sm:text-5xl font-black text-white tracking-tight">
+            <span className="text-3xl xs:text-4xl sm:text-5xl font-black text-white tracking-tight">
               {score}
             </span>
             <span className="text-xs text-white/60 font-semibold ml-1.5">
               AQI
             </span>
           </div>
-          <div className="flex items-center gap-1 text-xs text-white/75 font-medium">
+          <div className="flex items-center gap-1 text-[11px] xs:text-xs text-white/75 font-medium">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
             <span>Real-time index</span>
           </div>
@@ -101,45 +101,45 @@ export const AirQualityGlass: React.FC<AirQualityGlassProps> = ({
         </div>
 
         {/* Pollutants Breakdown (4 Metrics Grid) */}
-        <div className="grid grid-cols-2 gap-2.5 pt-3 border-t border-white/10">
-          <div className="glass-panel p-2.5 rounded-xl flex items-center justify-between">
+        <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 xs:gap-2.5 pt-3 border-t border-white/10">
+          <div className="glass-panel p-2 xs:p-2.5 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Wind className="w-3.5 h-3.5 text-white/60" />
-              <span className="text-xs font-semibold text-white/80">PM 2.5</span>
+              <span className="text-[11px] xs:text-xs font-semibold text-white/80">PM 2.5</span>
             </div>
-            <span className="text-xs font-extrabold text-white">{pm25} µg/m³</span>
+            <span className="text-[11px] xs:text-xs font-extrabold text-white">{pm25} µg/m³</span>
           </div>
 
-          <div className="glass-panel p-2.5 rounded-xl flex items-center justify-between">
+          <div className="glass-panel p-2 xs:p-2.5 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Wind className="w-3.5 h-3.5 text-white/60" />
-              <span className="text-xs font-semibold text-white/80">PM 10</span>
+              <span className="text-[11px] xs:text-xs font-semibold text-white/80">PM 10</span>
             </div>
-            <span className="text-xs font-extrabold text-white">{pm10} µg/m³</span>
+            <span className="text-[11px] xs:text-xs font-extrabold text-white">{pm10} µg/m³</span>
           </div>
 
-          <div className="glass-panel p-2.5 rounded-xl flex items-center justify-between">
+          <div className="glass-panel p-2 xs:p-2.5 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Gauge className="w-3.5 h-3.5 text-white/60" />
-              <span className="text-xs font-semibold text-white/80">O3 Ozone</span>
+              <span className="text-[11px] xs:text-xs font-semibold text-white/80">O3 Ozone</span>
             </div>
-            <span className="text-xs font-extrabold text-white">{o3} ppb</span>
+            <span className="text-[11px] xs:text-xs font-extrabold text-white">{o3} ppb</span>
           </div>
 
-          <div className="glass-panel p-2.5 rounded-xl flex items-center justify-between">
+          <div className="glass-panel p-2 xs:p-2.5 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Gauge className="w-3.5 h-3.5 text-white/60" />
-              <span className="text-xs font-semibold text-white/80">NO2</span>
+              <span className="text-[11px] xs:text-xs font-semibold text-white/80">NO2</span>
             </div>
-            <span className="text-xs font-extrabold text-white">{no2} ppb</span>
+            <span className="text-[11px] xs:text-xs font-extrabold text-white">{no2} ppb</span>
           </div>
         </div>
       </div>
 
       {/* Health Advice & Status Card at Bottom */}
-      <div className="mt-4 pt-3 border-t border-white/10 bg-white/5 rounded-2xl p-3 flex items-start gap-2.5">
+      <div className="mt-3 xs:mt-4 pt-3 border-t border-white/10 bg-white/5 rounded-2xl p-2.5 xs:p-3 flex items-start gap-2 xs:gap-2.5">
         <Sparkles className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-white/80 leading-relaxed">
+        <p className="text-[11px] xs:text-xs text-white/80 leading-relaxed">
           {aqiInfo.advice}
         </p>
       </div>

@@ -257,10 +257,10 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white"
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 text-white"
       >
         {/* Date, Time & Coordinates */}
-        <div className="flex items-center gap-4 text-xs sm:text-sm text-white/80 font-medium">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-white/80 font-medium">
           <div className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-white/70" />
             <span>{format(new Date(), 'EEEE, do MMM')}</span>
@@ -272,11 +272,11 @@ export default function Dashboard() {
         </div>
 
         {/* Action Controls: Search, My Location, 3D Radar, Export PDF */}
-        <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto justify-start md:justify-end">
+        <div className="flex items-center gap-2 xs:gap-2.5 flex-wrap w-full sm:w-auto justify-start sm:justify-end">
           {/* Quick City Search Bar with Suggestions */}
-          <div ref={searchContainerRef} className="relative flex-1 sm:flex-initial">
+          <div ref={searchContainerRef} className="relative flex-1 sm:flex-initial min-w-[130px]">
             <form onSubmit={handleCitySearchSubmit} className="relative flex items-center">
-              <Search className="absolute left-3.5 w-3.5 h-3.5 text-white/50 pointer-events-none" />
+              <Search className="absolute left-3 w-3.5 h-3.5 text-white/50 pointer-events-none" />
               <input
                 type="text"
                 value={citySearch}
@@ -286,7 +286,7 @@ export default function Dashboard() {
                   setShowSuggestions(true);
                 }}
                 placeholder="Search city..."
-                className="w-full sm:w-44 lg:w-56 pl-9 pr-3 py-1.5 text-xs rounded-full glass-input transition-all"
+                className="w-full sm:w-44 lg:w-56 pl-8.5 pr-3 py-1.5 text-xs rounded-full glass-input transition-all"
               />
             </form>
 
@@ -330,7 +330,7 @@ export default function Dashboard() {
             ref={locationBtnRef}
             onClick={handleDetectLocation}
             disabled={isLocating}
-            className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all glass-pill hover:bg-white/20 text-white flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 rounded-full text-xs font-bold transition-all glass-pill hover:bg-white/20 text-white flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
             title="Detect current location"
           >
             {isLocating ? (
@@ -338,7 +338,7 @@ export default function Dashboard() {
             ) : (
               <Compass className="w-3.5 h-3.5 text-sky-200" />
             )}
-            <span className="hidden sm:inline">{isLocating ? 'Detecting...' : 'My Location'}</span>
+            <span className="hidden xs:inline">{isLocating ? 'Detecting...' : 'My Location'}</span>
           </button>
 
           {/* Export PDF Weather Report */}
@@ -362,11 +362,11 @@ export default function Dashboard() {
                 rainChance: f.chance_of_rain
               }))
             })}
-            className="px-3.5 py-1.5 glass-pill hover:bg-white/20 text-white rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 glass-pill hover:bg-white/20 text-white rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
             title="Download formatted PDF weather report"
           >
             <Download className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Export PDF</span>
+            <span className="hidden xs:inline">Export PDF</span>
           </button>
         </div>
       </motion.div>
@@ -377,24 +377,24 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel p-4 sm:p-5 rounded-3xl border border-sky-400/30 bg-gradient-to-r from-sky-900/40 via-blue-900/30 to-indigo-900/40 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-white shadow-xl cursor-pointer hover:border-sky-400/50 transition-all"
+        className="glass-panel p-3.5 xs:p-4 sm:p-5 rounded-3xl border border-sky-400/30 bg-gradient-to-r from-sky-900/40 via-blue-900/30 to-indigo-900/40 backdrop-blur-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 text-white shadow-xl cursor-pointer hover:border-sky-400/50 transition-all"
         onClick={() => navigate('/travel')}
       >
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shrink-0 shadow-xs">
-            <Compass className="w-6 h-6 animate-pulse" />
+        <div className="flex items-center gap-3 xs:gap-3.5">
+          <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-300 shrink-0 shadow-xs">
+            <Compass className="w-5 h-5 xs:w-6 xs:h-6 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-sky-400/25 text-sky-200 border border-sky-400/30 uppercase tracking-wider">
                 New Feature
               </span>
-              <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
+              <h3 className="text-sm xs:text-base sm:text-lg font-extrabold text-white tracking-tight">
                 Source ➔ Destination Weather
               </h3>
             </div>
-            <p className="text-xs text-white/80 mt-0.5">
-              Plan your travel corridor with live arrival-time weather forecasts along Morbi ➔ Surat, Mumbai ➔ Pune, & all Indian routes.
+            <p className="text-[11px] xs:text-xs text-white/80 mt-0.5 leading-relaxed">
+              Plan your travel corridor with live arrival-time weather forecasts along Indian routes.
             </p>
           </div>
         </div>
@@ -403,7 +403,7 @@ export default function Dashboard() {
             e.stopPropagation();
             navigate('/travel');
           }}
-          className="px-4 py-2 bg-white text-slate-900 font-extrabold rounded-2xl text-xs hover:bg-white/90 transition-all cursor-pointer shrink-0 shadow-md flex items-center gap-1.5"
+          className="w-full sm:w-auto px-4 py-2 bg-white text-slate-900 font-extrabold rounded-2xl text-xs hover:bg-white/90 transition-all cursor-pointer shrink-0 shadow-md flex items-center justify-center gap-1.5"
         >
           <span>View Route Weather</span>
           <span className="text-sm">→</span>
@@ -413,7 +413,7 @@ export default function Dashboard() {
       {/* ===================================================================== */}
       {/* ROW 1: CURRENT WEATHER HERO & HOURLY FORECAST + TEMPERATURE CHART     */}
       {/* ===================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
         
         {/* LEFT: Current Weather Hero (Seamless Sky Blend) */}
         <div className="lg:col-span-4 h-full">

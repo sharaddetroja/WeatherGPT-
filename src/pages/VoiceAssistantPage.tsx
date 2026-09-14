@@ -1302,6 +1302,14 @@ export default function VoiceAssistantPage() {
   return (
     <div className="relative flex h-[calc(100vh-4rem)] w-full rounded-2xl border border-border bg-background shadow-2xl overflow-hidden animate-in fade-in duration-300">
       
+      {/* Mobile Backdrop Overlay */}
+      {sidebarOpen && (
+        <div 
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 md:hidden animate-in fade-in duration-200" 
+        />
+      )}
+
       {/* ========================================================================= */}
       {/* 1. COLLAPSIBLE SIDEBAR - CHAT HISTORY                                     */}
       {/* ========================================================================= */}

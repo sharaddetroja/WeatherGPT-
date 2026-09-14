@@ -114,30 +114,30 @@ export const WeatherDetailsGrid: React.FC<WeatherDetailsGridProps> = ({
   ];
 
   return (
-    <div className={`glass-panel rounded-3xl p-5 sm:p-6 text-white h-full flex flex-col justify-between ${className}`}>
+    <div className={`glass-panel rounded-3xl p-3.5 xs:p-4 sm:p-6 text-white h-full flex flex-col justify-between ${className}`}>
       <div>
         <h2 className="text-sm sm:text-base font-bold text-white tracking-wide mb-4 flex items-center justify-between">
           <span>Weather Details</span>
-          <span className="text-xs font-semibold text-white/60">Live Sensor Feed</span>
+          <span className="text-[11px] sm:text-xs font-semibold text-white/60">Live Sensor Feed</span>
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3 sm:gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2.5 xs:gap-3 sm:gap-3.5">
           {metrics.map((m, idx) => {
             const Icon = m.icon;
             return (
               <div
                 key={idx}
-                className="glass-panel glass-panel-hover p-3.5 rounded-2xl flex flex-col justify-between"
+                className="glass-panel glass-panel-hover p-2.5 xs:p-3 sm:p-3.5 rounded-2xl flex flex-col justify-between"
               >
                 <div className="flex items-center justify-between text-white/70">
-                  <span className="text-xs font-semibold text-white/75">{m.label}</span>
-                  <Icon className={`w-4 h-4 ${m.accent}`} />
+                  <span className="text-[11px] xs:text-xs font-semibold text-white/75 truncate pr-1">{m.label}</span>
+                  <Icon className={`w-3.5 h-3.5 xs:w-4 xs:h-4 shrink-0 ${m.accent}`} />
                 </div>
-                <div className="mt-2.5">
-                  <div className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                <div className="mt-2 xs:mt-2.5">
+                  <div className="text-base xs:text-lg sm:text-xl font-extrabold text-white tracking-tight">
                     {m.value}
                   </div>
-                  <div className="text-[11px] font-medium text-white/60 truncate mt-0.5">
+                  <div className="text-[10px] xs:text-[11px] font-medium text-white/60 truncate mt-0.5">
                     {m.subtext}
                   </div>
                 </div>

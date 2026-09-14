@@ -136,7 +136,7 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
- className="glass-panel absolute right-0 mt-2 w-80 sm:w-96 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 text-white" 
+                  className="glass-panel fixed sm:absolute right-2 sm:right-0 mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-96 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 text-white" 
                 >
                   {/* Header */}
                   <div className="p-3.5 border-b border-white/15 bg-white/5 flex items-center justify-between">

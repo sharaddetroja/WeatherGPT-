@@ -126,22 +126,23 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
   const formattedUnit = tempUnit.startsWith('°') ? tempUnit : `°${tempUnit}`;
 
   return (
-    <div className={`w-full glass-panel rounded-3xl p-5 sm:p-6 overflow-hidden ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-2">
+    <div className={`w-full glass-panel rounded-3xl p-4 xs:p-5 sm:p-6 overflow-hidden ${className}`}>
+      <div className="flex items-center justify-between mb-3 xs:mb-4 gap-2 flex-wrap">
+        <h2 className="text-xs xs:text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-1.5 xs:gap-2">
           <span>Hourly Forecast</span>
-          <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/10 text-white/80 font-medium">
+          <span className="text-[10px] xs:text-xs px-2 xs:px-2.5 py-0.5 rounded-full bg-white/10 text-white/80 font-medium">
             Next {items.length} Hours
           </span>
         </h2>
 
-        <span className="text-xs font-semibold text-white/70">
+        <span className="text-[10px] xs:text-xs font-semibold text-white/70">
           Temperature Curve ({formattedUnit})
         </span>
       </div>
 
-      {/* 100% Fluid Width Container */}
-      <div className="w-full relative select-none">
+      {/* Responsive Horizontal Scroll Container on mobile, 100% fluid on desktop */}
+      <div className="w-full overflow-x-auto overflow-y-hidden pb-1 -mx-1 px-1 scrollbar-none">
+        <div className="min-w-[620px] sm:min-w-0 w-full relative select-none">
         
         {/* Active Hour Vertical Glass Highlight Column */}
         {currentPoint && (
@@ -270,5 +271,6 @@ export const HourlyTemperatureChart: React.FC<HourlyTemperatureChartProps> = ({
         </div>
       </div>
     </div>
+  </div>
   );
 };

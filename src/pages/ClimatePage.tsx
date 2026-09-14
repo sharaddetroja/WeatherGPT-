@@ -277,9 +277,9 @@ export default function ClimatePage() {
 
           {/* 4 Dynamic Climate Overview Summary Cards */}
           {summary && summary.averageTemperatureC !== null && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               {/* Card 1: Average Temperature */}
-              <div className="p-4 rounded-2xl bg-card border border-border shadow-xs space-y-1">
+              <div className="p-3 xs:p-4 rounded-2xl bg-card border border-border shadow-xs space-y-1">
                 <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                   <ThermometerSun className="w-3.5 h-3.5 text-orange-500" /> Average Temperature
                 </span>

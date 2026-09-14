@@ -112,22 +112,22 @@ export default function AgriculturePage() {
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-4 xs:p-5 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1">
             <Sprout className="w-4 h-4" />
             <span>Kisan Agriculture Advisory</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">ખેડૂત હવામાન અને પાક સલાહકાર</h1>
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">ખેડૂત હવામાન અને પાક સલાહકાર</h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-xl">
             Real-time soil moisture tracking, crop advisory, and rainfall forecasting.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleExportPDF}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>Export Crop Report</span>
@@ -136,9 +136,9 @@ export default function AgriculturePage() {
       </div>
 
       {/* Location & Live Stream Status Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-card rounded-2xl border border-border gap-3">
-        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <MapPin className="w-4 h-4 text-emerald-500" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 xs:p-4 bg-card rounded-2xl border border-border gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground">
+          <MapPin className="w-4 h-4 text-emerald-500 shrink-0" />
           <span>Farming Belt: {profile.location || 'Rajkot & Saurashtra District'}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -150,24 +150,24 @@ export default function AgriculturePage() {
 
       {/* Crop Selector Grid */}
       <div className="space-y-3">
-        <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
+        <h3 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
           <span>Select Your Active Crop (પાક પસંદ કરો):</span>
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 xs:gap-3">
           {CROPS.map((crop) => (
             <button
               key={crop.id}
               onClick={() => setSelectedCrop(crop)}
-              className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+              className={`p-3 xs:p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                 selectedCrop.id === crop.id
                   ? 'bg-emerald-500/10 border-emerald-500 shadow-md ring-2 ring-emerald-500/20'
                   : 'bg-card hover:bg-muted border-border'
               }`}
             >
-              <div className="text-3xl mb-2">{crop.icon}</div>
+              <div className="text-2xl xs:text-3xl mb-1.5 xs:mb-2">{crop.icon}</div>
               <div>
-                <div className="font-extrabold text-sm text-foreground">{crop.nativeNameGu}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{crop.name}</div>
+                <div className="font-extrabold text-xs xs:text-sm text-foreground">{crop.nativeNameGu}</div>
+                <div className="text-[11px] xs:text-xs text-muted-foreground mt-0.5">{crop.name}</div>
               </div>
             </button>
           ))}

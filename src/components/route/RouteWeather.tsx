@@ -202,55 +202,55 @@ export function RouteWeather({
           </div>
 
           {/* Main Source -> Destination Metrics Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 py-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6 py-2">
             {/* Source */}
-            <div className="flex items-center gap-3.5 w-full sm:w-auto">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-xs">
-                <MapPin className="w-6 h-6 text-emerald-400" />
+            <div className="flex items-center gap-3 xs:gap-3.5 w-full sm:w-auto">
+              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-xs">
+                <MapPin className="w-5 h-5 xs:w-6 xs:h-6 text-emerald-400" />
               </div>
               <div>
                 <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest block">SOURCE</span>
-                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{route.sourceName}</h2>
-                <span className="text-[11px] text-white/60 font-medium">
+                <h2 className="text-xl xs:text-2xl sm:text-3xl font-black text-white tracking-tight">{route.sourceName}</h2>
+                <span className="text-[10px] xs:text-[11px] text-white/60 font-medium">
                   {route.sourceLat.toFixed(2)}°, {route.sourceLon.toFixed(2)}°
                 </span>
               </div>
             </div>
 
             {/* Connecting Corridor Metric */}
-            <div className="flex-1 w-full sm:w-auto flex flex-col items-center justify-center px-4">
-              <div className="flex items-center gap-3 text-xs font-bold text-sky-200 mb-2">
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15 shadow-2xs">
+            <div className="flex-1 w-full sm:w-auto flex flex-col items-center justify-center px-2 sm:px-4">
+              <div className="flex items-center gap-2 sm:gap-3 text-xs font-bold text-sky-200 mb-2">
+                <span className="px-2.5 sm:px-3 py-1 rounded-full bg-white/10 border border-white/15 shadow-2xs text-[11px] sm:text-xs">
                   {route.distanceKm} km
                 </span>
                 <span>•</span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15 shadow-2xs">
+                <span className="px-2.5 sm:px-3 py-1 rounded-full bg-white/10 border border-white/15 shadow-2xs text-[11px] sm:text-xs">
                   {formatDuration(route.durationMinutes)}
                 </span>
               </div>
 
               {/* Progress Line */}
               <div className="w-full relative flex items-center justify-between">
-                <div className="w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-900 z-10 shadow-xs" />
+                <div className="w-3 h-3 xs:w-3.5 xs:h-3.5 rounded-full bg-emerald-400 border-2 border-slate-900 z-10 shadow-xs" />
                 <div className="h-1.5 flex-1 bg-gradient-to-r from-emerald-500 via-sky-400 to-rose-500 rounded-full mx-1 relative overflow-hidden">
                   <div className="absolute inset-0 bg-white/30 animate-pulse" />
                 </div>
-                <div className="w-3.5 h-3.5 rounded-full bg-rose-400 border-2 border-slate-900 z-10 shadow-xs" />
+                <div className="w-3 h-3 xs:w-3.5 xs:h-3.5 rounded-full bg-rose-400 border-2 border-slate-900 z-10 shadow-xs" />
               </div>
               <span className="text-[10px] text-white/50 font-medium mt-1">Planned Corridor Telemetry</span>
             </div>
 
             {/* Destination */}
-            <div className="flex items-center gap-3.5 w-full sm:w-auto justify-start sm:justify-end">
+            <div className="flex items-center gap-3 xs:gap-3.5 w-full sm:w-auto justify-start sm:justify-end">
               <div className="text-left sm:text-right order-2 sm:order-1">
                 <span className="text-[10px] font-bold text-rose-300 uppercase tracking-widest block">DESTINATION</span>
-                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{route.destinationName}</h2>
-                <span className="text-[11px] text-white/60 font-medium">
+                <h2 className="text-xl xs:text-2xl sm:text-3xl font-black text-white tracking-tight">{route.destinationName}</h2>
+                <span className="text-[10px] xs:text-[11px] text-white/60 font-medium">
                   {route.destinationLat.toFixed(2)}°, {route.destinationLon.toFixed(2)}°
                 </span>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 order-1 sm:order-2 shadow-xs">
-                <MapPin className="w-6 h-6 text-rose-400" />
+              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 order-1 sm:order-2 shadow-xs">
+                <MapPin className="w-5 h-5 xs:w-6 xs:h-6 text-rose-400" />
               </div>
             </div>
           </div>
@@ -428,7 +428,7 @@ export function RouteWeather({
                 {/* Waypoint Card Container */}
                 <div 
                   onClick={() => toggleExpand(index)}
-                  className={`glass-panel p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer hover:border-white/30 backdrop-blur-xl ${
+                  className={`glass-panel p-3 xs:p-4 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all cursor-pointer hover:border-white/30 backdrop-blur-xl ${
                     isSource 
                       ? 'border-emerald-500/40 bg-emerald-950/10' 
                       : isDestination 
@@ -442,7 +442,7 @@ export function RouteWeather({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <span className="text-xs font-mono font-bold text-white/50">[{wptNumber}]</span>
-                        <h4 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
+                        <h4 className="text-sm xs:text-base sm:text-lg font-extrabold text-white tracking-tight">
                           {place.name}
                         </h4>
                         

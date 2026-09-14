@@ -170,13 +170,13 @@ export default function TravelPlannerPage() {
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
       
       {/* Header Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-4 xs:p-5 sm:p-8 rounded-3xl bg-card border border-border shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 text-sky-400 font-bold text-xs uppercase tracking-wider mb-1">
             <Car className="w-4 h-4" />
             <span>Highway & Journey Weather</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold text-foreground">
             {t('travel_title', 'Source ➔ Destination Weather')}
           </h1>
           <p className="text-xs text-muted-foreground mt-1 max-w-xl">
@@ -185,7 +185,7 @@ export default function TravelPlannerPage() {
         </div>
 
         {/* Preset Quick Buttons */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full scrollbar-none sm:flex-wrap w-full md:w-auto">
           {PRESET_ROUTES.map((preset, idx) => (
             <button
               key={idx}
@@ -194,7 +194,7 @@ export default function TravelPlannerPage() {
                 setDestInput(preset.destination);
                 handleCalculateRoute(preset.source, preset.destination);
               }}
-              className="px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted border border-border text-xs font-semibold text-foreground transition-all cursor-pointer shadow-2xs"
+              className="px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted border border-border text-xs font-semibold text-foreground transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0"
             >
               {preset.label}
             </button>
@@ -203,7 +203,7 @@ export default function TravelPlannerPage() {
       </div>
 
       {/* Main Interactive Route Search Form Card */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-card border border-border shadow-lg space-y-4">
+      <div className="p-4 xs:p-5 sm:p-6 rounded-3xl bg-card border border-border shadow-lg space-y-4">
         <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
           <Navigation className="w-4 h-4 text-primary" />
           <span>Plan Your Journey Weather</span>

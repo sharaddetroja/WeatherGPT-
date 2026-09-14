@@ -287,23 +287,23 @@ export default function ChatWindow() {
             setIsOpen(true);
           }
         }}
-        className="fixed bottom-6 right-6 lg:bottom-8 lg:right-8 bg-gradient-to-r from-primary via-blue-600 to-indigo-600 text-primary-foreground px-4 py-3 md:px-5 md:py-3 rounded-full shadow-xl hover:shadow-2xl hover:shadow-primary/40 transition-all transform hover:-translate-y-0.5 hover:scale-105 z-50 flex items-center gap-2.5 border border-white/20 backdrop-blur-md cursor-pointer"
+        className="fixed bottom-4 right-4 xs:bottom-6 xs:right-6 lg:bottom-8 lg:right-8 bg-gradient-to-r from-primary via-blue-600 to-indigo-600 text-primary-foreground px-3.5 py-2.5 xs:px-4 xs:py-3 md:px-5 md:py-3 rounded-full shadow-xl hover:shadow-2xl hover:shadow-primary/40 transition-all transform hover:-translate-y-0.5 hover:scale-105 z-50 flex items-center gap-2 xs:gap-2.5 border border-white/20 backdrop-blur-md cursor-pointer"
         title="Chat with WeatherGPT AI Assistant"
       >
         <div className="relative flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
+          <Sparkles className="w-4 h-4 xs:w-5 xs:h-5 text-amber-300 animate-pulse" />
           <span className="absolute -top-1 -right-1 flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-300"></span>
           </span>
         </div>
-        <span className="font-semibold text-sm tracking-wide">{t('chat_title')}</span>
+        <span className="font-semibold text-xs xs:text-sm tracking-wide">{t('chat_title')}</span>
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-0 right-0 w-full h-[80vh] md:h-[600px] md:w-[400px] md:bottom-6 md:right-6 bg-card border shadow-2xl md:rounded-2xl flex flex-col z-50 overflow-hidden animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-8">
+    <div className="fixed bottom-0 right-0 w-full h-[88vh] sm:h-[80vh] md:h-[600px] md:w-[400px] md:bottom-6 md:right-6 bg-card border shadow-2xl rounded-t-3xl md:rounded-2xl flex flex-col z-50 overflow-hidden animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-8">
       {/* Header */}
       <div className="p-4 bg-primary text-primary-foreground flex justify-between items-center">
         <div className="flex items-center gap-3">
