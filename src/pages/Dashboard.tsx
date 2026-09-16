@@ -535,12 +535,13 @@ export default function Dashboard() {
           className="h-full"
           sunriseTime={data.astronomy?.sunrise || "6:32 am"}
           sunsetTime={data.astronomy?.sunset || "6:51 pm"}
+          isDay={data.current?.is_day !== undefined ? data.current.is_day === 1 : undefined}
         />
 
         {/* Photorealistic Moon Phase Sphere, Moonrise & Moonset Telemetry */}
         <MoonPhaseCard 
           className="h-full"
-          phaseName="Waxing crescent"
+          phaseName={data.astronomy?.moon_phase || "Waxing crescent"}
           moonriseTime={data.astronomy?.moonrise || "11:12 am"}
           moonsetTime={data.astronomy?.moonset || "10:03 pm"}
         />

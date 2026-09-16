@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 interface SunriseCardProps {
   sunriseTime?: string;
   sunsetTime?: string;
+  isDay?: boolean;
   className?: string;
 }
 
@@ -23,23 +24,28 @@ function parseTimeToMinutes(timeStr?: string): number | null {
 export const SunriseCard: React.FC<SunriseCardProps> = ({
   sunriseTime = '6:32 am',
   sunsetTime = '6:51 pm',
+  isDay: propIsDay,
   className = '',
 }) => {
-  // Calculate sun position along trajectory based on current time or reference evening time (~6:06 PM)
-  const { sunX, sunY, progressT } = useMemo(() => {
+  // Dynamically calculate sun position and daytime presence
+  const { sunX, sunY, progressT, isDaytime, statusLabel } = useMemo(() => {
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const sMin = parseTimeToMinutes(sunriseTime) ?? (6 * 60 + 32);
     const eMin = parseTimeToMinutes(sunsetTime) ?? (18 * 60 + 51);
 
-    let t = 0.86; // Default to late afternoon near sunset as shown in reference photo
+    const isDay = propIsDay !== undefined 
+      ? propIsDay 
+      : (eMin > sMin ? (currentMinutes >= sMin && currentMinutes <= eMin) : true);
+
+    let t = 0.5;
     if (eMin > sMin) {
       if (currentMinutes >= sMin && currentMinutes <= eMin) {
         t = (currentMinutes - sMin) / (eMin - sMin);
       } else if (currentMinutes > eMin) {
-        t = 0.92; // Just before sunset point
+        t = 1.0;
       } else {
-        t = 0.15; // Just past sunrise point
+        t = 0.0;
       }
     }
 
@@ -49,8 +55,19 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
     const x = 65 + clampedT * (255 - 65);
     const y = 75 - Math.sin(clampedT * Math.PI) * 53;
 
-    return { sunX: Math.round(x * 10) / 10, sunY: Math.round(y * 10) / 10, progressT: clampedT };
-  }, [sunriseTime, sunsetTime]);
+    let label = 'Daylight';
+    if (!isDay) {
+      label = currentMinutes > eMin ? 'Sun has set' : 'Night';
+    }
+
+    return { 
+      sunX: Math.round(x * 10) / 10, 
+      sunY: Math.round(y * 10) / 10, 
+      progressT: clampedT,
+      isDaytime: isDay,
+      statusLabel: label
+    };
+  }, [sunriseTime, sunsetTime, propIsDay]);
 
   return (
     <motion.div
@@ -59,16 +76,24 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
       transition={{ duration: 0.45, delay: 0.05 }}
       className={`glass-panel rounded-3xl p-4 xs:p-5 sm:p-6 text-white border border-white/20 shadow-2xl backdrop-blur-2xl relative select-none overflow-hidden flex flex-col justify-between ${className}`}
     >
-      {/* Background Solar Warm Glow */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-48 h-28 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
+      {/* Background Solar Warm Glow (active during daytime) */}
+      <div 
+        className={`absolute top-2 left-1/2 -translate-x-1/2 w-48 h-28 rounded-full blur-2xl pointer-events-none transition-opacity duration-500 ${
+          isDaytime ? 'bg-amber-400/15 opacity-100' : 'bg-indigo-950/20 opacity-40'
+        }`} 
+      />
 
       {/* Top Header Row with Sun Status Badge */}
       <div className="flex items-center justify-between z-10">
-        <span className="text-[11px] sm:text-xs font-semibold text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
+        <span className="text-[11px] sm:text-xs font-semibold text-amber-200/90 uppercase tracking-wider flex items-center gap-1.5">
           Sun Position
         </span>
-        <span className="text-[10px] sm:text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/30 shadow-xs">
-          Daylight Arc
+        <span className={`text-[10px] sm:text-[11px] font-semibold px-2.5 py-0.5 rounded-full border shadow-xs transition-colors ${
+          isDaytime 
+            ? 'bg-amber-500/20 text-amber-200 border-amber-400/30' 
+            : 'bg-white/10 text-white/70 border-white/15'
+        }`}>
+          {statusLabel}
         </span>
       </div>
 
@@ -140,62 +165,68 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
               stroke="#FACC15"
               strokeWidth="2.5"
               strokeLinecap="round"
-              opacity="0.35"
+              opacity="0.3"
             />
 
-            {/* Active Luminous Golden Arc from Sunrise to Current Sun Position */}
-            <path
-              d="M 65,75 C 95,62 120,22 160,22 C 200,22 225,62 255,75"
-              fill="none"
-              stroke="#FACC15"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              filter="url(#sun-arc-glow)"
-              pathLength="100"
-              strokeDasharray="100"
-              strokeDashoffset={100 - (progressT * 100)}
-            />
+            {/* Active Luminous Golden Arc from Sunrise to Current Sun Position (Daytime only) */}
+            {isDaytime && (
+              <path
+                d="M 65,75 C 95,62 120,22 160,22 C 200,22 225,62 255,75"
+                fill="none"
+                stroke="#FACC15"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                filter="url(#sun-arc-glow)"
+                pathLength="100"
+                strokeDasharray="100"
+                strokeDashoffset={100 - (progressT * 100)}
+              />
+            )}
 
-            {/* Vertical Sun Ray beam down to horizon */}
-            <line 
-              x1={sunX} 
-              y1={sunY + 4} 
-              x2={sunX} 
-              y2="75" 
-              stroke="rgba(254, 240, 138, 0.22)" 
-              strokeWidth="1.5" 
-              strokeDasharray="2 2" 
-            />
+            {/* Vertical Sun Ray beam down to horizon (Daytime only) */}
+            {isDaytime && (
+              <line 
+                x1={sunX} 
+                y1={sunY + 4} 
+                x2={sunX} 
+                y2="75" 
+                stroke="rgba(254, 240, 138, 0.22)" 
+                strokeWidth="1.5" 
+                strokeDasharray="2 2" 
+              />
+            )}
 
-            {/* Radiant Glowing Sun Orb sitting exactly on the sunset trajectory line */}
-            <g>
-              {/* Outer Pulsing Glow */}
-              <circle 
-                cx={sunX} 
-                cy={sunY} 
-                r="13" 
-                fill="#FBBF24" 
-                opacity="0.3" 
-                filter="url(#sun-arc-glow)" 
-              />
-              {/* Mid Golden Aura */}
-              <circle 
-                cx={sunX} 
-                cy={sunY} 
-                r="8.5" 
-                fill="#F59E0B" 
-                opacity="0.8" 
-              />
-              {/* Inner Radiant Core */}
-              <circle 
-                cx={sunX} 
-                cy={sunY} 
-                r="5.5" 
-                fill="#FEF08A" 
-                stroke="#FFFFFF" 
-                strokeWidth="1" 
-              />
-            </g>
+            {/* Radiant Glowing Sun Orb sitting exactly on the sunset trajectory line (Daytime only) */}
+            {isDaytime && (
+              <g>
+                {/* Outer Pulsing Glow */}
+                <circle 
+                  cx={sunX} 
+                  cy={sunY} 
+                  r="13" 
+                  fill="#FBBF24" 
+                  opacity="0.3" 
+                  filter="url(#sun-arc-glow)" 
+                />
+                {/* Mid Golden Aura */}
+                <circle 
+                  cx={sunX} 
+                  cy={sunY} 
+                  r="8.5" 
+                  fill="#F59E0B" 
+                  opacity="0.8" 
+                />
+                {/* Inner Radiant Core */}
+                <circle 
+                  cx={sunX} 
+                  cy={sunY} 
+                  r="5.5" 
+                  fill="#FEF08A" 
+                  stroke="#FFFFFF" 
+                  strokeWidth="1" 
+                />
+              </g>
+            )}
           </g>
         </svg>
       </div>
