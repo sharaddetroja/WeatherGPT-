@@ -252,7 +252,7 @@ export function RouteWeather({
                 </span>
               </div>
               <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-xl xs:rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 shadow-xs">
-                <Flag className="w-5 h-5 xs:w-5.5 xs:h-5.5 sm:w-6 sm:h-6 text-rose-400" />
+                <Flag className="w-5 h-5 xs:w-5.5 xs:h-5.5 sm:w-6 sm:h-6 text-rose-400 fill-rose-400/25" />
               </div>
             </div>
 
@@ -427,7 +427,13 @@ export function RouteWeather({
                       : 'bg-sky-500 text-slate-950 ring-2 ring-sky-500/20'
                   }`}
                 >
-                  {wptNumber}
+                  {isDestination ? (
+                    <Flag className="w-3 h-3 text-white fill-white" />
+                  ) : isSource ? (
+                    <MapPin className="w-3 h-3 text-slate-950" />
+                  ) : (
+                    wptNumber
+                  )}
                 </div>
 
                 {/* Waypoint Card Container */}

@@ -541,8 +541,8 @@ export default function Dashboard() {
         <MoonPhaseCard 
           className="h-full"
           phaseName="Waxing crescent"
-          moonriseTime="9:20 am"
-          moonsetTime="8:43 pm"
+          moonriseTime={data.astronomy?.moonrise || "11:12 am"}
+          moonsetTime={data.astronomy?.moonset || "10:03 pm"}
         />
       </div>
 

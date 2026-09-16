@@ -214,7 +214,7 @@ export default function TravelPlannerPage() {
               <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Start Point</span>
             </label>
             <div className="relative">
-              <MapPin className="w-4 h-4 text-emerald-400 absolute left-3 top-3 pointer-events-none" />
+              <MapPin className="w-4 h-4 text-emerald-400 fill-emerald-400/20 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="e.g. Morbi"
@@ -274,7 +274,7 @@ export default function TravelPlannerPage() {
               <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider">Arrival Point</span>
             </label>
             <div className="relative">
-              <Flag className="w-4 h-4 text-rose-400 absolute left-3 top-3 pointer-events-none" />
+              <Flag className="w-4 h-4 text-rose-400 fill-rose-400/25 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="e.g. Surat"
@@ -302,7 +302,7 @@ export default function TravelPlannerPage() {
                     className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-white/15 text-white flex items-center justify-between gap-2.5 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <Flag className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <Flag className="w-3.5 h-3.5 text-rose-400 fill-rose-400/25 shrink-0" />
                       <span className="truncate font-bold">{city.name}</span>
                     </div>
                     <span className="text-[10px] text-white/70 bg-white/10 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0 border border-white/10">

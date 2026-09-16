@@ -218,6 +218,8 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
 
       const sunrise = formatSunTime(data.daily?.[0]?.sunrise) || '6:32 am';
       const sunset = formatSunTime(data.daily?.[0]?.sunset) || '6:51 pm';
+      const moonrise = formatSunTime(data.daily?.[0]?.moonrise) || '11:12 am';
+      const moonset = formatSunTime(data.daily?.[0]?.moonset) || '10:03 pm';
 
       return {
         location: {
@@ -246,6 +248,8 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
         astronomy: {
           sunrise,
           sunset,
+          moonrise,
+          moonset,
         },
         hourly: hourlyList,
         forecast: forecastList,
@@ -288,6 +292,8 @@ export const getWeatherData = async (city: string = 'Rajkot') => {
     astronomy: {
       sunrise: '6:32 am',
       sunset: '6:51 pm',
+      moonrise: '11:12 am',
+      moonset: '10:03 pm',
     },
     hourly: generateDynamicHourlyForecast(28, 'Partly Cloudy'),
     forecast: [

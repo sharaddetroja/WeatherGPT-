@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 
 interface SunriseCardProps {
@@ -7,17 +7,57 @@ interface SunriseCardProps {
   className?: string;
 }
 
+function parseTimeToMinutes(timeStr?: string): number | null {
+  if (!timeStr) return null;
+  const cleaned = timeStr.trim().toLowerCase();
+  const match = cleaned.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/);
+  if (!match) return null;
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const period = match[3];
+  if (period === 'pm' && hours < 12) hours += 12;
+  if (period === 'am' && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+}
+
 export const SunriseCard: React.FC<SunriseCardProps> = ({
   sunriseTime = '6:32 am',
   sunsetTime = '6:51 pm',
   className = '',
 }) => {
+  // Calculate sun position along trajectory based on current time or reference evening time (~6:06 PM)
+  const { sunX, sunY, progressT } = useMemo(() => {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const sMin = parseTimeToMinutes(sunriseTime) ?? (6 * 60 + 32);
+    const eMin = parseTimeToMinutes(sunsetTime) ?? (18 * 60 + 51);
+
+    let t = 0.86; // Default to late afternoon near sunset as shown in reference photo
+    if (eMin > sMin) {
+      if (currentMinutes >= sMin && currentMinutes <= eMin) {
+        t = (currentMinutes - sMin) / (eMin - sMin);
+      } else if (currentMinutes > eMin) {
+        t = 0.92; // Just before sunset point
+      } else {
+        t = 0.15; // Just past sunrise point
+      }
+    }
+
+    const clampedT = Math.max(0.06, Math.min(0.94, t));
+    
+    // Arc geometry: sunrise at (65, 75), peak at (160, 22), sunset at (255, 75)
+    const x = 65 + clampedT * (255 - 65);
+    const y = 75 - Math.sin(clampedT * Math.PI) * 53;
+
+    return { sunX: Math.round(x * 10) / 10, sunY: Math.round(y * 10) / 10, progressT: clampedT };
+  }, [sunriseTime, sunsetTime]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.05 }}
-      className={`glass-panel rounded-3xl p-5 sm:p-6 text-white border border-white/20 shadow-2xl backdrop-blur-2xl relative select-none overflow-hidden flex flex-col justify-between ${className}`}
+      className={`glass-panel rounded-3xl p-4 xs:p-5 sm:p-6 text-white border border-white/20 shadow-2xl backdrop-blur-2xl relative select-none overflow-hidden flex flex-col justify-between ${className}`}
     >
       {/* Background Solar Warm Glow */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 w-48 h-28 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
@@ -31,7 +71,7 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
         >
           <defs>
             {/* Soft Warm Glow for the Daytime Arc */}
-            <filter id="sun-arc-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <filter id="sun-arc-glow" x="-30%" y="-30%" width="160%" height="160%">
               <feGaussianBlur stdDeviation="3.5" result="glow" />
               <feMerge>
                 <feMergeNode in="glow" />
@@ -69,11 +109,6 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
             strokeWidth="1.5"
           />
 
-          {/* Full Arc Path Geometry:
-              Starts at (5, 95) -> rises smoothly crossing horizon at (65, 75) -> peaks at (160, 22) ->
-              crosses horizon at (255, 75) -> ends at (315, 95)
-          */}
-
           {/* 1. Arc Portion BELOW Horizon (Muted sage/slate line on left and right) */}
           <g clipPath="url(#below-horizon-clip)">
             <path
@@ -86,8 +121,19 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
             />
           </g>
 
-          {/* 2. Arc Portion ABOVE Horizon (Luminous Golden-Yellow Curve) */}
+          {/* 2. Arc Portion ABOVE Horizon */}
           <g clipPath="url(#above-horizon-clip)">
+            {/* Base Faded Daytime Path to Sunset */}
+            <path
+              d="M 65,75 C 95,62 120,22 160,22 C 200,22 225,62 255,75"
+              fill="none"
+              stroke="#FACC15"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              opacity="0.35"
+            />
+
+            {/* Active Luminous Golden Arc from Sunrise to Current Sun Position */}
             <path
               d="M 65,75 C 95,62 120,22 160,22 C 200,22 225,62 255,75"
               fill="none"
@@ -95,7 +141,51 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
               strokeWidth="3.5"
               strokeLinecap="round"
               filter="url(#sun-arc-glow)"
+              pathLength="100"
+              strokeDasharray="100"
+              strokeDashoffset={100 - (progressT * 100)}
             />
+
+            {/* Vertical Sun Ray beam down to horizon */}
+            <line 
+              x1={sunX} 
+              y1={sunY + 4} 
+              x2={sunX} 
+              y2="75" 
+              stroke="rgba(254, 240, 138, 0.22)" 
+              strokeWidth="1.5" 
+              strokeDasharray="2 2" 
+            />
+
+            {/* Radiant Glowing Sun Orb sitting exactly on the sunset trajectory line */}
+            <g>
+              {/* Outer Pulsing Glow */}
+              <circle 
+                cx={sunX} 
+                cy={sunY} 
+                r="13" 
+                fill="#FBBF24" 
+                opacity="0.3" 
+                filter="url(#sun-arc-glow)" 
+              />
+              {/* Mid Golden Aura */}
+              <circle 
+                cx={sunX} 
+                cy={sunY} 
+                r="8.5" 
+                fill="#F59E0B" 
+                opacity="0.8" 
+              />
+              {/* Inner Radiant Core */}
+              <circle 
+                cx={sunX} 
+                cy={sunY} 
+                r="5.5" 
+                fill="#FEF08A" 
+                stroke="#FFFFFF" 
+                strokeWidth="1" 
+              />
+            </g>
           </g>
         </svg>
       </div>

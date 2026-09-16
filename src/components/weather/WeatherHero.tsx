@@ -89,37 +89,37 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
       </div>
 
       {/* Main Dual Metric Display: Left = Temperature, Right = AQI (Same Styling) */}
-      <div className="my-5 xs:my-6 sm:my-7 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-6 lg:gap-8 items-start">
+      <div className="my-4 xs:my-5 sm:my-7 grid grid-cols-1 xs:grid-cols-2 gap-4 xs:gap-5 sm:gap-6 lg:gap-8 items-start">
         {/* LEFT: Temperature */}
-        <div className="flex flex-col items-start text-left">
+        <div className="flex flex-col items-start text-left min-w-0">
           {/* Condition Text */}
-          <div className="flex items-center gap-2 mb-1.5">
-            <ConditionIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white/90 drop-shadow-sm" />
-            <span className="text-xl xs:text-2xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white drop-shadow-sm truncate">
+          <div className="flex items-center gap-2 mb-1.5 min-w-0">
+            <ConditionIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white/90 drop-shadow-sm shrink-0" />
+            <span className="text-lg xs:text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white drop-shadow-sm truncate">
               {condition}
             </span>
           </div>
 
           {/* Temperature Range & Feels Like */}
-          <div className="flex items-center flex-wrap gap-2 xs:gap-2.5 text-xs xs:text-sm font-medium text-white/85">
+          <div className="flex items-center flex-wrap gap-1.5 xs:gap-2 text-[11px] xs:text-xs sm:text-sm font-medium text-white/85">
             <span>{minTemp}° ~ {maxTemp}{tempUnit}</span>
-            <span className="w-1 h-1 rounded-full bg-white/50" />
-            <span>Feels like {feelsLike}{tempUnit}</span>
+            <span className="w-1 h-1 rounded-full bg-white/50 shrink-0" />
+            <span>Feels {feelsLike}{tempUnit}</span>
           </div>
 
           {/* Huge Visually Dominant Temperature */}
-          <div className="flex items-start mt-2">
-            <span className="text-6xl xs:text-7xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-none text-white drop-shadow-md">
+          <div className="flex items-start mt-1.5 xs:mt-2">
+            <span className="text-5xl xs:text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-none text-white drop-shadow-md">
               {temp}
             </span>
-            <span className="text-2xl xs:text-3xl sm:text-3xl lg:text-4xl font-light text-white/80 -mt-1 ml-1">
+            <span className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-light text-white/80 -mt-1 ml-1">
               {tempUnit}
             </span>
           </div>
         </div>
 
         {/* RIGHT: AQI with Slidebar matching reference image */}
-        <div className="flex flex-col items-start text-left sm:border-l sm:border-white/15 sm:pl-6 lg:pl-8 w-full">
+        <div className="flex flex-col items-start text-left xs:border-l xs:border-white/15 xs:pl-4 sm:pl-6 lg:pl-8 w-full min-w-0">
           {/* AQI Title Label */}
           <span className="text-xs sm:text-sm font-semibold text-white/70 uppercase tracking-wider block">
             AQI
