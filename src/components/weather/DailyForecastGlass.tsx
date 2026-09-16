@@ -122,8 +122,8 @@ export const DailyForecastGlass: React.FC<DailyForecastGlassProps> = ({
           </span>
         </div>
 
-        {/* Forecast Rows List - Styled Exactly Like Reference */}
-        <div className="divide-y divide-white/10">
+        {/* Forecast Rows List - Distinct Daywise Cards with Comfortable Gap */}
+        <div className="space-y-2 sm:space-y-2.5">
           {forecastData.map((item, idx) => {
             const isToday = idx === 0;
             const min = convertTemp(item.min_temp);
@@ -136,10 +136,10 @@ export const DailyForecastGlass: React.FC<DailyForecastGlassProps> = ({
             return (
               <div
                 key={idx}
-                className={`grid grid-cols-12 items-center py-3.5 px-2 sm:px-4 rounded-2xl transition-all ${
+                className={`grid grid-cols-12 items-center py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl transition-all ${
                   isToday 
-                    ? 'bg-white/12 border border-white/20 shadow-xs' 
-                    : 'hover:bg-white/5 border border-transparent'
+                    ? 'bg-white/15 border border-sky-400/40 shadow-sm' 
+                    : 'bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 shadow-2xs'
                 }`}
               >
                 {/* 1. Left: Day Name (e.g. "Today", "Tue", "Wed") */}

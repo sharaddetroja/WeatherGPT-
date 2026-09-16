@@ -36,7 +36,7 @@ const createCustomIcon = (type: 'source' | 'destination' | 'route_place', index:
     ? 'bg-rose-500 text-white ring-4 ring-rose-500/30' 
     : 'bg-sky-500 text-slate-950 ring-2 ring-sky-500/20';
 
-  const label = type === 'source' ? 'S' : type === 'destination' ? 'D' : (index + 1).toString();
+  const label = type === 'source' ? 'S' : type === 'destination' ? '🏁' : (index + 1).toString();
 
   const html = `
     <div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9999px;font-weight:800;font-size:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.3);border:2px solid #0f172a;" class="${bgClass}">

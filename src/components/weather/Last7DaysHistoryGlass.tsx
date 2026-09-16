@@ -152,8 +152,8 @@ export const Last7DaysHistoryGlass: React.FC<Last7DaysHistoryGlassProps> = ({
           </div>
         </div>
 
-        {/* Day by Day Historical Table/Cards Styled Like Reference Image */}
-        <div className="divide-y divide-white/10">
+        {/* Day by Day Historical Table/Cards with Comfortable Gap */}
+        <div className="space-y-2 sm:space-y-2.5">
           {historyData.map((item, idx) => {
             const min = convertTemp(item.min_temp);
             const max = convertTemp(item.max_temp);
@@ -179,12 +179,12 @@ export const Last7DaysHistoryGlass: React.FC<Last7DaysHistoryGlassProps> = ({
               <div
                 key={idx}
                 onClick={() => setSelectedDay(selectedDay?.date === item.date ? null : item)}
-                className={`grid grid-cols-12 items-center py-3.5 px-2 sm:px-4 rounded-2xl transition-all cursor-pointer ${
+                className={`grid grid-cols-12 items-center py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl transition-all cursor-pointer ${
                   selectedDay?.date === item.date
-                    ? 'bg-white/15 border border-sky-400/40 shadow-xs'
+                    ? 'bg-white/20 border border-sky-400 shadow-md'
                     : isYesterday
-                    ? 'bg-white/10 border border-white/20'
-                    : 'hover:bg-white/5 border border-transparent'
+                    ? 'bg-white/12 border border-white/20 shadow-xs'
+                    : 'bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 shadow-2xs'
                 }`}
               >
                 {/* 1. Left: Day Label (e.g. "Yesterday", "Sun", "Sat") */}

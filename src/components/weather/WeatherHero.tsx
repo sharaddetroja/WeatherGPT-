@@ -118,31 +118,47 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           </div>
         </div>
 
-        {/* RIGHT: AQI (Displayed with identical typographic prominence) */}
-        <div className="flex flex-col items-start text-left sm:border-l sm:border-white/15 sm:pl-6 lg:pl-8">
-          {/* AQI Quality Status */}
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className={`w-2.5 h-2.5 rounded-full ${aqiInfo.dotColor} animate-pulse shadow-sm`} />
-            <span className={`text-xl xs:text-2xl sm:text-2xl lg:text-3xl font-bold tracking-tight ${aqiInfo.textColor} drop-shadow-sm truncate`}>
-              {aqiInfo.label} Air
-            </span>
-          </div>
+        {/* RIGHT: AQI with Slidebar matching reference image */}
+        <div className="flex flex-col items-start text-left sm:border-l sm:border-white/15 sm:pl-6 lg:pl-8 w-full">
+          {/* AQI Title Label */}
+          <span className="text-xs sm:text-sm font-semibold text-white/70 uppercase tracking-wider block">
+            AQI
+          </span>
 
-          {/* PM2.5 & PM10 Details */}
-          <div className="flex items-center flex-wrap gap-2 xs:gap-2.5 text-xs xs:text-sm font-medium text-white/85">
-            <span>PM 2.5: {activePm25}</span>
-            <span className="w-1 h-1 rounded-full bg-white/50" />
-            <span>PM 10: {aqiInfo.pm10}</span>
-          </div>
+          {/* Quality(Score) e.g. Good(29) */}
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-0.5 drop-shadow-sm">
+            {aqiInfo.label}({aqiInfo.score})
+          </h3>
 
-          {/* Huge Visually Dominant AQI Score */}
-          <div className="flex items-start mt-2">
-            <span className={`text-6xl xs:text-7xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-none ${aqiInfo.textColor} drop-shadow-md`}>
-              {aqiInfo.score}
-            </span>
-            <span className="text-2xl xs:text-3xl sm:text-3xl lg:text-4xl font-light text-white/80 -mt-1 ml-1.5">
-              AQI
-            </span>
+          {/* AQI Quality Slidebar (Good to Bad gradient track with active fill) */}
+          <div className="w-full mt-2.5">
+            <div className="w-full h-3 sm:h-3.5 rounded-full bg-white/20 backdrop-blur-md overflow-hidden relative border border-white/10 p-0.5 flex items-center">
+              <div 
+                className={`h-full rounded-full transition-all duration-700 ${
+                  aqiInfo.category === 'good' 
+                    ? 'bg-[#00E676] shadow-[0_0_10px_rgba(0,230,118,0.7)]'
+                    : aqiInfo.category === 'moderate'
+                    ? 'bg-[#FBBF24] shadow-[0_0_10px_rgba(251,191,36,0.7)]'
+                    : aqiInfo.category === 'poor'
+                    ? 'bg-[#FB923C] shadow-[0_0_10px_rgba(251,146,60,0.7)]'
+                    : aqiInfo.category === 'unhealthy'
+                    ? 'bg-[#F43F5E] shadow-[0_0_10px_rgba(244,63,94,0.7)]'
+                    : 'bg-[#A855F7] shadow-[0_0_10px_rgba(168,85,247,0.7)]'
+                }`}
+                style={{ width: `${Math.min(100, Math.max(12, Math.round((aqiInfo.score / 300) * 100)))}%` }}
+              />
+            </div>
+
+            {/* PM2.5 & PM10 Details */}
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-white/70 mt-1.5 font-medium">
+              <span>PM 2.5: {activePm25}</span>
+              <span>•</span>
+              <span>PM 10: {aqiInfo.pm10}</span>
+              <span className="hidden xs:inline">•</span>
+              <span className={`hidden xs:inline font-bold ${aqiInfo.textColor}`}>
+                {aqiInfo.category === 'good' ? 'Clean Air' : aqiInfo.label}
+              </span>
+            </div>
           </div>
         </div>
       </div>

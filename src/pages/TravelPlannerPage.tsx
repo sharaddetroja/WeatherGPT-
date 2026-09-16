@@ -5,9 +5,11 @@ import {
   Navigation, 
   ArrowLeftRight, 
   MapPin, 
+  Flag,
   Loader2, 
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  ArrowRight
 } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 import { INDIAN_CITIES } from '../data/indianCities';
@@ -18,14 +20,6 @@ import {
 } from '../services/routeWeatherService';
 import { RouteWeather } from '../components/route/RouteWeather';
 import { rawBackendRouteWeatherResponse } from '../data/mockRouteWeather';
-
-const PRESET_ROUTES = [
-  { source: 'Morbi', destination: 'Surat', label: 'Morbi ➔ Surat (Backend Data)' },
-  { source: 'Morbi', destination: 'Rajkot', label: 'Morbi ➔ Rajkot (NH27)' },
-  { source: 'Rajkot', destination: 'Ahmedabad', label: 'Rajkot ➔ Ahmedabad (NH47)' },
-  { source: 'Mumbai', destination: 'Pune', label: 'Mumbai ➔ Pune (Expressway)' },
-  { source: 'Delhi', destination: 'Jaipur', label: 'Delhi ➔ Jaipur (NH48)' }
-];
 
 export default function TravelPlannerPage() {
   const { t } = useLanguage();
@@ -188,41 +182,14 @@ export default function TravelPlannerPage() {
             <Car className="w-3.5 h-3.5" />
             <span>Highway & Route Telemetry</span>
           </div>
-          <h1 className="text-xl xs:text-2xl sm:text-3xl font-black text-white tracking-tight">
-            {t('travel_title', 'Source ➔ Destination Weather')}
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5 flex-wrap">
+            <span>Source</span>
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400" />
+            <span>Destination Weather</span>
           </h1>
           <p className="text-xs text-white/70 mt-1 max-w-xl leading-relaxed">
             {t('travel_subtitle', 'Live arrival-time weather forecasts, highway hazard alerts, and route telemetry along your travel corridor.')}
           </p>
-        </div>
-
-        {/* Preset Quick Buttons with smooth horizontal scroll */}
-        <div className="w-full md:w-auto overflow-hidden">
-          <span className="text-[10px] font-bold text-white/60 uppercase tracking-wider block mb-1.5 md:hidden">
-            Popular Corridors:
-          </span>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full scrollbar-none md:flex-wrap">
-            {PRESET_ROUTES.map((preset, idx) => {
-              const isSelected = sourceInput.toLowerCase() === preset.source.toLowerCase() && destInput.toLowerCase() === preset.destination.toLowerCase();
-              return (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setSourceInput(preset.source);
-                    setDestInput(preset.destination);
-                    handleCalculateRoute(preset.source, preset.destination);
-                  }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs whitespace-nowrap shrink-0 border ${
-                    isSelected
-                      ? 'bg-primary text-white border-sky-400 font-bold shadow-md scale-105'
-                      : 'glass-pill border-white/15 text-white/80 hover:text-white hover:bg-white/15'
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              );
-            })}
-          </div>
         </div>
       </div>
 
@@ -307,7 +274,7 @@ export default function TravelPlannerPage() {
               <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider">Arrival Point</span>
             </label>
             <div className="relative">
-              <MapPin className="w-4 h-4 text-rose-400 absolute left-3 top-3 pointer-events-none" />
+              <Flag className="w-4 h-4 text-rose-400 absolute left-3 top-3 pointer-events-none" />
               <input
                 type="text"
                 placeholder="e.g. Surat"
@@ -335,7 +302,7 @@ export default function TravelPlannerPage() {
                     className="w-full px-3.5 py-2 text-left text-xs font-semibold hover:bg-white/15 text-white flex items-center justify-between gap-2.5 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <Flag className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                       <span className="truncate font-bold">{city.name}</span>
                     </div>
                     <span className="text-[10px] text-white/70 bg-white/10 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0 border border-white/10">

@@ -13,7 +13,6 @@ import {
   Database,
   X
 } from 'lucide-react';
-import { cn } from '../utils/cn';
 import { 
   LineChart, 
   Line, 
@@ -33,16 +32,6 @@ import {
   type NormalizedClimateData 
 } from '../services/climateService';
 import { motion, AnimatePresence } from 'motion/react';
-
-const PRESET_LOCATIONS = [
-  { name: 'Morbi', label: 'Morbi' },
-  { name: 'Rajkot', label: 'Rajkot' },
-  { name: 'Surat', label: 'Surat' },
-  { name: 'Ahmedabad', label: 'Ahmedabad' },
-  { name: 'Mumbai', label: 'Mumbai' },
-  { name: 'Delhi', label: 'Delhi' },
-  { name: 'Jaipur', label: 'Jaipur' },
-];
 
 export default function ClimatePage() {
   const { convertTemp, tempUnitSymbol, profile, updateProfile } = useUserProfile();
@@ -226,24 +215,6 @@ export default function ClimatePage() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-
-          {/* Quick Preset Buttons: Horizontally Scrollable without Jagged Wrapping */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none flex-nowrap shrink-0 max-w-full">
-            {PRESET_LOCATIONS.map((preset, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSelectCity(preset.name)}
-                className={cn(
-                  "px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0",
-                  selectedCity.toLowerCase() === preset.name.toLowerCase()
-                    ? "bg-primary text-white border-sky-400 font-bold shadow-xs scale-105"
-                    : "glass-pill border-white/15 text-white/80 hover:text-white hover:bg-white/15"
-                )}
-              >
-                {preset.name}
-              </button>
-            ))}
           </div>
         </div>
       </div>
