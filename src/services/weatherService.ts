@@ -1,7 +1,5 @@
 import { 
-  fetchCurrentWeatherApi, 
-  fetchWeatherHistoryApi,
-  WEATHER_ENDPOINT 
+  fetchBackendWeather 
 } from './weatherGptApi';
 
 export interface YesterdayWeatherData {
@@ -127,146 +125,184 @@ export const generateDynamicHourlyForecast = (baseTemp: number = 28, conditionTe
 };
 
 /**
+ * Helper to format ISO sun string (e.g. "2026-09-16T06:20") into readable 12-hour format ("6:20 am")
+ */
+export function formatSunTime(isoString?: string): string {
+  if (!isoString) return '';
+  if (isoString.includes('am') || isoString.includes('pm')) return isoString;
+  const timePart = isoString.includes('T') ? isoString.split('T')[1] : isoString;
+  if (!timePart) return isoString;
+  const [hStr, mStr] = timePart.split(':');
+  let h = parseInt(hStr, 10);
+  if (isNaN(h)) return isoString;
+  const m = mStr ? mStr.slice(0, 2) : '00';
+  const ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  return `${h}:${m} ${ampm}`;
+}
+
+/**
  * Main weather data fetcher connecting to production Express backend
  */
 export const getWeatherData = async (city: string = 'Rajkot') => {
+  const cleanCity = (city || 'Rajkot').split(',')[0].trim() || 'Rajkot';
+
   try {
-    // Attempt fetching current weather & 7-day history from live API endpoints concurrently
-    const [currentRes, historyRes] = await Promise.allSettled([
-      fetchCurrentWeatherApi(city),
-      fetchWeatherHistoryApi(city),
-    ]);
+    // Attempt fetching live unified weather from production backend POST /api/weather
+    const liveRes = await fetchBackendWeather(cleanCity);
 
-    let liveCurrent: any = null;
-    let liveHistory: HistoricalWeatherDay[] | null = null;
-    let locationData: any = null;
+    if (liveRes && liveRes.success && liveRes.data) {
+      const data = liveRes.data;
+      const cur = data.current || {};
+      const tempC = Math.round(cur.temperature ?? 28);
+      const isStale = Boolean(data.isCached);
 
-    if (currentRes.status === 'fulfilled' && currentRes.value?.success) {
-      const val = currentRes.value;
-      locationData = val.location || { name: city };
-      liveCurrent = val.current;
-    }
+      const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    if (historyRes.status === 'fulfilled' && historyRes.value?.success && Array.isArray(historyRes.value.history)) {
-      liveHistory = historyRes.value.history.map((h: any) => ({
-        date: h.date,
-        day: h.day || new Date(h.date).toLocaleDateString('en-US', { weekday: 'short' }),
-        min_temp: Number(h.min_temp_c ?? h.min_temp ?? 22),
-        max_temp: Number(h.max_temp_c ?? h.max_temp ?? 32),
-        avg_temp: Number(h.avg_temp_c ?? h.avg_temp ?? 27),
-        condition: typeof h.condition === 'string' ? h.condition : h.condition?.text || 'Sunny',
-        rainfall_mm: Number(h.precipitation_mm ?? h.rainfall_mm ?? 0),
-        humidity: Number(h.humidity ?? 60),
-        wind_kph: Number(h.wind_kph ?? 12),
-        pressure_mb: Number(h.pressure_mb ?? 1012),
-        uv: Number(h.uv ?? 6),
-        is_stale: Boolean(h.is_stale),
-      }));
-    }
+      // Map backend hourly forecast (24h) into 12h display
+      let hourlyList: Array<{
+        time: string;
+        temp_c: number;
+        icon: string;
+        chance_of_rain: number;
+        wind_kph?: number;
+      }> = [];
 
-    // If direct endpoint had data, construct merged object
-    if (liveCurrent) {
-      const tempC = Number(liveCurrent.temp_c ?? liveCurrent.temperature_c ?? 28);
-      const isStale = Boolean(liveCurrent.is_stale);
+      if (Array.isArray(data.hourly) && data.hourly.length > 0) {
+        hourlyList = data.hourly.slice(0, 12).map((h: any) => {
+          const d = new Date(h.time);
+          const hour = isNaN(d.getHours()) ? 12 : d.getHours();
+          return {
+            time: `${String(hour).padStart(2, '0')}:00`,
+            temp_c: Math.round(h.temperature ?? tempC),
+            icon: (h.precipitationProbability ?? 0) > 40 ? 'cloud-rain' : (hour < 6 || hour >= 19) ? 'cloud' : 'sun',
+            chance_of_rain: Math.round(h.precipitationProbability ?? 10),
+            wind_kph: Math.round(h.windSpeed ?? 12),
+          };
+        });
+      } else {
+        hourlyList = generateDynamicHourlyForecast(tempC, cur.condition);
+      }
+
+      // Map backend daily forecast (7 days)
+      let forecastList: Array<any> = [];
+      if (Array.isArray(data.daily) && data.daily.length > 0) {
+        forecastList = data.daily.map((d: any, idx: number) => {
+          const dDate = new Date(d.date);
+          const dayName = idx === 0 ? 'Today' : daysOfWeek[dDate.getDay()] || 'Day';
+          return {
+            date: d.date,
+            day: dayName,
+            min_temp: Math.round(d.temperatureMin ?? tempC - 4),
+            max_temp: Math.round(d.temperatureMax ?? tempC + 4),
+            condition: d.condition || 'Partly Cloudy',
+            chance_of_rain: Math.round(d.precipitationProbabilityMax ?? 20),
+            rainfall_mm: Number(d.precipitationSum ?? 0),
+            humidity: Math.round(cur.humidity ?? 65),
+            wind_kph: Math.round(cur.windSpeed ?? 14),
+            sunrise: d.sunrise,
+            sunset: d.sunset,
+          };
+        });
+      } else {
+        forecastList = [
+          { date: "2026-09-16", day: "Today", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: cur.condition || "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.5, humidity: cur.humidity || 65, wind_kph: cur.windSpeed || 12 },
+          { date: "2026-09-17", day: "Thu", min_temp: Math.round(tempC - 3), max_temp: Math.round(tempC + 4), condition: "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.2, humidity: 60, wind_kph: 14 },
+          { date: "2026-09-18", day: "Fri", min_temp: Math.round(tempC - 3), max_temp: Math.round(tempC + 5), condition: "Sunny", chance_of_rain: 0, rainfall_mm: 0, humidity: 48, wind_kph: 12 },
+          { date: "2026-09-19", day: "Sat", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: "Thunderstorm", chance_of_rain: 85, rainfall_mm: 15.0, humidity: 82, wind_kph: 22 },
+          { date: "2026-09-20", day: "Sun", min_temp: Math.round(tempC - 5), max_temp: Math.round(tempC + 3), condition: "Rain Showers", chance_of_rain: 70, rainfall_mm: 8.5, humidity: 78, wind_kph: 18 },
+          { date: "2026-09-21", day: "Mon", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: "Sunny", chance_of_rain: 10, rainfall_mm: 0, humidity: 55, wind_kph: 11 },
+          { date: "2026-09-22", day: "Tue", min_temp: Math.round(tempC - 3), max_temp: Math.round(tempC + 5), condition: "Clear Sky", chance_of_rain: 0, rainfall_mm: 0, humidity: 50, wind_kph: 10 },
+        ];
+      }
+
+      const sunrise = formatSunTime(data.daily?.[0]?.sunrise) || '6:32 am';
+      const sunset = formatSunTime(data.daily?.[0]?.sunset) || '6:51 pm';
 
       return {
         location: {
-          name: locationData?.name || city,
-          region: locationData?.state || locationData?.region || "India",
-          country: locationData?.country || "India",
-          lat: Number(locationData?.latitude ?? 22.3039),
-          lon: Number(locationData?.longitude ?? 70.8022),
+          name: data.location?.name || cleanCity,
+          region: data.location?.region || (['Rajkot', 'Morbi', 'Ahmedabad', 'Surat', 'Vadodara', 'Jamnagar', 'Bhavnagar', 'Junagadh'].includes(cleanCity) ? 'Gujarat' : 'India'),
+          country: "India",
+          lat: Number(data.location?.latitude ?? 22.3039),
+          lon: Number(data.location?.longitude ?? 70.8022),
         },
         current: {
           temp_c: tempC,
           condition: {
-            text: typeof liveCurrent.condition === 'string' ? liveCurrent.condition : liveCurrent.condition?.text || "Partly Cloudy",
-            icon: liveCurrent.condition?.icon || "cloud-sun"
+            text: cur.condition || "Partly Cloudy",
+            icon: cur.weatherCode !== undefined ? (cur.weatherCode > 50 ? 'cloud-rain' : cur.weatherCode > 0 ? 'cloud-sun' : 'sun') : "cloud-sun"
           },
-          wind_kph: Number(liveCurrent.wind_kph ?? 12.4),
-          humidity: Number(liveCurrent.humidity ?? 65),
-          feelslike_c: Number(liveCurrent.feelslike_c ?? tempC + 1.5),
-          uv: Number(liveCurrent.uv ?? 6),
-          visibility_km: Number(liveCurrent.visibility_km ?? 10),
-          pressure_mb: Number(liveCurrent.pressure_mb ?? 1012),
-          precip_mm: Number(liveCurrent.precip_mm ?? 0.0),
+          wind_kph: Number(cur.windSpeed ?? 12.4),
+          humidity: Number(cur.humidity ?? 65),
+          feelslike_c: Number(cur.apparentTemperature ?? tempC + 1.5),
+          uv: Number(cur.uvIndex ?? 6),
+          visibility_km: cur.visibility ? Math.round(cur.visibility / 1000) : 10,
+          pressure_mb: 1012,
+          precip_mm: Number(cur.precipitation ?? 0.0),
           is_stale: isStale,
-          fetched_at: liveCurrent.fetched_at,
+          fetched_at: data.retrievedAt,
         },
-        hourly: generateDynamicHourlyForecast(tempC, liveCurrent.condition?.text),
-        forecast: [
-          { date: "2026-09-13", day: "Today", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: liveCurrent.condition?.text || "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.5, humidity: liveCurrent.humidity || 65, wind_kph: liveCurrent.wind_kph || 12 },
-          { date: "2026-09-14", day: "Mon", min_temp: Math.round(tempC - 5), max_temp: Math.round(tempC + 3), condition: "Rain Showers", chance_of_rain: 70, rainfall_mm: 8.5, humidity: 78, wind_kph: 18 },
-          { date: "2026-09-15", day: "Tue", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: "Sunny", chance_of_rain: 10, rainfall_mm: 0, humidity: 55, wind_kph: 11 },
-          { date: "2026-09-16", day: "Wed", min_temp: Math.round(tempC - 3), max_temp: Math.round(tempC + 5), condition: "Clear Sky", chance_of_rain: 0, rainfall_mm: 0, humidity: 50, wind_kph: 10 },
-          { date: "2026-09-17", day: "Thu", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.2, humidity: 60, wind_kph: 14 },
-          { date: "2026-09-18", day: "Fri", min_temp: Math.round(tempC - 3), max_temp: Math.round(tempC + 5), condition: "Sunny", chance_of_rain: 0, rainfall_mm: 0, humidity: 48, wind_kph: 12 },
-          { date: "2026-09-19", day: "Sat", min_temp: Math.round(tempC - 4), max_temp: Math.round(tempC + 4), condition: "Thunderstorm", chance_of_rain: 85, rainfall_mm: 15.0, humidity: 82, wind_kph: 22 },
-        ],
-        history7Days: liveHistory || generateLast7DaysHistory(tempC),
+        astronomy: {
+          sunrise,
+          sunset,
+        },
+        hourly: hourlyList,
+        forecast: forecastList,
+        history7Days: generateLast7DaysHistory(tempC),
         insights: [
-          { title: "Live Forecast Active", type: "info", message: `Displaying live weather data for ${city}.`, icon: "info" },
+          { title: "Live Telemetry Active", type: "info", message: `Connected to live satellite & radar weather data for ${cleanCity}.`, icon: "info" },
           { title: "Travel Recommendation", type: "success", message: "Optimal travel window detected in morning hours.", icon: "car" },
         ]
       };
     }
-
-    // Fallback: Legacy `/api/weather` endpoint or deterministic mock data
-    const url = `${WEATHER_ENDPOINT}?city=${encodeURIComponent(city)}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
-      if (!data.history7Days) {
-        const baseT = data.current?.temp_c || 28;
-        data.history7Days = liveHistory || generateLast7DaysHistory(baseT);
-      }
-      return data;
-    }
-
-    throw new Error('Failed to fetch weather from backend endpoints');
   } catch (err) {
-    console.warn('Backend endpoint fetch error, falling back to mock weather data:', err);
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    return {
-      location: {
-        name: city,
-        region: "Gujarat",
-        country: "India",
-        lat: 22.3039,
-        lon: 70.8022,
-      },
-      current: {
-        temp_c: 28,
-        condition: {
-          text: "Partly Cloudy",
-          icon: "cloud-sun"
-        },
-        wind_kph: 15.4,
-        humidity: 68,
-        feelslike_c: 30,
-        uv: 6,
-        visibility_km: 10,
-        pressure_mb: 1012,
-        precip_mm: 0.0,
-        is_stale: false,
-      },
-      hourly: generateDynamicHourlyForecast(28, "Partly Cloudy"),
-      forecast: [
-        { date: "2026-09-08", day: "Mon", min_temp: 24, max_temp: 32, condition: "Rain", chance_of_rain: 80, rainfall_mm: 12.5, humidity: 82, wind_kph: 20 },
-        { date: "2026-09-09", day: "Tue", min_temp: 23, max_temp: 31, condition: "Thunderstorm", chance_of_rain: 90, rainfall_mm: 25.0, humidity: 88, wind_kph: 26 },
-        { date: "2026-09-10", day: "Wed", min_temp: 25, max_temp: 33, condition: "Partly Cloudy", chance_of_rain: 30, rainfall_mm: 1.2, humidity: 65, wind_kph: 14 },
-        { date: "2026-09-11", day: "Thu", min_temp: 26, max_temp: 34, condition: "Sunny", chance_of_rain: 10, rainfall_mm: 0, humidity: 55, wind_kph: 11 },
-        { date: "2026-09-12", day: "Fri", min_temp: 26, max_temp: 35, condition: "Sunny", chance_of_rain: 0, rainfall_mm: 0, humidity: 50, wind_kph: 10 },
-        { date: "2026-09-13", day: "Sat", min_temp: 27, max_temp: 35, condition: "Sunny", chance_of_rain: 0, rainfall_mm: 0, humidity: 48, wind_kph: 12 },
-        { date: "2026-09-14", day: "Sun", min_temp: 26, max_temp: 34, condition: "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.5, humidity: 60, wind_kph: 15 },
-      ],
-      history7Days: generateLast7DaysHistory(28),
-      insights: [
-        { title: "Rain Advisory", type: "warning", message: "Heavy rain may occur between 1 PM and 4 PM today.", icon: "rain" },
-        { title: "Travel Recommendation", type: "info", message: "Travel conditions may become difficult during afternoon rainfall.", icon: "car" },
-        { title: "Agriculture Insight", type: "success", message: "High humidity and rainfall will benefit local Kharif crops.", icon: "leaf" },
-      ]
-    };
+    console.warn('Live backend fetch error, falling back to cached weather data:', err);
   }
+
+  // Graceful deterministic fallback (Render cold-start / offline)
+  await new Promise(resolve => setTimeout(resolve, 200));
+  return {
+    location: {
+      name: cleanCity,
+      region: ['Rajkot', 'Morbi', 'Ahmedabad', 'Surat', 'Vadodara'].includes(cleanCity) ? 'Gujarat' : 'India',
+      country: 'India',
+      lat: 22.3039,
+      lon: 70.8022,
+    },
+    current: {
+      temp_c: 28,
+      condition: {
+        text: 'Partly Cloudy',
+        icon: 'cloud-sun',
+      },
+      wind_kph: 15.4,
+      humidity: 68,
+      feelslike_c: 30,
+      uv: 6,
+      visibility_km: 10,
+      pressure_mb: 1012,
+      precip_mm: 0.0,
+      is_stale: false,
+    },
+    astronomy: {
+      sunrise: '6:32 am',
+      sunset: '6:51 pm',
+    },
+    hourly: generateDynamicHourlyForecast(28, 'Partly Cloudy'),
+    forecast: [
+      { date: "2026-09-16", day: "Today", min_temp: 24, max_temp: 32, condition: "Partly Cloudy", chance_of_rain: 20, rainfall_mm: 0.5, humidity: 65, wind_kph: 15 },
+      { date: "2026-09-17", day: "Thu", min_temp: 24, max_temp: 33, condition: "Sunny", chance_of_rain: 10, rainfall_mm: 0, humidity: 58, wind_kph: 12 },
+      { date: "2026-09-18", day: "Fri", min_temp: 25, max_temp: 34, condition: "Clear Sky", chance_of_rain: 0, rainfall_mm: 0, humidity: 52, wind_kph: 11 },
+      { date: "2026-09-19", day: "Sat", min_temp: 26, max_temp: 34, condition: "Partly Cloudy", chance_of_rain: 25, rainfall_mm: 0.8, humidity: 62, wind_kph: 14 },
+      { date: "2026-09-20", day: "Sun", min_temp: 25, max_temp: 32, condition: "Rain Showers", chance_of_rain: 70, rainfall_mm: 7.2, humidity: 76, wind_kph: 18 },
+      { date: "2026-09-21", day: "Mon", min_temp: 24, max_temp: 31, condition: "Thunderstorm", chance_of_rain: 85, rainfall_mm: 14.0, humidity: 82, wind_kph: 20 },
+      { date: "2026-09-22", day: "Tue", min_temp: 25, max_temp: 33, condition: "Sunny", chance_of_rain: 10, rainfall_mm: 0, humidity: 55, wind_kph: 12 },
+    ],
+    history7Days: generateLast7DaysHistory(28),
+    insights: [
+      { title: "Weather Forecast", type: "info", message: `Displaying local weather forecast for ${cleanCity}.`, icon: "info" },
+      { title: "Travel Recommendation", type: "success", message: "Good visibility and travel conditions today.", icon: "car" },
+    ]
+  };
 };

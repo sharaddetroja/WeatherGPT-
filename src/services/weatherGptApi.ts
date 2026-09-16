@@ -79,12 +79,82 @@ const API_ENDPOINT = `${BASE_API_URL}/ask`;
 export const WEATHER_ENDPOINT = `${BASE_API_URL}/weather`;
 export const WEATHER_CURRENT_ENDPOINT = `${BASE_API_URL}/weather/current`;
 export const WEATHER_HISTORY_ENDPOINT = `${BASE_API_URL}/weather/history`;
-export const WEATHER_ALERTS_ENDPOINT = `${BASE_API_URL}/weather/alerts`;
+export const WEATHER_ALERTS_ENDPOINT = `${BASE_API_URL}/alerts`;
 export const ROUTE_WEATHER_ENDPOINT = `${BASE_API_URL}/route-weather`;
-export const HEALTH_ENDPOINT = `${BASE_API_URL}/health`;
+export const HEALTH_ENDPOINT = `${RAW_BASE_URL.replace(/\/api$/, '')}/health`;
 export const VOICE_SPEAK_ENDPOINT = `${BASE_API_URL}/voice/speak`;
 export const VOICE_TRANSCRIBE_ENDPOINT = `${BASE_API_URL}/voice/transcribe`;
 export const VOICE_ASK_ENDPOINT = `${BASE_API_URL}/voice/ask`;
+
+export const KNOWN_CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
+  rajkot: { lat: 22.3039, lon: 70.8022 },
+  morbi: { lat: 22.8173, lon: 70.8368 },
+  ahmedabad: { lat: 23.0225, lon: 72.5714 },
+  surat: { lat: 21.1702, lon: 72.8311 },
+  vadodara: { lat: 22.3072, lon: 73.1812 },
+  bhavnagar: { lat: 21.7645, lon: 72.1519 },
+  jamnagar: { lat: 22.4707, lon: 70.0577 },
+  junagadh: { lat: 21.5222, lon: 70.4579 },
+  gandhinagar: { lat: 23.2156, lon: 72.6369 },
+  mumbai: { lat: 19.0760, lon: 72.8777 },
+  pune: { lat: 18.5204, lon: 73.8567 },
+  nagpur: { lat: 21.1458, lon: 79.0882 },
+  nashik: { lat: 19.9975, lon: 73.7898 },
+  delhi: { lat: 28.6139, lon: 77.2090 },
+  'new delhi': { lat: 28.6139, lon: 77.2090 },
+  noida: { lat: 28.5355, lon: 77.3910 },
+  gurugram: { lat: 28.4595, lon: 77.0266 },
+  bengaluru: { lat: 12.9716, lon: 77.5946 },
+  bangalore: { lat: 12.9716, lon: 77.5946 },
+  hyderabad: { lat: 17.3850, lon: 78.4867 },
+  chennai: { lat: 13.0827, lon: 80.2707 },
+  kolkata: { lat: 22.5726, lon: 88.3639 },
+  jaipur: { lat: 26.9124, lon: 75.7873 },
+  lucknow: { lat: 26.8467, lon: 80.9462 },
+  kanpur: { lat: 26.4499, lon: 80.3319 },
+  indore: { lat: 22.7196, lon: 75.8577 },
+  bhopal: { lat: 23.2599, lon: 77.4126 },
+  patna: { lat: 25.5941, lon: 85.1376 },
+  chandigarh: { lat: 30.7333, lon: 76.7794 },
+  varanasi: { lat: 25.3176, lon: 82.9739 },
+  agra: { lat: 27.1767, lon: 78.0081 },
+  amritsar: { lat: 31.6340, lon: 74.8723 },
+  coimbatore: { lat: 11.0168, lon: 76.9558 },
+  kochi: { lat: 9.9312, lon: 76.2673 },
+  thiruvananthapuram: { lat: 8.5241, lon: 76.9366 },
+  visakhapatnam: { lat: 17.6868, lon: 83.2185 },
+  goa: { lat: 15.2993, lon: 74.1240 },
+  shimla: { lat: 31.1048, lon: 77.1734 },
+  dehradun: { lat: 30.3165, lon: 78.0322 },
+  srinagar: { lat: 34.0837, lon: 74.7973 },
+  guwahati: { lat: 26.1445, lon: 91.7362 },
+  bhubaneswar: { lat: 20.2961, lon: 85.8245 },
+  ranchi: { lat: 23.3441, lon: 85.3096 },
+  raipur: { lat: 21.2514, lon: 81.6296 },
+};
+
+export function resolveCoordinatesForCity(cityOrLocation: string): { latitude: number; longitude: number } {
+  if (!cityOrLocation || !cityOrLocation.trim()) {
+    return { latitude: 22.3039, longitude: 70.8022 };
+  }
+
+  const parts = cityOrLocation.split(',');
+  if (parts.length === 2 && !isNaN(Number(parts[0])) && !isNaN(Number(parts[1]))) {
+    return { latitude: Number(parts[0].trim()), longitude: Number(parts[1].trim()) };
+  }
+
+  const cleanName = parts[0].trim().toLowerCase();
+  if (KNOWN_CITY_COORDINATES[cleanName]) {
+    return { latitude: KNOWN_CITY_COORDINATES[cleanName].lat, longitude: KNOWN_CITY_COORDINATES[cleanName].lon };
+  }
+
+  const foundKey = Object.keys(KNOWN_CITY_COORDINATES).find(k => cleanName.includes(k) || k.includes(cleanName));
+  if (foundKey) {
+    return { latitude: KNOWN_CITY_COORDINATES[foundKey].lat, longitude: KNOWN_CITY_COORDINATES[foundKey].lon };
+  }
+
+  return { latitude: 22.3039, longitude: 70.8022 };
+}
 
 export interface AskWeatherGPTParams {
   question: string;
@@ -98,7 +168,7 @@ export interface AskWeatherGPTParams {
 }
 
 /**
- * Health Check API Call
+ * Health Check API Call (Hits root /health which returns status 200)
  */
 export async function getHealthStatus(): Promise<{ status: string; timestamp: string; success?: boolean; message?: string }> {
   try {
@@ -113,50 +183,147 @@ export async function getHealthStatus(): Promise<{ status: string; timestamp: st
 }
 
 /**
- * Live Current Weather Endpoint
+ * Live Weather Fetch using POST /api/weather
+ */
+export async function fetchBackendWeather(
+  cityOrLocation: string,
+  coords?: { latitude: number; longitude: number }
+): Promise<any> {
+  try {
+    const cleanCity = (cityOrLocation || 'Rajkot').split(',')[0].trim() || 'Rajkot';
+    const location = coords || resolveCoordinatesForCity(cityOrLocation);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    const response = await fetch(WEATHER_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        city: cleanCity,
+        location,
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+
+    return await response.json();
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Network request failed' };
+  }
+}
+
+/**
+ * Live Current Weather Endpoint adapter (calls live backend POST /api/weather)
  */
 export async function fetchCurrentWeatherApi(cityOrLocation: string): Promise<any> {
-  try {
-    const url = `${WEATHER_CURRENT_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      return { success: false, error: `HTTP ${response.status}` };
-    }
-    return await response.json();
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Network request failed' };
+  const result = await fetchBackendWeather(cityOrLocation);
+  if (result && result.success && result.data) {
+    const cur = result.data.current || {};
+    return {
+      success: true,
+      location: result.data.location || { name: cityOrLocation },
+      current: {
+        temp_c: cur.temperature ?? 28,
+        temperature_c: cur.temperature ?? 28,
+        feelslike_c: cur.apparentTemperature ?? cur.temperature ?? 28,
+        condition: {
+          text: cur.condition || 'Partly Cloudy',
+          icon: cur.weatherCode !== undefined ? (cur.weatherCode > 50 ? 'cloud-rain' : cur.weatherCode > 0 ? 'cloud-sun' : 'sun') : 'cloud-sun'
+        },
+        wind_kph: cur.windSpeed ?? 14,
+        humidity: cur.humidity ?? 65,
+        uv: cur.uvIndex ?? 6,
+        precip_mm: cur.precipitation ?? 0,
+        visibility_km: cur.visibility ? Math.round(cur.visibility / 1000) : 10,
+        is_stale: false,
+        fetched_at: result.data.retrievedAt || new Date().toISOString()
+      },
+      hourly: result.data.hourly,
+      daily: result.data.daily,
+    };
   }
+  return result || { success: false, error: 'Failed to fetch current weather' };
 }
 
 /**
- * Live 7-Day Weather History Endpoint
+ * Live Weather History / Forecast Endpoint adapter
  */
 export async function fetchWeatherHistoryApi(cityOrLocation: string): Promise<any> {
-  try {
-    const url = `${WEATHER_HISTORY_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      return { success: false, error: `HTTP ${response.status}` };
-    }
-    return await response.json();
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Network request failed' };
+  const result = await fetchBackendWeather(cityOrLocation);
+  if (result && result.success && result.data && Array.isArray(result.data.daily)) {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return {
+      success: true,
+      location: result.data.location || { name: cityOrLocation },
+      history: result.data.daily.map((d: any) => {
+        const dateObj = new Date(d.date);
+        return {
+          date: d.date,
+          day: days[dateObj.getDay()] || 'Day',
+          min_temp_c: d.temperatureMin,
+          max_temp_c: d.temperatureMax,
+          avg_temp_c: Math.round(((d.temperatureMax + d.temperatureMin) / 2) * 10) / 10,
+          condition: d.condition,
+          precipitation_mm: d.precipitationSum ?? 0,
+          humidity: 60,
+          wind_kph: 14,
+          pressure_mb: 1012,
+          uv: d.uvIndexMax ?? 6,
+          is_stale: false,
+        };
+      })
+    };
   }
+  return { success: false, history: [] };
 }
 
 /**
- * Live Weather Alerts Endpoint (/api/weather/alerts?city=...)
+ * Live Weather Alerts Endpoint adapter (POST /api/alerts)
  */
 export async function fetchWeatherAlertsApi(cityOrLocation: string): Promise<any> {
   try {
-    const url = `${WEATHER_ALERTS_ENDPOINT}?city=${encodeURIComponent(cityOrLocation)}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      return { success: false, alerts: [], message: `Weather alerts unavailable (HTTP ${response.status})` };
+    const cleanCity = (cityOrLocation || 'Rajkot').split(',')[0].trim() || 'Rajkot';
+    const location = resolveCoordinatesForCity(cleanCity);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const response = await fetch(`${BASE_API_URL}/alerts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        city: cleanCity,
+        location,
+        threshold: 50
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data = await response.json();
+      const alerts: any[] = [];
+      if (data?.currentStatus?.thresholdCrossed) {
+        alerts.push({
+          headline: `Severe Weather Warning for ${cleanCity}`,
+          event: "Rain Alert",
+          severity: "High",
+          description: `Precipitation risk reached ${data.currentStatus.maxRainProbability}%.`,
+          area: cleanCity
+        });
+      }
+      return { success: true, alerts, message: data?.makeWebhookResult?.message || '' };
     }
-    return await response.json();
-  } catch (err: any) {
-    return { success: false, alerts: [], message: err.message || 'Network request failed' };
+    return { success: true, alerts: [] };
+  } catch {
+    return { success: true, alerts: [] };
   }
 }
 

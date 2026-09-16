@@ -533,8 +533,8 @@ export default function Dashboard() {
         {/* Sun Trajectory Arc (Sunrise & Sunset) */}
         <SunriseCard 
           className="h-full"
-          sunriseTime="6:32 am"
-          sunsetTime="6:51 pm"
+          sunriseTime={data.astronomy?.sunrise || "6:32 am"}
+          sunsetTime={data.astronomy?.sunset || "6:51 pm"}
         />
 
         {/* Photorealistic Moon Phase Sphere, Moonrise & Moonset Telemetry */}
