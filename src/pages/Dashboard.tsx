@@ -30,6 +30,7 @@ import { WeatherDetailsGrid } from '../components/weather/WeatherDetailsGrid';
 import { WeatherAlertsGlass } from '../components/weather/WeatherAlertsGlass';
 import { Last7DaysHistoryGlass } from '../components/weather/Last7DaysHistoryGlass';
 import { HourlyPrecipitationBarCard } from '../components/weather/HourlyPrecipitationBarCard';
+import { SunriseCard } from '../components/weather/SunriseCard';
 import { MoonPhaseCard } from '../components/weather/MoonPhaseCard';
 
 function DashboardSkeleton() {
@@ -431,8 +432,8 @@ export default function Dashboard() {
       {/* ===================================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
         
-        {/* LEFT: Current Weather Hero (Seamless Sky Blend) */}
-        <div className="lg:col-span-4 h-full">
+        {/* LEFT: Current Weather Hero (Seamless Sky Blend with Temp & AQI) */}
+        <div className="lg:col-span-5 h-full">
           <WeatherHero
             className="h-full"
             locationName={currentLocationName}
@@ -448,7 +449,7 @@ export default function Dashboard() {
         </div>
 
         {/* CENTER / RIGHT: Hourly Forecast & Smooth Temperature Spline Curve */}
-        <div className="lg:col-span-8 h-full">
+        <div className="lg:col-span-7 h-full">
           <HourlyTemperatureChart
             className="h-full"
             hourlyData={data.hourly}
@@ -506,9 +507,8 @@ export default function Dashboard() {
 
         {/* Weather Details */}
         <div className="lg:col-span-5 h-full">
-          {/* 8 Compact Glass Metric Details + City Air Quality Summary */}
+          {/* 8 Compact Glass Metric Details */}
           <WeatherDetailsGrid
-            locationName={currentLocationName}
             feelsLike={convertTemp(data.current.feelslike_c)}
             tempUnit={tempUnitSymbol}
             humidity={data.current.humidity}
@@ -524,11 +524,18 @@ export default function Dashboard() {
       </div>
 
       {/* ===================================================================== */}
-      {/* ROW 3: HOURLY PRECIPITATION VOLUME (MM) & LUNAR MOON PHASE TELEMETRY  */}
+      {/* ROW 3: HOURLY PRECIPITATION & CELESTIAL TELEMETRY (SUN & MOON)        */}
       {/* ===================================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
         {/* Hourly Precipitation Bar Graph with liquid-surface styling */}
         <HourlyPrecipitationBarCard className="h-full" />
+
+        {/* Sun Trajectory Arc (Sunrise & Sunset) */}
+        <SunriseCard 
+          className="h-full"
+          sunriseTime="6:32 am"
+          sunsetTime="6:51 pm"
+        />
 
         {/* Photorealistic Moon Phase Sphere, Moonrise & Moonset Telemetry */}
         <MoonPhaseCard 

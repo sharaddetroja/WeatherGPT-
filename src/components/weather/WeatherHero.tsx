@@ -79,54 +79,71 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           )}
         </div>
 
-        {/* Air Quality & PM2.5 Badges */}
-        <div className="flex items-center gap-1.5 xs:gap-2 shrink-0 flex-wrap justify-end">
-          {/* Dynamic AQI Indicator Pill */}
-          <div 
-            className={`flex items-center gap-1.5 px-2.5 py-1 xs:px-3 xs:py-1.5 rounded-full ${aqiInfo.badgeBg} border ${aqiInfo.badgeBorder} backdrop-blur-md text-xs font-semibold text-white shadow-xs`}
-            title={`Air Quality Index: ${aqiInfo.score} (${aqiInfo.label}) - ${aqiInfo.advice}`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${aqiInfo.dotColor} animate-pulse`} />
-            <span className="text-[9px] xs:text-[10px] uppercase font-bold tracking-wider text-white/80">AQI</span>
-            <span className={`font-black ${aqiInfo.textColor}`}>{aqiInfo.score}</span>
-            <span className="hidden xs:inline text-[10px] font-medium text-white/70">
-              • {aqiInfo.label}
-            </span>
-          </div>
-
-          {/* PM2.5 Glass Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 xs:px-3 xs:py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-md text-xs font-semibold text-white shadow-xs">
-            <span className="text-[9px] xs:text-[10px] uppercase font-bold tracking-wider text-white/80">PM 2.5</span>
-            <span className="font-extrabold">{activePm25}</span>
+        {/* Live Status Pill */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-[10px] sm:text-xs font-semibold text-white/80 shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="tracking-wide">Live Feed</span>
           </div>
         </div>
       </div>
 
-      {/* Main Center Temperature & Condition Display */}
-      <div className="my-5 xs:my-6 sm:my-8 flex flex-col items-center sm:items-start text-center sm:text-left">
-        {/* Condition Text */}
-        <div className="flex items-center gap-2 mb-1.5">
-          <ConditionIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white/90 drop-shadow-sm" />
-          <span className="text-xl xs:text-2xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-sm">
-            {condition}
-          </span>
+      {/* Main Dual Metric Display: Left = Temperature, Right = AQI (Same Styling) */}
+      <div className="my-5 xs:my-6 sm:my-7 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-6 lg:gap-8 items-start">
+        {/* LEFT: Temperature */}
+        <div className="flex flex-col items-start text-left">
+          {/* Condition Text */}
+          <div className="flex items-center gap-2 mb-1.5">
+            <ConditionIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white/90 drop-shadow-sm" />
+            <span className="text-xl xs:text-2xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white drop-shadow-sm truncate">
+              {condition}
+            </span>
+          </div>
+
+          {/* Temperature Range & Feels Like */}
+          <div className="flex items-center flex-wrap gap-2 xs:gap-2.5 text-xs xs:text-sm font-medium text-white/85">
+            <span>{minTemp}° ~ {maxTemp}{tempUnit}</span>
+            <span className="w-1 h-1 rounded-full bg-white/50" />
+            <span>Feels like {feelsLike}{tempUnit}</span>
+          </div>
+
+          {/* Huge Visually Dominant Temperature */}
+          <div className="flex items-start mt-2">
+            <span className="text-6xl xs:text-7xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-none text-white drop-shadow-md">
+              {temp}
+            </span>
+            <span className="text-2xl xs:text-3xl sm:text-3xl lg:text-4xl font-light text-white/80 -mt-1 ml-1">
+              {tempUnit}
+            </span>
+          </div>
         </div>
 
-        {/* Temperature Range & Feels Like */}
-        <div className="flex items-center flex-wrap justify-center sm:justify-start gap-2 xs:gap-3 text-xs xs:text-sm sm:text-base font-medium text-white/85">
-          <span>{minTemp}° ~ {maxTemp}{tempUnit}</span>
-          <span className="w-1 h-1 rounded-full bg-white/50" />
-          <span>Feels like {feelsLike}{tempUnit}</span>
-        </div>
+        {/* RIGHT: AQI (Displayed with identical typographic prominence) */}
+        <div className="flex flex-col items-start text-left sm:border-l sm:border-white/15 sm:pl-6 lg:pl-8">
+          {/* AQI Quality Status */}
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className={`w-2.5 h-2.5 rounded-full ${aqiInfo.dotColor} animate-pulse shadow-sm`} />
+            <span className={`text-xl xs:text-2xl sm:text-2xl lg:text-3xl font-bold tracking-tight ${aqiInfo.textColor} drop-shadow-sm truncate`}>
+              {aqiInfo.label} Air
+            </span>
+          </div>
 
-        {/* Huge Visually Dominant Temperature */}
-        <div className="flex items-start justify-center sm:justify-start mt-2">
-          <span className="text-6xl xs:text-7xl sm:text-8xl md:text-9xl font-black tracking-tighter leading-none text-white drop-shadow-md">
-            {temp}
-          </span>
-          <span className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-light text-white/80 -mt-1 ml-1">
-            {tempUnit}
-          </span>
+          {/* PM2.5 & PM10 Details */}
+          <div className="flex items-center flex-wrap gap-2 xs:gap-2.5 text-xs xs:text-sm font-medium text-white/85">
+            <span>PM 2.5: {activePm25}</span>
+            <span className="w-1 h-1 rounded-full bg-white/50" />
+            <span>PM 10: {aqiInfo.pm10}</span>
+          </div>
+
+          {/* Huge Visually Dominant AQI Score */}
+          <div className="flex items-start mt-2">
+            <span className={`text-6xl xs:text-7xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-none ${aqiInfo.textColor} drop-shadow-md`}>
+              {aqiInfo.score}
+            </span>
+            <span className="text-2xl xs:text-3xl sm:text-3xl lg:text-4xl font-light text-white/80 -mt-1 ml-1.5">
+              AQI
+            </span>
+          </div>
         </div>
       </div>
     </motion.div>
