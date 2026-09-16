@@ -19,8 +19,7 @@ import {
   Droplets,
   Eye,
   Umbrella,
-  ArrowRight,
-  Flag
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useUserProfile } from '../../hooks/useUserProfile';
@@ -243,16 +242,16 @@ export function RouteWeather({
             </div>
 
             {/* Destination */}
-            <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-              <div className="text-left md:text-right min-w-0 flex-1 md:flex-initial">
+            <div className="flex items-center gap-3 w-full md:w-auto justify-start">
+              <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-xl xs:rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 shadow-xs">
+                <MapPin className="w-5 h-5 xs:w-5.5 xs:h-5.5 sm:w-6 sm:h-6 text-rose-400" />
+              </div>
+              <div className="text-left min-w-0 flex-1 md:flex-initial">
                 <span className="text-[9px] xs:text-[10px] font-bold text-rose-300 uppercase tracking-widest block">DESTINATION</span>
                 <h2 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight truncate">{route.destinationName}</h2>
                 <span className="text-[10px] xs:text-[11px] text-white/60 font-medium">
                   {route.destinationLat.toFixed(2)}°, {route.destinationLon.toFixed(2)}°
                 </span>
-              </div>
-              <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-xl xs:rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 shadow-xs">
-                <Flag className="w-5 h-5 xs:w-5.5 xs:h-5.5 sm:w-6 sm:h-6 text-rose-400 fill-rose-400/25" />
               </div>
             </div>
 
@@ -428,7 +427,7 @@ export function RouteWeather({
                   }`}
                 >
                   {isDestination ? (
-                    <Flag className="w-3 h-3 text-white fill-white" />
+                    <MapPin className="w-3 h-3 text-white fill-white/80" />
                   ) : isSource ? (
                     <MapPin className="w-3 h-3 text-slate-950" />
                   ) : (

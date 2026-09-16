@@ -62,8 +62,18 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
       {/* Background Solar Warm Glow */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 w-48 h-28 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
 
+      {/* Top Header Row with Sun Status Badge */}
+      <div className="flex items-center justify-between z-10">
+        <span className="text-[11px] sm:text-xs font-semibold text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
+          Sun Position
+        </span>
+        <span className="text-[10px] sm:text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/30 shadow-xs">
+          Daylight Arc
+        </span>
+      </div>
+
       {/* Sun Arc Trajectory Visualization */}
-      <div className="relative w-full h-28 sm:h-32 pt-2 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full h-28 sm:h-32 pt-1 flex items-center justify-center overflow-hidden">
         <svg 
           viewBox="0 0 320 120" 
           className="w-full h-full overflow-visible"
@@ -191,7 +201,7 @@ export const SunriseCard: React.FC<SunriseCardProps> = ({
       </div>
 
       {/* Bottom Row: Sunrise on Left & Sunset on Right */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-1">
         {/* Sunrise */}
         <div className="flex flex-col">
           <span className="text-xs sm:text-sm text-white/75 font-medium">
