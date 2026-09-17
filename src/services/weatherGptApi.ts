@@ -79,7 +79,7 @@ const API_ENDPOINT = `${BASE_API_URL}/ask`;
 export const WEATHER_ENDPOINT = `${BASE_API_URL}/weather`;
 export const WEATHER_CURRENT_ENDPOINT = `${BASE_API_URL}/weather/current`;
 export const WEATHER_HISTORY_ENDPOINT = `${BASE_API_URL}/weather/history`;
-export const WEATHER_ALERTS_ENDPOINT = `${BASE_API_URL}/alerts`;
+export const WEATHER_ALERTS_ENDPOINT = `${BASE_API_URL}/disaster/alerts`;
 export const ROUTE_WEATHER_ENDPOINT = `${BASE_API_URL}/route-weather`;
 export const HEALTH_ENDPOINT = `${RAW_BASE_URL.replace(/\/api$/, '')}/health`;
 export const VOICE_SPEAK_ENDPOINT = `${BASE_API_URL}/voice/speak`;
@@ -87,6 +87,7 @@ export const VOICE_TRANSCRIBE_ENDPOINT = `${BASE_API_URL}/voice/transcribe`;
 export const VOICE_ASK_ENDPOINT = `${BASE_API_URL}/voice/ask`;
 
 export const KNOWN_CITY_COORDINATES: Record<string, { lat: number; lon: number }> = {
+  // Gujarat Cities & Towns
   rajkot: { lat: 22.3039, lon: 70.8022 },
   morbi: { lat: 22.8173, lon: 70.8368 },
   ahmedabad: { lat: 23.0225, lon: 72.5714 },
@@ -96,10 +97,51 @@ export const KNOWN_CITY_COORDINATES: Record<string, { lat: number; lon: number }
   jamnagar: { lat: 22.4707, lon: 70.0577 },
   junagadh: { lat: 21.5222, lon: 70.4579 },
   gandhinagar: { lat: 23.2156, lon: 72.6369 },
+  bhuj: { lat: 23.2420, lon: 69.6669 },
+  gandhidham: { lat: 23.0753, lon: 70.1337 },
+  porbandar: { lat: 21.6417, lon: 69.6293 },
+  anand: { lat: 22.5645, lon: 72.9289 },
+  nadiad: { lat: 22.6916, lon: 72.8634 },
+  surendranagar: { lat: 22.7278, lon: 71.6372 },
+  bharuch: { lat: 21.7051, lon: 72.9959 },
+  ankleshwar: { lat: 21.6264, lon: 73.0033 },
+  navsari: { lat: 20.9467, lon: 72.9520 },
+  valsad: { lat: 20.5992, lon: 72.9342 },
+  vapi: { lat: 20.3893, lon: 72.9106 },
+  godhra: { lat: 22.7758, lon: 73.6149 },
+  dahod: { lat: 22.8398, lon: 74.2532 },
+  botad: { lat: 22.1704, lon: 71.6663 },
+  palanpur: { lat: 24.1724, lon: 72.4346 },
+  patan: { lat: 23.8493, lon: 72.1266 },
+  mehsana: { lat: 23.5880, lon: 72.3693 },
+  amreli: { lat: 21.6032, lon: 71.2221 },
+  gondal: { lat: 21.9619, lon: 70.7923 },
+  veraval: { lat: 20.9077, lon: 70.3679 },
+  somnath: { lat: 20.8880, lon: 70.4013 },
+  dwarka: { lat: 22.2442, lon: 68.9685 },
+  jetpur: { lat: 21.7547, lon: 70.7850 },
+  keshod: { lat: 21.3039, lon: 70.2504 },
+  deesa: { lat: 24.2585, lon: 72.1810 },
+  tankara: { lat: 22.6562, lon: 70.7495 },
+  chotila: { lat: 22.4225, lon: 71.1947 },
+  wankaner: { lat: 22.6139, lon: 70.9634 },
+  dhoraji: { lat: 21.7371, lon: 70.4503 },
+  upleta: { lat: 21.7333, lon: 70.2833 },
+  mandvi: { lat: 22.8333, lon: 69.3550 },
+
+  // Maharashtra & Mumbai Region
   mumbai: { lat: 19.0760, lon: 72.8777 },
   pune: { lat: 18.5204, lon: 73.8567 },
   nagpur: { lat: 21.1458, lon: 79.0882 },
   nashik: { lat: 19.9975, lon: 73.7898 },
+  thane: { lat: 19.2183, lon: 72.9781 },
+  panvel: { lat: 18.9894, lon: 73.1175 },
+  lonavala: { lat: 18.7557, lon: 73.4091 },
+  aurangabad: { lat: 19.8762, lon: 75.3433 },
+  solapur: { lat: 17.6599, lon: 75.9064 },
+  kolhapur: { lat: 16.7050, lon: 74.2433 },
+
+  // National Metros & Capitals
   delhi: { lat: 28.6139, lon: 77.2090 },
   'new delhi': { lat: 28.6139, lon: 77.2090 },
   noida: { lat: 28.5355, lon: 77.3910 },
@@ -131,6 +173,8 @@ export const KNOWN_CITY_COORDINATES: Record<string, { lat: number; lon: number }
   bhubaneswar: { lat: 20.2961, lon: 85.8245 },
   ranchi: { lat: 23.3441, lon: 85.3096 },
   raipur: { lat: 21.2514, lon: 81.6296 },
+  jodhpur: { lat: 26.2389, lon: 73.0243 },
+  udaipur: { lat: 24.5854, lon: 73.7125 },
 };
 
 export function resolveCoordinatesForCity(cityOrLocation: string): { latitude: number; longitude: number } {
@@ -153,7 +197,12 @@ export function resolveCoordinatesForCity(cityOrLocation: string): { latitude: n
     return { latitude: KNOWN_CITY_COORDINATES[foundKey].lat, longitude: KNOWN_CITY_COORDINATES[foundKey].lon };
   }
 
-  return { latitude: 22.3039, longitude: 70.8022 };
+  // Deterministic fallback for other Indian cities
+  let hash = 0;
+  for (let i = 0; i < cleanName.length; i++) hash += cleanName.charCodeAt(i);
+  const lat = 20.0 + ((hash % 120) / 10);
+  const lon = 72.0 + ((hash % 80) / 10);
+  return { latitude: Math.round(lat * 1000) / 1000, longitude: Math.round(lon * 1000) / 1000 };
 }
 
 export interface AskWeatherGPTParams {
@@ -285,45 +334,39 @@ export async function fetchWeatherHistoryApi(cityOrLocation: string): Promise<an
 }
 
 /**
- * Live Weather Alerts Endpoint adapter (POST /api/alerts)
+ * Live Weather Alerts Endpoint adapter (queries GET /api/disaster/alerts?location=...)
  */
 export async function fetchWeatherAlertsApi(cityOrLocation: string): Promise<any> {
   try {
     const cleanCity = (cityOrLocation || 'Rajkot').split(',')[0].trim() || 'Rajkot';
-    const location = resolveCoordinatesForCity(cleanCity);
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const response = await fetch(`${BASE_API_URL}/alerts`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        city: cleanCity,
-        location,
-        threshold: 50
-      }),
-      signal: controller.signal
+    const response = await fetch(`${BASE_API_URL}/disaster/alerts?location=${encodeURIComponent(cleanCity)}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+      signal: controller.signal,
     });
     clearTimeout(timeoutId);
 
     if (response.ok) {
       const data = await response.json();
-      const alerts: any[] = [];
-      if (data?.currentStatus?.thresholdCrossed) {
-        alerts.push({
-          headline: `Severe Weather Warning for ${cleanCity}`,
-          event: "Rain Alert",
-          severity: "High",
-          description: `Precipitation risk reached ${data.currentStatus.maxRainProbability}%.`,
-          area: cleanCity
-        });
-      }
-      return { success: true, alerts, message: data?.makeWebhookResult?.message || '' };
+      const alerts: any[] = Array.isArray(data?.alerts) ? data.alerts : [];
+      return {
+        success: true,
+        alerts,
+        activeAlertsCount: data?.activeAlertsCount ?? alerts.length,
+        hasCriticalAlert: data?.hasCriticalAlert ?? false,
+        location: data?.location,
+        message: alerts.length === 0 ? `No severe weather warnings reported for ${cleanCity}.` : ''
+      };
     }
-    return { success: true, alerts: [] };
-  } catch {
-    return { success: true, alerts: [] };
+    return { success: true, alerts: [], activeAlertsCount: 0, hasCriticalAlert: false };
+  } catch (err: any) {
+    console.warn(`Disaster alerts fetch error for ${cityOrLocation}:`, err?.message);
+    return { success: true, alerts: [], activeAlertsCount: 0, hasCriticalAlert: false };
   }
 }
 
@@ -367,13 +410,20 @@ export async function askWeatherGPT(params: AskWeatherGPTParams | string): Promi
       payload.language = requestParams.language;
     }
     
-    if (requestParams.location) {
+    // Always supply location object to prevent backend missing-location crashes
+    if (requestParams.location && typeof requestParams.location.latitude === 'number' && typeof requestParams.location.longitude === 'number') {
       payload.location = requestParams.location;
+    } else {
+      const savedCity = localStorage.getItem('weathergpt_selected_city') || 'Rajkot';
+      payload.location = resolveCoordinatesForCity(savedCity);
     }
     
     if (convId) {
       payload.conversationId = convId;
     }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
@@ -381,7 +431,9 @@ export async function askWeatherGPT(params: AskWeatherGPTParams | string): Promi
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

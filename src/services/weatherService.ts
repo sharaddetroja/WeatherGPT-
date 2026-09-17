@@ -144,12 +144,18 @@ export function formatSunTime(isoString?: string): string {
 /**
  * Main weather data fetcher connecting to production Express backend
  */
-export const getWeatherData = async (city: string = 'Rajkot') => {
+export const getWeatherData = async (
+  city: string = 'Rajkot',
+  coords?: { latitude: number; longitude: number }
+) => {
   const cleanCity = (city || 'Rajkot').split(',')[0].trim() || 'Rajkot';
+  try {
+    localStorage.setItem('weathergpt_selected_city', cleanCity);
+  } catch {}
 
   try {
     // Attempt fetching live unified weather from production backend POST /api/weather
-    const liveRes = await fetchBackendWeather(cleanCity);
+    const liveRes = await fetchBackendWeather(cleanCity, coords);
 
     if (liveRes && liveRes.success && liveRes.data) {
       const data = liveRes.data;

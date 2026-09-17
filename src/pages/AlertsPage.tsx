@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
-import { AlertTriangle, Info, ShieldAlert, CloudRain, Wind, ThermometerSun, Bell, Volume2, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AlertTriangle, Info, ShieldAlert, CloudRain, Wind, ThermometerSun, Bell, Volume2, CheckCircle2, PhoneCall, Check, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLanguage } from '../hooks/useLanguage';
+import { getEmergencyGuide } from '../services/weatherGptApi';
 
 export default function AlertsPage() {
   const { t } = useLanguage();
@@ -18,6 +19,22 @@ export default function AlertsPage() {
     sendAlertNotification,
     updateAlertsForLocation
   } = useWeatherAlerts();
+
+  const [selectedDisaster, setSelectedDisaster] = useState<'cyclone' | 'flood' | 'heatwave' | 'lightning'>('cyclone');
+  const [guideData, setGuideData] = useState<any>(null);
+  const [guideLoading, setGuideLoading] = useState(false);
+
+  useEffect(() => {
+    setGuideLoading(true);
+    getEmergencyGuide(selectedDisaster, 'en')
+      .then(res => {
+        if (res && res.success && res.guidance) {
+          setGuideData(res.guidance);
+        }
+      })
+      .catch(e => console.warn('Could not fetch emergency guide:', e))
+      .finally(() => setGuideLoading(false));
+  }, [selectedDisaster]);
 
   useEffect(() => {
     if (profile.location) {
@@ -168,6 +185,110 @@ export default function AlertsPage() {
         })}
       </div>
       )}
+
+      {/* Live Backend Emergency Protocols & Helplines */}
+      <div className="glass-panel p-5 sm:p-6 rounded-3xl border border-white/20 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30">
+              <PhoneCall className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-white">Emergency Safety Protocols & Helplines</h2>
+              <p className="text-xs text-white/70">Verified response guidelines synced from NDMA disaster engine</p>
+            </div>
+          </div>
+
+          {/* Disaster Type Switcher */}
+          <div className="flex items-center gap-1.5 p-1 bg-white/10 rounded-2xl border border-white/15 self-start sm:self-auto">
+            {(['cyclone', 'flood', 'heatwave', 'lightning'] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => setSelectedDisaster(type)}
+                className={cn(
+                  "px-3 py-1 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer",
+                  selectedDisaster === type
+                    ? "bg-primary text-white shadow-xs"
+                    : "text-white/70 hover:text-white hover:bg-white/10"
+                )}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {guideLoading ? (
+          <div className="py-8 text-center text-xs text-white/60 animate-pulse">
+            Loading disaster safety protocols...
+          </div>
+        ) : guideData ? (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-white">{guideData.title}</h3>
+              <p className="text-xs text-white/80 mt-0.5">{guideData.summary}</p>
+            </div>
+
+            {/* Do's and Don'ts Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {/* Do's */}
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 space-y-2">
+                <div className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" /> What to Do
+                </div>
+                <ul className="space-y-1.5 text-xs text-white/90">
+                  {guideData.dos?.map((item: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-emerald-400 font-bold shrink-0">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Don'ts */}
+              <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-400/30 space-y-2">
+                <div className="text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <X className="w-3.5 h-3.5" /> What to Avoid
+                </div>
+                <ul className="space-y-1.5 text-xs text-white/90">
+                  {guideData.donts?.map((item: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-rose-400 font-bold shrink-0">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Official Helplines */}
+            {Array.isArray(guideData.helplines) && guideData.helplines.length > 0 && (
+              <div className="pt-2 border-t border-white/10">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-sky-200">
+                  Emergency Speed-Dial Directory
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-2">
+                  {guideData.helplines.map((line: any, idx: number) => (
+                    <a
+                      key={idx}
+                      href={`tel:${line.number}`}
+                      className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition-all text-center group cursor-pointer block shadow-xs"
+                    >
+                      <div className="text-[10px] text-white/70 truncate group-hover:text-white">
+                        {line.name}
+                      </div>
+                      <div className="text-sm font-extrabold text-amber-300 mt-0.5">
+                        📞 {line.number}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

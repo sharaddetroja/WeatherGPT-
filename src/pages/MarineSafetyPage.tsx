@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Waves, Anchor, ShieldAlert, Thermometer, Wind, Eye } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
+import { fetchBackendWeather } from '../services/weatherGptApi';
 
 export interface CoastalZone {
   id: string;
@@ -61,6 +62,21 @@ const COASTAL_ZONES: CoastalZone[] = [
 export default function MarineSafetyPage() {
   const { t } = useLanguage();
   const [selectedZone, setSelectedZone] = useState<CoastalZone>(COASTAL_ZONES[0]);
+  const [liveWeather, setLiveWeather] = useState<any>(null);
+
+  useEffect(() => {
+    const zoneCityMap: Record<string, string> = {
+      'saurashtra': 'Bhavnagar',
+      'porbandar-dwarka': 'Dwarka',
+      'mumbai-coast': 'Mumbai'
+    };
+    const targetCity = zoneCityMap[selectedZone.id] || 'Bhavnagar';
+    fetchBackendWeather(targetCity).then(res => {
+      if (res && res.success && res.data?.current) {
+        setLiveWeather(res.data.current);
+      }
+    }).catch(() => {});
+  }, [selectedZone.id]);
 
   const alertColor = 
     selectedZone.alertLevel === 'Red Alert' ? 'bg-red-500/15 text-red-600 border-red-500/30' :
@@ -144,7 +160,9 @@ export default function MarineSafetyPage() {
                   <Wind className="w-4 h-4 text-teal-400" />
                   <span>Wind Velocity</span>
                 </div>
-                <div className="text-xs xs:text-sm font-black text-white mt-1">{selectedZone.windSpeed}</div>
+                <div className="text-xs xs:text-sm font-black text-white mt-1">
+                  {liveWeather ? `${liveWeather.windSpeed} km/h` : selectedZone.windSpeed}
+                </div>
               </div>
 
               <div className="p-3 xs:p-3.5 rounded-2xl glass-panel border border-white/15">
@@ -152,7 +170,9 @@ export default function MarineSafetyPage() {
                   <Thermometer className="w-4 h-4 text-amber-400" />
                   <span>Sea Surface Temp</span>
                 </div>
-                <div className="text-xs xs:text-sm font-black text-white mt-1">{selectedZone.seaTemp}</div>
+                <div className="text-xs xs:text-sm font-black text-white mt-1">
+                  {liveWeather ? `${liveWeather.temperature}°C` : selectedZone.seaTemp}
+                </div>
               </div>
 
               <div className="p-3 xs:p-3.5 rounded-2xl glass-panel border border-white/15">
@@ -160,7 +180,9 @@ export default function MarineSafetyPage() {
                   <Eye className="w-4 h-4 text-sky-400" />
                   <span>Coastal Visibility</span>
                 </div>
-                <div className="text-xs xs:text-sm font-black text-white mt-1">{selectedZone.visibility}</div>
+                <div className="text-xs xs:text-sm font-black text-white mt-1">
+                  {liveWeather?.visibility ? `${Math.round(liveWeather.visibility / 1000)} km` : selectedZone.visibility}
+                </div>
               </div>
             </div>
           </div>

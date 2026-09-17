@@ -1,5 +1,5 @@
 import { INDIAN_CITIES } from '../data/indianCities';
-import { fetchRouteWeatherApi } from './weatherGptApi';
+import { fetchRouteWeatherApi, fetchBackendWeather } from './weatherGptApi';
 
 export interface RouteWaypoint {
   id: string;
@@ -301,6 +301,52 @@ export async function calculateRouteWeather(
       weatherMeta: weatherData.weatherMeta
     };
   });
+
+  // Enrich source & destination waypoints with live backend weather if accessible
+  try {
+    const [sourceRes, destRes] = await Promise.allSettled([
+      fetchBackendWeather(sourceLoc.name, { latitude: sourceLoc.latitude, longitude: sourceLoc.longitude }),
+      fetchBackendWeather(destLoc.name, { latitude: destLoc.latitude, longitude: destLoc.longitude })
+    ]);
+
+    if (sourceRes.status === 'fulfilled' && sourceRes.value?.success && sourceRes.value?.data?.current) {
+      const cur = sourceRes.value.data.current;
+      const firstWp = waypoints[0];
+      if (firstWp) {
+        firstWp.weather = {
+          temperatureC: Math.round(cur.temperature ?? firstWp.weather.temperatureC),
+          condition: cur.condition || firstWp.weather.condition,
+          icon: cur.weatherCode !== undefined ? (cur.weatherCode > 50 ? 'cloud-rain' : cur.weatherCode > 0 ? 'cloud-sun' : 'sun') : firstWp.weather.icon,
+          rainProbability: Math.round(cur.rainProbability ?? firstWp.weather.rainProbability),
+          rainfallMm: Number(cur.precipitation ?? firstWp.weather.rainfallMm),
+          humidity: Math.round(cur.humidity ?? firstWp.weather.humidity),
+          windSpeedKph: Math.round(cur.windSpeed ?? firstWp.weather.windSpeedKph),
+          visibilityKm: cur.visibility ? Math.round(cur.visibility / 1000) : firstWp.weather.visibilityKm,
+          isStale: Boolean(sourceRes.value.data.isCached)
+        };
+      }
+    }
+
+    if (destRes.status === 'fulfilled' && destRes.value?.success && destRes.value?.data?.current) {
+      const cur = destRes.value.data.current;
+      const lastWp = waypoints[waypoints.length - 1];
+      if (lastWp) {
+        lastWp.weather = {
+          temperatureC: Math.round(cur.temperature ?? lastWp.weather.temperatureC),
+          condition: cur.condition || lastWp.weather.condition,
+          icon: cur.weatherCode !== undefined ? (cur.weatherCode > 50 ? 'cloud-rain' : cur.weatherCode > 0 ? 'cloud-sun' : 'sun') : lastWp.weather.icon,
+          rainProbability: Math.round(cur.rainProbability ?? lastWp.weather.rainProbability),
+          rainfallMm: Number(cur.precipitation ?? lastWp.weather.rainfallMm),
+          humidity: Math.round(cur.humidity ?? lastWp.weather.humidity),
+          windSpeedKph: Math.round(cur.windSpeed ?? lastWp.weather.windSpeedKph),
+          visibilityKm: cur.visibility ? Math.round(cur.visibility / 1000) : lastWp.weather.visibilityKm,
+          isStale: Boolean(destRes.value.data.isCached)
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Could not enrich route waypoints with live weather:', err);
+  }
 
   let safetyScore = 90;
   let hazardAlert: RouteCalculationResult['hazardAlert'] = undefined;
