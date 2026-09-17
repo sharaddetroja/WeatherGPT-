@@ -7,9 +7,9 @@ export default function LanguageSelectionPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-8 pb-12 animate-in fade-in duration-400">
+    <div className="space-y-4 sm:space-y-6 pb-2 sm:pb-4 animate-in fade-in duration-400 text-white">
       {/* Banner */}
-      <div className="p-4 xs:p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-primary via-blue-600 to-indigo-700 text-white shadow-2xl relative overflow-hidden">
+      <div className="p-4 xs:p-6 sm:p-8 rounded-2xl xs:rounded-3xl bg-gradient-to-r from-primary via-blue-600 to-indigo-700 text-white shadow-2xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
             <div className="flex items-center gap-2 text-amber-300 font-bold text-xs uppercase tracking-wider mb-2">
@@ -35,9 +35,9 @@ export default function LanguageSelectionPage() {
       </div>
 
       {/* Grid of Language Options */}
-      <div className="space-y-4">
-        <h3 className="text-xs sm:text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
-          <Languages className="w-4 h-4 text-primary" />
+      <div className="space-y-3 sm:space-y-4">
+        <h3 className="text-xs sm:text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+          <Languages className="w-4 h-4 text-sky-300" />
           <span>Available Site Languages:</span>
         </h3>
 
@@ -49,7 +49,7 @@ export default function LanguageSelectionPage() {
                 key={lang.code}
                 type="button"
                 onClick={() => setLanguage(lang)}
-                className={`p-5 rounded-2xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group ${
+                className={`p-4 xs:p-5 rounded-2xl border text-left transition-all cursor-pointer relative flex flex-col justify-between group ${
                   isSelected
                     ? 'glass-pill-active text-white scale-[1.02]'
                     : 'glass-panel text-white hover:bg-white/10 hover:border-white/40'
@@ -62,18 +62,18 @@ export default function LanguageSelectionPage() {
                 )}
 
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-4xl drop-shadow-xs">{lang.flag}</span>
+                  <span className="text-3xl xs:text-4xl drop-shadow-xs">{lang.flag}</span>
                   <div>
-                    <h4 className="font-extrabold text-base text-foreground group-hover:text-primary transition-colors">
+                    <h4 className="font-extrabold text-sm xs:text-base text-white group-hover:text-sky-300 transition-colors">
                       {lang.nativeName}
                     </h4>
-                    <p className="text-xs text-muted-foreground font-medium">{lang.name}</p>
+                    <p className="text-xs text-white/70 font-medium">{lang.name}</p>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-border/50 flex items-center justify-between text-xs font-bold text-muted-foreground">
+                <div className="pt-3 border-t border-white/15 flex items-center justify-between text-xs font-bold text-white/75">
                   <span>{isSelected ? 'Selected ✓' : 'Click to apply'}</span>
-                  <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'text-primary' : 'group-hover:translate-x-1'}`} />
+                  <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'text-sky-300' : 'group-hover:translate-x-1'}`} />
                 </div>
               </button>
             );
@@ -82,14 +82,14 @@ export default function LanguageSelectionPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="p-6 glass-panel border border-white/20 text-white rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+      <div className="p-4 xs:p-5 sm:p-6 glass-panel border border-white/20 text-white rounded-2xl xs:rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-emerald-500/10 text-emerald-600 rounded-2xl">
-            <Sparkles className="w-6 h-6 animate-pulse" />
+          <div className="p-2.5 sm:p-3 bg-emerald-500/20 text-emerald-300 rounded-2xl border border-emerald-400/30">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
           </div>
           <div>
-            <h4 className="font-bold text-sm text-foreground">Selected: {currentLang.nativeName} ({currentLang.name})</h4>
-            <p className="text-xs text-muted-foreground mt-0.5">All dashboard items, voice assistant, and navigation will render in this language.</p>
+            <h4 className="font-bold text-sm text-white">Selected: {currentLang.nativeName} ({currentLang.name})</h4>
+            <p className="text-xs text-white/70 mt-0.5">All dashboard items, voice assistant, and navigation will render in this language.</p>
           </div>
         </div>
 

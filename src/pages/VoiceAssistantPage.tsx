@@ -1295,7 +1295,7 @@ export default function VoiceAssistantPage() {
   };
 
   return (
-    <div className="relative flex h-[calc(100vh-4rem)] w-full rounded-2xl border border-border bg-background shadow-2xl overflow-hidden animate-in fade-in duration-300">
+    <div className="relative flex h-full w-full rounded-2xl border border-white/20 glass-panel shadow-2xl overflow-hidden animate-in fade-in duration-300">
       
       {/* Mobile Backdrop Overlay */}
       {sidebarOpen && (

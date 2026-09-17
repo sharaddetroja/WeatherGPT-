@@ -123,9 +123,7 @@ export default function ClimatePage() {
   const location = climateData?.location;
 
   return (
-    <div className="space-y-6 w-full animate-in fade-in duration-500 pb-12">
-      
-      {/* Top Header & Search Bar Row */}
+    <div className="space-y-4 sm:space-y-6 w-full animate-in fade-in duration-500 pb-2 sm:pb-4">
       {/* Top Header & Search Bar Row */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">

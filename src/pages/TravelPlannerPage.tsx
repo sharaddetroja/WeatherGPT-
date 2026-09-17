@@ -172,7 +172,7 @@ export default function TravelPlannerPage() {
     : rawBackendRouteWeatherResponse;
 
   return (
-    <div className="space-y-4 xs:space-y-6 pb-12 animate-in fade-in duration-300">
+    <div className="space-y-4 sm:space-y-6 pb-2 sm:pb-4 animate-in fade-in duration-300">
       
       {/* Header Banner */}
       <div className="glass-panel p-4 xs:p-5 sm:p-7 rounded-2xl xs:rounded-3xl border border-white/20 shadow-xl backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

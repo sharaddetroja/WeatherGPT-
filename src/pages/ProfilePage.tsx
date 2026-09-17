@@ -58,12 +58,12 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="w-full mx-auto space-y-6 animate-in fade-in duration-500 relative">
+    <div className="w-full mx-auto space-y-4 sm:space-y-6 pb-2 sm:pb-4 animate-in fade-in duration-500 relative text-white">
       {/* Save Success Banner Notification */}
       {lastSavedNotification && (
-        <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between gap-3 text-emerald-700 dark:text-emerald-400 shadow-sm animate-in slide-in-from-top-2">
+        <div className="p-4 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl flex items-center justify-between gap-3 text-emerald-200 shadow-sm animate-in slide-in-from-top-2 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-400" />
             <span className="text-sm font-semibold">{lastSavedNotification}</span>
           </div>
           <button 
@@ -78,10 +78,12 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <User className="w-8 h-8 text-primary" />
+          <div className="p-2 sm:p-2.5 rounded-2xl bg-sky-500/20 text-sky-300 border border-sky-400/30 shrink-0 shadow-xs">
+            <User className="w-5 h-5 sm:w-6 sm:h-6" />
+          </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('profile_title', 'Profile & Settings')}</h1>
-            <p className="text-xs text-muted-foreground">{t('profile_subtitle', 'Manage your personal preferences and weather units')}</p>
+            <h1 className="text-xl xs:text-2xl sm:text-3xl font-black tracking-tight text-white">{t('profile_title', 'Profile & Settings')}</h1>
+            <p className="text-xs text-white/70">{t('profile_subtitle', 'Manage your personal preferences and weather units')}</p>
           </div>
         </div>
       </div>

@@ -36,14 +36,16 @@ export default function AlertsPage() {
   };
 
   return (
-    <div className="space-y-6 w-full animate-in fade-in duration-500">
+    <div className="space-y-4 sm:space-y-6 w-full animate-in fade-in duration-500 pb-2 sm:pb-4 text-white">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <ShieldAlert className="w-8 h-8 text-primary" />
+          <div className="p-2 sm:p-2.5 rounded-2xl bg-sky-500/20 text-sky-300 border border-sky-400/30 shrink-0 shadow-xs">
+            <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6" />
+          </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('alerts_title', 'Weather Alerts')}</h1>
-            <p className="text-xs text-muted-foreground">{t('alerts_subtitle', 'Real-time severe weather warnings and area advisories')}</p>
+            <h1 className="text-xl xs:text-2xl sm:text-3xl font-black tracking-tight text-white">{t('alerts_title', 'Weather Alerts')}</h1>
+            <p className="text-xs text-white/70 mt-0.5">{t('alerts_subtitle', 'Real-time severe weather warnings and area advisories')}</p>
           </div>
         </div>
       </div>

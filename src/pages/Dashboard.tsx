@@ -243,7 +243,7 @@ export default function Dashboard() {
   const currentLocationName = profile.location?.split(',')[0] || data.location.name || 'Morvi';
 
   return (
-    <div className="relative space-y-6 sm:space-y-8 pb-12 animate-in fade-in duration-500">
+    <div className="relative space-y-4 sm:space-y-6 pb-2 sm:pb-4 animate-in fade-in duration-500">
       {locateError && (
         <div className="p-3 bg-rose-500/20 border border-rose-400/30 rounded-2xl text-xs text-rose-200 flex items-center justify-between gap-2 backdrop-blur-md">
           <span>{locateError}</span>
@@ -528,11 +528,11 @@ export default function Dashboard() {
       {/* ===================================================================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
         {/* Hourly Precipitation Bar Graph with liquid-surface styling */}
-        <HourlyPrecipitationBarCard className="h-full" />
+        <HourlyPrecipitationBarCard className="h-full md:col-span-2 lg:col-span-1" />
 
         {/* Sun Trajectory Arc (Sunrise & Sunset) */}
         <SunriseCard 
-          className="h-full"
+          className="h-full md:col-span-1"
           sunriseTime={data.astronomy?.sunrise || "6:32 am"}
           sunsetTime={data.astronomy?.sunset || "6:51 pm"}
           isDay={data.current?.is_day !== undefined ? data.current.is_day === 1 : undefined}
@@ -540,7 +540,7 @@ export default function Dashboard() {
 
         {/* Photorealistic Moon Phase Sphere, Moonrise & Moonset Telemetry */}
         <MoonPhaseCard 
-          className="h-full"
+          className="h-full md:col-span-1"
           phaseName={data.astronomy?.moon_phase || "Waxing crescent"}
           moonriseTime={data.astronomy?.moonrise || "11:12 am"}
           moonsetTime={data.astronomy?.moonset || "10:03 pm"}
@@ -558,9 +558,6 @@ export default function Dashboard() {
           className="w-full" 
         />
       </div>
-
-
-
     </div>
   );
 }

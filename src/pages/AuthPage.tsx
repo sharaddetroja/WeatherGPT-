@@ -88,7 +88,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="h-full w-full min-h-[100dvh] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="w-full min-h-[calc(100vh-140px)] flex items-center justify-center p-2 sm:p-4 relative overflow-hidden">
       {/* Animated Weather Background */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-50 dark:opacity-30">
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-primary/20 rounded-full blur-[100px] animate-pulse" />
