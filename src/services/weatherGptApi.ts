@@ -71,6 +71,8 @@ export interface AskApiResponse {
   explainWhy?: any;
 }
 
+import { translateEmergencyGuideToEnglish, getLocalEmergencyProtocol } from '../data/emergencyProtocols';
+
 // Base URL configuration supporting .env and default production Render URL
 const RAW_BASE_URL = (import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://weathergpt-backend-46or.onrender.com').replace(/\/+$/, '');
 export const BASE_API_URL = RAW_BASE_URL.endsWith('/api') ? RAW_BASE_URL : `${RAW_BASE_URL}/api`;
@@ -507,11 +509,31 @@ export async function getDisasterAlerts(location: string): Promise<any> {
 }
 
 export async function getEmergencyGuide(disasterType: string, language: string = 'en'): Promise<any> {
-  const response = await fetch(
-    `${BASE_API_URL}/disaster/emergency-guide?disasterType=${encodeURIComponent(disasterType)}&language=${encodeURIComponent(language)}`
-  );
-  if (!response.ok) throw new Error('Failed to fetch emergency guide');
-  return response.json();
+  try {
+    const response = await fetch(
+      `${BASE_API_URL}/disaster/emergency-guide?disasterType=${encodeURIComponent(disasterType)}&language=${encodeURIComponent(language)}`
+    );
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.success && data.guidance) {
+        if (language === 'en') {
+          return {
+            success: true,
+            guidance: translateEmergencyGuideToEnglish(data.guidance, disasterType)
+          };
+        }
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn('Backend emergency guide fetch encountered an issue, serving verified offline guide:', err);
+  }
+
+  // Fallback to verified local English emergency safety protocol
+  return {
+    success: true,
+    guidance: getLocalEmergencyProtocol(disasterType)
+  };
 }
 
 export async function getMapWeatherOverlay(layer: string, lat: number, lon: number): Promise<{tileUrlTemplate: string, legend?: any}> {

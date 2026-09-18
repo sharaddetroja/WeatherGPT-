@@ -5,9 +5,10 @@ import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLanguage } from '../hooks/useLanguage';
 import { getEmergencyGuide } from '../services/weatherGptApi';
+import { getLocalEmergencyProtocol } from '../data/emergencyProtocols';
 
 export default function AlertsPage() {
-  const { t } = useLanguage();
+  const { t, currentLang } = useLanguage();
   const { profile } = useUserProfile();
   const { 
     alerts, 
@@ -26,15 +27,20 @@ export default function AlertsPage() {
 
   useEffect(() => {
     setGuideLoading(true);
-    getEmergencyGuide(selectedDisaster, 'en')
+    getEmergencyGuide(selectedDisaster, currentLang?.code || 'en')
       .then(res => {
         if (res && res.success && res.guidance) {
           setGuideData(res.guidance);
+        } else {
+          setGuideData(getLocalEmergencyProtocol(selectedDisaster));
         }
       })
-      .catch(e => console.warn('Could not fetch emergency guide:', e))
+      .catch(e => {
+        console.warn('Could not fetch emergency guide:', e);
+        setGuideData(getLocalEmergencyProtocol(selectedDisaster));
+      })
       .finally(() => setGuideLoading(false));
-  }, [selectedDisaster]);
+  }, [selectedDisaster, currentLang?.code]);
 
   useEffect(() => {
     if (profile.location) {
@@ -194,8 +200,8 @@ export default function AlertsPage() {
               <PhoneCall className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white">Emergency Safety Protocols & Helplines</h2>
-              <p className="text-xs text-white/70">Verified response guidelines synced from NDMA disaster engine</p>
+              <h2 className="text-base sm:text-lg font-bold text-white">{t('emergency_protocols_title', 'Emergency Safety Protocols & Helplines')}</h2>
+              <p className="text-xs text-white/70">{t('emergency_protocols_subtitle', 'Verified response guidelines synced from NDMA disaster engine')}</p>
             </div>
           </div>
 
@@ -212,7 +218,10 @@ export default function AlertsPage() {
                     : "text-white/70 hover:text-white hover:bg-white/10"
                 )}
               >
-                {type}
+                {type === 'cyclone' ? t('disaster_cyclone', 'Cyclone') :
+                 type === 'flood' ? t('disaster_flood', 'Flood') :
+                 type === 'heatwave' ? t('disaster_heatwave', 'Heatwave') :
+                 t('disaster_lightning', 'Lightning')}
               </button>
             ))}
           </div>
@@ -220,7 +229,7 @@ export default function AlertsPage() {
 
         {guideLoading ? (
           <div className="py-8 text-center text-xs text-white/60 animate-pulse">
-            Loading disaster safety protocols...
+            {t('loading_protocols', 'Loading disaster safety protocols...')}
           </div>
         ) : guideData ? (
           <div className="space-y-4">
@@ -234,7 +243,7 @@ export default function AlertsPage() {
               {/* Do's */}
               <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 space-y-2">
                 <div className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5" /> What to Do
+                  <Check className="w-3.5 h-3.5" /> {t('what_to_do', 'What to Do')}
                 </div>
                 <ul className="space-y-1.5 text-xs text-white/90">
                   {guideData.dos?.map((item: string, i: number) => (
@@ -249,7 +258,7 @@ export default function AlertsPage() {
               {/* Don'ts */}
               <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-400/30 space-y-2">
                 <div className="text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <X className="w-3.5 h-3.5" /> What to Avoid
+                  <X className="w-3.5 h-3.5" /> {t('what_to_avoid', 'What to Avoid')}
                 </div>
                 <ul className="space-y-1.5 text-xs text-white/90">
                   {guideData.donts?.map((item: string, i: number) => (
@@ -266,7 +275,7 @@ export default function AlertsPage() {
             {Array.isArray(guideData.helplines) && guideData.helplines.length > 0 && (
               <div className="pt-2 border-t border-white/10">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-sky-200">
-                  Emergency Speed-Dial Directory
+                  {t('emergency_directory', 'Emergency Speed-Dial Directory')}
                 </span>
                 <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2.5 mt-2">
                   {guideData.helplines.map((line: any, idx: number) => (
