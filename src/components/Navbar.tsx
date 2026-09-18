@@ -136,7 +136,7 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="glass-panel fixed sm:absolute right-2 sm:right-0 mt-2 w-[calc(100vw-1rem)] max-w-sm sm:w-96 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 text-white" 
+                  className="glass-panel fixed top-16 right-3 left-3 sm:left-auto sm:absolute sm:right-0 sm:top-full mt-2 w-auto sm:w-96 max-w-md sm:max-w-none backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50 text-white" 
                 >
                   {/* Header */}
                   <div className="p-3.5 border-b border-white/15 bg-white/5 flex items-center justify-between">
@@ -171,14 +171,14 @@ export default function Navbar() {
                     {permissionStatus !== 'granted' ? (
                       <button
                         onClick={requestNotificationPermission}
-                        className="px-2.5 py-1 bg-white text-[#1D4ED8] text-[10px] font-bold rounded-lg hover:bg-white/90 transition-colors cursor-pointer shadow-2xs"
+                        className="px-2.5 py-1 bg-white text-[#1D4ED8] text-[10px] font-bold rounded-lg hover:bg-white/90 transition-colors cursor-pointer shadow-2xs shrink-0 active:scale-95"
                       >
                         Enable Push
                       </button>
                     ) : (
                       <button
                         onClick={() => triggerHeavyRainTestAlert()}
-                        className="px-2.5 py-1 bg-white/15 hover:bg-white/25 border border-white/20 text-white text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-2xs"
+                        className="px-2.5 py-1 bg-white/15 hover:bg-white/25 border border-white/20 text-white text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-2xs shrink-0 active:scale-95"
                       >
                         ⚡ Test Alert
                       </button>
@@ -198,14 +198,14 @@ export default function Navbar() {
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className={cn(
-                            "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
+                            "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border shrink-0",
                             alert.severity === 'Critical' ? "bg-red-500/25 text-red-200 border-red-500/40" :
                             alert.severity === 'High' ? "bg-orange-500/25 text-orange-200 border-orange-500/40" :
                             "bg-amber-500/25 text-amber-200 border-amber-500/40"
                           )}>
                             {alert.severity} • {alert.type}
                           </span>
-                          <span className="text-[10px] text-white/60">{alert.timestamp}</span>
+                          <span className="text-[10px] text-white/60 shrink-0">{alert.timestamp}</span>
                         </div>
 
                         <h4 className={cn("text-xs font-bold text-white line-clamp-1", !alert.read && "text-sky-300")}>
@@ -220,10 +220,10 @@ export default function Navbar() {
                   </div>
 
                   {/* Footer Link */}
-                  <div className="p-2.5 bg-white/5 border-t border-white/15 flex items-center justify-between">
+                  <div className="p-2.5 bg-white/5 border-t border-white/15 flex flex-wrap items-center justify-between gap-2">
                     <button
                       onClick={() => triggerHeavyRainTestAlert()}
-                      className="text-[11px] font-bold text-rose-300 hover:text-rose-200 hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-[11px] font-bold text-rose-300 hover:text-rose-200 hover:underline cursor-pointer flex items-center gap-1 active:scale-95"
                       title="Simulate a real-time heavy rain warning with sound & notification"
                     >
                       <span>⛈️ Test Heavy Rain Alert</span>
@@ -231,7 +231,7 @@ export default function Navbar() {
                     <Link
                       to="/alerts"
                       onClick={() => setNotifOpen(false)}
-                      className="text-[11px] font-bold text-sky-300 hover:underline"
+                      className="text-[11px] font-bold text-sky-300 hover:underline shrink-0"
                     >
                       View All Advisories →
                     </Link>

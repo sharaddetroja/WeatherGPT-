@@ -56,36 +56,43 @@ export const WeatherAlertsGlass: React.FC<WeatherAlertsGlassProps> = ({
   const displayAlerts = alerts.slice(0, 3);
 
   return (
-    <div className={`glass-panel rounded-3xl p-5 sm:p-6 text-white ${className}`}>
+    <div className={`glass-panel rounded-3xl p-4 sm:p-6 text-white ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <BellRing className="w-4 h-4 text-amber-300" />
-          <h2 className="text-sm sm:text-base font-bold text-white tracking-wide">
+      <div className="flex items-center justify-between gap-3 mb-3.5 sm:mb-4">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="p-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/30 shrink-0">
+            <BellRing className="w-4 h-4" />
+          </div>
+          <h2 className="text-sm sm:text-base font-bold text-white tracking-wide truncate">
             Weather Alerts
           </h2>
+          {displayAlerts.length > 0 && (
+            <span className="hidden xs:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/15 border border-white/20 text-white/90 shrink-0">
+              {alerts.length} {alerts.length === 1 ? 'Advisory' : 'Advisories'}
+            </span>
+          )}
         </div>
         <Link
           to="/alerts"
-          className="text-xs font-semibold text-white/70 hover:text-white flex items-center gap-1 transition-colors"
+          className="text-xs font-semibold text-sky-300 hover:text-white flex items-center gap-1 transition-colors shrink-0 group"
         >
           <span>View All</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform shrink-0" />
         </Link>
       </div>
 
       {displayAlerts.length === 0 ? (
-        <div className="p-5 rounded-2xl glass-panel text-center text-xs space-y-2 border border-white/10 my-auto">
+        <div className="p-4 sm:p-6 rounded-2xl glass-panel text-center text-xs space-y-2 border border-white/10 my-auto">
           <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center mx-auto border border-emerald-400/30">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div className="font-bold text-sm text-white">No Active Alerts for {activeLocation}</div>
-          <p className="text-xs text-white/70 max-w-xs mx-auto leading-relaxed">
+          <p className="text-xs text-white/70 max-w-sm mx-auto leading-relaxed">
             {apiMessage || `No active severe weather warnings for ${activeLocation}.`}
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className={displayAlerts.length > 1 ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" : "space-y-3"}>
           {displayAlerts.map((alert) => {
             const style = getSeverityStyle(alert.severity);
             const Icon = style.icon;
@@ -93,22 +100,24 @@ export const WeatherAlertsGlass: React.FC<WeatherAlertsGlassProps> = ({
             return (
               <div
                 key={alert.id}
-                className={`p-3.5 rounded-2xl border backdrop-blur-md transition-all ${style.bg} ${style.border}`}
+                className={`p-3.5 sm:p-4 rounded-2xl border backdrop-blur-md transition-all flex flex-col justify-between ${style.bg} ${style.border}`}
               >
-                <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <div className="flex items-center gap-2 font-bold text-xs text-white">
-                    <Icon className={`w-4 h-4 ${style.iconColor} flex-shrink-0`} />
-                    <span className="truncate">{alert.title}</span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0">
+                    <div className="flex items-center gap-2 font-bold text-xs sm:text-sm text-white min-w-0 flex-1">
+                      <Icon className={`w-4 h-4 ${style.iconColor} shrink-0`} />
+                      <span className="truncate">{alert.title}</span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${style.badge}`}>
+                      {alert.severity}
+                    </span>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex-shrink-0 ${style.badge}`}>
-                    {alert.severity}
-                  </span>
+                  <p className="text-[11px] sm:text-xs text-white/80 leading-relaxed line-clamp-2">
+                    {alert.description}
+                  </p>
                 </div>
-                <p className="text-[11px] text-white/80 leading-relaxed line-clamp-2">
-                  {alert.description}
-                </p>
-                <div className="flex items-center justify-between text-[10px] text-white/60 mt-2 pt-1.5 border-t border-white/10">
-                  <span className="truncate max-w-[75%]">{alert.expected}</span>
+                <div className="flex items-center justify-between gap-2 text-[10px] text-white/60 mt-3 pt-2 border-t border-white/10 min-w-0">
+                  <span className="truncate max-w-[65%] sm:max-w-[70%]">{alert.expected}</span>
                   <span className="shrink-0">{alert.timestamp}</span>
                 </div>
               </div>

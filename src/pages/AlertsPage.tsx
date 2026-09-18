@@ -68,42 +68,42 @@ export default function AlertsPage() {
       </div>
 
       {/* Push Notification Setup Banner */}
-      <div className="glass-panel p-4 sm:p-5 rounded-3xl border border-sky-400/20 bg-sky-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg backdrop-blur-xl">
-        <div className="flex items-center gap-3.5">
+      <div className="glass-panel p-4 sm:p-5 rounded-3xl border border-sky-400/20 bg-sky-500/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg backdrop-blur-xl">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-3.5 min-w-0">
           <div className="p-2.5 sm:p-3 bg-primary text-white rounded-2xl shadow-md shrink-0 border border-white/20">
             <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-sm text-white">Heavy Rain & Severe Weather Push Alerts</h3>
+              <h3 className="font-bold text-sm sm:text-base text-white">Heavy Rain & Severe Weather Push Alerts</h3>
               {permissionStatus === 'granted' ? (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/40 shadow-2xs">
+                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/40 shadow-2xs shrink-0">
                   <CheckCircle2 className="w-3 h-3" /> Enabled
                 </span>
               ) : (
-                <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40">
+                <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40 shrink-0">
                   Not Allowed
                 </span>
               )}
             </div>
-            <p className="text-xs text-white/70 mt-0.5 max-w-xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-white/70 mt-1 max-w-xl leading-relaxed">
               Receive instant sound chimes and desktop notifications when heavy rain, cyclones or thunderstorms threaten your area.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0">
+        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
           {permissionStatus !== 'granted' ? (
             <button
               onClick={requestNotificationPermission}
-              className="w-full sm:w-auto px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-xs transition-all shadow-md hover:scale-105 cursor-pointer text-center border border-white/20"
+              className="w-full md:w-auto px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-xs transition-all shadow-md hover:scale-105 cursor-pointer text-center border border-white/20 active:scale-95"
             >
               Enable Notifications
             </button>
           ) : (
             <button
               onClick={() => triggerHeavyRainTestAlert(profile.location)}
-              className="w-full sm:w-auto px-4 py-2 glass-pill border border-white/20 text-white hover:bg-white/20 font-bold rounded-xl text-xs transition-all cursor-pointer shadow-xs text-center"
+              className="w-full md:w-auto px-4 py-2 glass-pill border border-white/20 text-white hover:bg-white/20 font-bold rounded-xl text-xs transition-all cursor-pointer shadow-xs text-center active:scale-95"
             >
               Send Test Alert
             </button>
@@ -125,7 +125,7 @@ export default function AlertsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3.5 sm:gap-4">
         {alerts.map((alert) => {
           const Icon = getTypeIcon(alert.type);
           return (
@@ -138,19 +138,19 @@ export default function AlertsPage() {
                 alert.severity === 'Moderate' ? "border-l-4 border-l-amber-500 bg-amber-950/15" : "border-l-4 border-l-blue-500 bg-blue-950/15"
               )}
             >
-              <div className="flex flex-col sm:flex-row gap-3.5 sm:gap-6 items-start">
-                <div className={cn("p-3 sm:p-4 rounded-2xl flex-shrink-0 shadow-md border", 
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 items-start">
+                <div className={cn("p-2.5 sm:p-3.5 rounded-2xl shrink-0 shadow-md border self-start", 
                   alert.severity === 'Critical' ? "bg-red-500/20 text-red-300 border-red-500/40" :
                   alert.severity === 'High' ? "bg-orange-500/20 text-orange-300 border-orange-500/40" :
                   alert.severity === 'Moderate' ? "bg-amber-500/20 text-amber-300 border-amber-500/40" : "bg-blue-500/20 text-blue-300 border-blue-500/40"
                 )}>
-                  <Icon className="w-6 h-6 sm:w-8 sm:h-8" />
+                  <Icon className="w-5 h-5 sm:w-7 sm:h-7" />
                 </div>
-                <div className="flex-1 space-y-2 w-full">
-                  <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
-                    <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                      <h3 className="text-base sm:text-xl font-bold text-white">{alert.title}</h3>
-                      <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold uppercase tracking-wider border", 
+                <div className="flex-1 min-w-0 space-y-2 w-full">
+                  <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2.5 sm:gap-3">
+                    <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
+                      <h3 className="text-base sm:text-xl font-bold text-white break-words">{alert.title}</h3>
+                      <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold uppercase tracking-wider border shrink-0", 
                         alert.severity === 'Critical' ? "bg-red-500/25 text-red-200 border-red-500/40" :
                         alert.severity === 'High' ? "bg-orange-500/25 text-orange-200 border-orange-500/40" :
                         alert.severity === 'Moderate' ? "bg-amber-500/25 text-amber-200 border-amber-500/40" : "bg-blue-500/25 text-blue-200 border-blue-500/40"
@@ -162,20 +162,20 @@ export default function AlertsPage() {
                     {/* Send notification test for this specific card */}
                     <button
                       onClick={() => sendAlertNotification(alert)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 glass-pill hover:bg-white/20 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer border border-white/20 shadow-xs"
+                      className="self-start xs:self-auto flex items-center justify-center gap-1.5 px-3 py-1.5 glass-pill hover:bg-white/20 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer border border-white/20 shadow-xs shrink-0 active:scale-95"
                       title="Play audio chime and send notification for this alert"
                     >
-                      <Volume2 className="w-3.5 h-3.5 text-sky-300" />
+                      <Volume2 className="w-3.5 h-3.5 text-sky-300 shrink-0" />
                       <span>Notify Me</span>
                     </button>
                   </div>
 
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-white/70">
-                    <Info className="w-4 h-4 text-sky-300" />
-                    <span>Expected: {alert.expected}</span>
+                    <Info className="w-4 h-4 text-sky-300 shrink-0" />
+                    <span className="break-words">Expected: {alert.expected}</span>
                   </div>
 
-                  <p className="text-white/90 leading-relaxed mt-2 text-xs sm:text-sm">
+                  <p className="text-white/90 leading-relaxed text-xs sm:text-sm break-words">
                     {alert.description}
                   </p>
                 </div>
@@ -187,10 +187,10 @@ export default function AlertsPage() {
       )}
 
       {/* Live Backend Emergency Protocols & Helplines */}
-      <div className="glass-panel p-5 sm:p-6 rounded-3xl border border-white/20 shadow-xl space-y-4">
+      <div className="glass-panel p-4 sm:p-6 rounded-3xl border border-white/20 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30">
+            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 shrink-0">
               <PhoneCall className="w-4 h-4" />
             </div>
             <div>
@@ -200,13 +200,13 @@ export default function AlertsPage() {
           </div>
 
           {/* Disaster Type Switcher */}
-          <div className="flex items-center gap-1.5 p-1 bg-white/10 rounded-2xl border border-white/15 self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 p-1 bg-white/10 rounded-2xl border border-white/15 overflow-x-auto max-w-full no-scrollbar self-start sm:self-auto">
             {(['cyclone', 'flood', 'heatwave', 'lightning'] as const).map((type) => (
               <button
                 key={type}
                 onClick={() => setSelectedDisaster(type)}
                 className={cn(
-                  "px-3 py-1 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer",
+                  "px-3 py-1 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer whitespace-nowrap shrink-0",
                   selectedDisaster === type
                     ? "bg-primary text-white shadow-xs"
                     : "text-white/70 hover:text-white hover:bg-white/10"
@@ -268,7 +268,7 @@ export default function AlertsPage() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-sky-200">
                   Emergency Speed-Dial Directory
                 </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-2">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2.5 mt-2">
                   {guideData.helplines.map((line: any, idx: number) => (
                     <a
                       key={idx}
